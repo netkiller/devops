@@ -5,13 +5,14 @@ OS Software Configure Managment
 
 Install
 -------
-
+	$ git clone https://github.com/oscm/devops.git
+	$ cd devops
 	$ python3 setup.py sdist
 	$ python3 setup.py install
 
 	or 
 	
-	$ python setup.py install --prefix=/srv/oscm
+	$ python setup.py install --prefix=/srv/devops
 	
 Deployment
 ----------
