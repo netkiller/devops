@@ -194,7 +194,7 @@ class Deployment():
 			if('option' in conf):
 				rsync.option(conf['option'])
 			else:
-				rsync.option('-auzvP')
+				rsync.option('-auzv --exclude=.git --exclude=.svn')
 			
 			if('delete' in conf):
 				if conf['delete'].lower() in ("yes", "true", "y", "enable") :
