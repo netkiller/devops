@@ -96,7 +96,7 @@ class Deployment():
 
 		self.config	= self.configure(CONFIG_DIR+'/deployment.cfg','main')
 		self.node	= self.configure(CONFIG_DIR+'/deployment.cfg','node')
-		self.logging = self.logfile(self.config['logfile'])
+		self.logging = self.logfile(self.config['logdir']+'/'+self.config['logfile'])
 		
 	def configure(self,inifile, section = None):
 		conf = {}
@@ -148,6 +148,7 @@ class Deployment():
 		return(log)
 		
 	def deploy(self, stage, domain):
+		self.logging.debug('deployment '+ self.stage+' '+self.domain)
 		try:
 			inifile = CONFIG_DIR+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini'
 			host = domain[:domain.find('.')]
@@ -155,6 +156,8 @@ class Deployment():
 			
 			if ('source' not in conf):
 				conf['source'] = self.node['source'] +'/'+ domain
+			else:
+				conf['source'] = self.node['source'] +'/'+ conf['source']
 			source = conf['source']	
 
 			if self.options.clean:
@@ -171,11 +174,10 @@ class Deployment():
 				self.logging.debug(backup.string());
 				self.logging.info('backup '+conf['remote']+'::'+conf['destination']+' -> '+self.options.backup);
 				return()
-
+			
 			git = Git(source)
 			if os.path.isdir(source):
 				if self.options.revert :
-				#git.pull(source)
 					revision = self.options.revert
 					git.checkout(revision)
 					git.branch()
@@ -310,7 +312,6 @@ class Deployment():
 				self.stage = args[0]
 				self.domain =args[1]
 				self.deploy(self.stage, self.domain)
-				self.logging.debug('deployment '+ self.stage+' '+self.domain)
 			else:
 				self.stage = args[0]
 				self.list(self.stage)
