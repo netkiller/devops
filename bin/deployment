@@ -57,8 +57,9 @@ class Git():
 		if revision :
 			self.cmd.append('checkout -f '+revision)
 	def debug(self):
-		for line in self.cmd:
-			print('git ' + line)
+		#for line in self.cmd:
+		#	cmd += 'git ' + line + '\n'
+		return(self.cmd)
 	def execute(self):
 		for line in self.cmd:
 			os.system('git '+ line)
@@ -194,7 +195,7 @@ class Deployment():
 			rsync = Rsync()
 			
 			if('option' in conf):
-				rsync.option(conf['option'])
+				rsync.option('-auzv --exclude=.git --exclude=.svn ' + conf['option'])
 			else:
 				rsync.option('-auzv --exclude=.git --exclude=.svn')
 			
@@ -209,7 +210,8 @@ class Deployment():
 				logdir = self.node['logdir']+'/'+stage
 				if not os.path.exists(logdir):
 					os.makedirs(logdir)
-				conf['logfile'] = logdir+'/'+domain+'.'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')+'.log'
+				conf['logfile'] = logdir+'/'+domain+'.'+datetime.today().strftime('%Y-%m-%d')+'.log'
+				#.%H:%M:%S
 				rsync.logfile(conf['logfile'])
 			
 			if('password' in conf):
@@ -257,7 +259,9 @@ class Deployment():
 			
 			if ('source' not in conf):
 				conf['source'] = self.node['source'] +'/'+ domain
-			
+			else:
+				conf['source'] = self.node['source'] +'/'+ conf['source']
+				
 			git = Git(conf['source'])
 			if self.options.checkout:
 				git.branch(self.options.checkout)
@@ -269,8 +273,10 @@ class Deployment():
 				git.tag(self.options.release)
 			else:
 				git.branch()
+			#git.debug()
+			self.logging.debug(git.debug());
 			git.execute()
-
+			
 		except configparser.NoSectionError as err:
 			s.list()
 			self.logging.error(err)
