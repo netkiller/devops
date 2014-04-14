@@ -273,6 +273,21 @@ class Deployment():
 			s.list()
 			self.logging.error(err)
 			print(err)
+	def list(self,stage):
+		try:
+			config = configparser.SafeConfigParser()
+			#if domain == None:
+			for file in os.listdir(CONFIG_DIR+'/'+stage):
+				if file.endswith(".ini"):
+					config.read(CONFIG_DIR+'/'+stage+'/'+file)
+					print(file)
+					#for project in config.sections():
+					#	print(project, end = ', ');
+					print(config.sections())
+					print()
+		except FileNotFoundError as err:
+			self.logging.error(err)
+			print(err)
 	def usage(self):
 		self.parser.print_help()
 		print("\n  Example: \n\tdeployment testing www.example.com\n\tdeployment production www.example.com --clean\n\tdeployment testing bbs.example.com --backup=/tmp/backup")
@@ -291,10 +306,14 @@ class Deployment():
 		elif args[0] == 'branch':
 			self.branch(args)
 		elif args[0] in ('development','testing','production'):	
-			self.stage = args[0]
-			self.domain =args[1]
-			self.deploy(self.stage, self.domain)
-			self.logging.debug('deployment '+ self.stage+' '+self.domain)
+			if args.__len__() == 2:
+				self.stage = args[0]
+				self.domain =args[1]
+				self.deploy(self.stage, self.domain)
+				self.logging.debug('deployment '+ self.stage+' '+self.domain)
+			else:
+				self.stage = args[0]
+				self.list(self.stage)
 		else:
 			self.usage()
 		self.logging.error('---------------------------------------------')	
