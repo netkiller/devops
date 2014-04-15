@@ -24,6 +24,7 @@ CONFIG_DIR= basedir + '/etc'
 class Git():
 	cmd = []
 	def __init__(self, workspace = None, logging = None):
+		self.logging = logging
 		self.workspace = workspace
 	def option(self, opt):
 		if opt:
@@ -45,7 +46,8 @@ class Git():
 				self.cmd.append('checkout -fb '+branchname+' --')
 			else:
 				self.cmd.append('reset HEAD --hard')
-				self.cmd.append('checkout -f '+branchname+' --')
+				self.cmd.append('fetch origin')
+				self.cmd.append('checkout -f '+branchname)
 		else:
 			self.cmd.append('branch')
 		
@@ -57,12 +59,14 @@ class Git():
 		if revision :
 			self.cmd.append('checkout -f '+revision)
 	def debug(self):
-		#for line in self.cmd:
-		#	cmd += 'git ' + line + '\n'
-		return(self.cmd)
+		cmd = ''
+		for line in self.cmd:
+			cmd += 'git ' + line + '; '
+		return(cmd)
 	def execute(self):
 		for line in self.cmd:
 			os.system('git '+ line)
+			self.logging.debug('git '+ line)
 		self.cmd = []
 
 class Deployment():
@@ -149,18 +153,17 @@ class Deployment():
 		return(log)
 		
 	def deploy(self, stage, domain):
-		self.logging.debug('deployment '+ self.stage+' '+self.domain)
+		self.logging.info('deployment '+ self.stage+' '+self.domain)
 		try:
 			inifile = CONFIG_DIR+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini'
 			host = domain[:domain.find('.')]
 			conf = self.configure(inifile, host)
 			
 			if ('source' not in conf):
-				conf['source'] = self.node['source'] +'/'+ domain
+				source = self.node['source'] +'/'+ domain
 			else:
-				conf['source'] = self.node['source'] +'/'+ conf['source']
-			source = conf['source']	
-
+				source = self.node['source'] +'/'+ conf['source'] +'/'+ domain
+			#print(source)
 			if self.options.clean:
 				import shutil
 				shutil.rmtree(source)
@@ -176,21 +179,29 @@ class Deployment():
 				self.logging.info('backup '+conf['remote']+'::'+conf['destination']+' -> '+self.options.backup);
 				return()
 			
-			git = Git(source)
+			git = Git(source, self.logging)
 			if os.path.isdir(source):
 				if self.options.revert :
 					revision = self.options.revert
 					git.checkout(revision)
 					git.branch()
 					self.logging.info('revision '+ revision);
+					git.execute()
 				else:
 					git.pull()
 					self.logging.info('pull '+ conf['repository']);
+					git.execute()
 			else:
 				git.clone(conf['repository'])
-				self.logging.info('clone '+ conf['repository']);
-			#git.debug()
-			git.execute()
+				git.execute()
+				if 'branch' in conf:
+					git.checkout(conf['branch'])
+					git.execute()
+					self.logging.info('checkout branch '+ conf['branch']);
+				else:
+					self.logging.info('clone '+ conf['repository']);
+				#git.debug()
+				
 			
 			rsync = Rsync()
 			
@@ -258,27 +269,34 @@ class Deployment():
 			conf = self.configure(inifile, host)
 			
 			if ('source' not in conf):
-				conf['source'] = self.node['source'] +'/'+ domain
+				source = self.node['source'] +'/'+ domain
 			else:
-				conf['source'] = self.node['source'] +'/'+ conf['source']
-				
-			git = Git(conf['source'])
+				source = self.node['source'] +'/'+ conf['source']
+			
+			#if os.path.isdir(source):
+			
+			git = Git(source, self.logging)
 			if self.options.checkout:
 				git.branch(self.options.checkout)
+				self.logging.info('checkout branch '+ stage+' '+domain+' -> '+self.options.checkout)
 			elif self.options.delete:
 				git.branch(self.options.delete, 'delete')
+				self.logging.info('delete branch '+ stage+' '+domain+' -> '+self.options.delete)
 			elif self.options.new:
 				git.branch(self.options.new, 'new')				
+				self.logging.info('create branch '+ stage+' '+domain+' -> '+self.options.new)
 			elif self.options.release:
 				git.tag(self.options.release)
 			else:
 				git.branch()
-			#git.debug()
-			self.logging.debug(git.debug());
+				self.logging.info('branch '+ stage+' '+domain)
+			#self.logging.debug(git.debug());
 			git.execute()
 			
 		except configparser.NoSectionError as err:
-			s.list()
+			self.logging.error(err)
+			print(err)
+		except FileNotFoundError as err:
 			self.logging.error(err)
 			print(err)
 	def list(self,stage):
@@ -323,7 +341,7 @@ class Deployment():
 				self.list(self.stage)
 		else:
 			self.usage()
-		self.logging.error('---------------------------------------------')	
+		self.logging.debug('---------------------------------------------')	
 if __name__ == '__main__':
 	try:
 		deployment = Deployment()
