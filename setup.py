@@ -43,13 +43,15 @@ setup(
 	scripts=[
 		'bin/deployment',
 		'bin/backup',
-		'bin/mysqlshell'
+		'bin/mysqlshell',
+		'bin/auditlog'
 	],
 	data_files = [
 		('etc', ['etc/deployment.cfg']),
 		('etc', ['etc/task.cfg']),
 		('etc', ['etc/schedule.cfg']),
-		('log', ['log/deployment.log'])
+		('log', ['log/deployment.log']),
+		('project', ['project/exclude','project/testing','project/production','project/development'])
 	]
 )
 

@@ -20,6 +20,7 @@ except ImportError as err:
 	print("Error: %s" %(err))	 
 
 CONFIG_DIR= basedir + '/etc'
+PROJECT_DIR=basedir + '/project'
 ##############################################	
 class Git():
 	cmd = []
@@ -152,10 +153,38 @@ class Deployment():
 			sys.exit(2)
 		return(log)
 		
+	def buildconfig(self, stage, domain, source):
+		try:
+			inifile = PROJECT_DIR+'/'+stage+'/config/'+domain+'.ini'
+			if os.path.exists(inifile):
+				sections = self.configure(inifile)
+				#print(sections)
+				for filename in sections:
+					cfgfile = source+'/'+filename
+					#print(cfgfile)
+					self.logging.debug('build config file: '+cfgfile);
+					if os.path.isfile(cfgfile) and os.access(cfgfile, os.R_OK):
+						conf = self.configure(inifile, filename)
+						with open(cfgfile,'r') as f:
+							lines = []
+							for line in f.readlines():
+								for key, val in conf.items():
+									#print(key+':'+val)
+									self.logging.debug('replace config item: '+key+'=>'+val);
+									lines.append(line.replace('{{'+key+'}}', val))
+						with open(cfgfile, 'w') as f:
+							for line in lines:
+								f.write(line)
+						
+			#print(inifile)
+			#print(source)
+		except IOError as err:
+			print("Error: %s %s" %(err, cfgfile))
+		
 	def deploy(self, stage, domain):
 		self.logging.info('deployment '+ self.stage+' '+self.domain)
 		try:
-			inifile = CONFIG_DIR+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini'
+			inifile = PROJECT_DIR+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini'
 			host = domain[:domain.find('.')]
 			conf = self.configure(inifile, host)
 			
@@ -163,7 +192,9 @@ class Deployment():
 				source = self.node['source'] +'/'+ domain
 			else:
 				source = self.node['source'] +'/'+ conf['source'] +'/'+ domain
-			#print(source)
+			
+			source = os.path.expanduser(source)
+			
 			if self.options.clean:
 				import shutil
 				shutil.rmtree(source)
@@ -201,8 +232,10 @@ class Deployment():
 				else:
 					self.logging.info('clone '+ conf['repository']);
 				#git.debug()
-				
-			
+
+			self.buildconfig(stage, domain, source)
+			#sys.exit()				
+
 			rsync = Rsync()
 			
 			if('option' in conf):
@@ -230,13 +263,13 @@ class Deployment():
 			
 			if('backup' in conf):
 				if conf['backup'] :
-					rsync.backup(conf['backup'])
+					rsync.backup(os.path.expanduser(conf['backup']))
 			else:
 				conf['backup'] = ''+self.node['backup']+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
-				rsync.backup(conf['backup'])
+				rsync.backup(os.path.expanduser(conf['backup']))
 			
 			if('exclude' in conf):
-				rsync.exclude(CONFIG_DIR + '/exclude/' + conf['exclude'])
+				rsync.exclude(PROJECT_DIR + '/exclude/' + conf['exclude'])
 			
 			rsync.source(source+'/')
 			
@@ -264,7 +297,7 @@ class Deployment():
 		stage = args[1]
 		domain =args[2]
 		try:
-			inifile = CONFIG_DIR+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini'
+			inifile = PROJECT_DIR+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini'
 			host = domain[:domain.find('.')]
 			conf = self.configure(inifile, host)
 			
@@ -303,9 +336,9 @@ class Deployment():
 		try:
 			config = configparser.SafeConfigParser()
 			#if domain == None:
-			for file in os.listdir(CONFIG_DIR+'/'+stage):
+			for file in os.listdir(PROJECT_DIR+'/'+stage):
 				if file.endswith(".ini"):
-					config.read(CONFIG_DIR+'/'+stage+'/'+file)
+					config.read(PROJECT_DIR+'/'+stage+'/'+file)
 					print(file)
 					#for project in config.sections():
 					#	print(project, end = ', ');
