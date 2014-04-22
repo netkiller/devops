@@ -12,3 +12,6 @@ library/__init__.py
 library/rsync.py
 library/whiptail.py
 log/deployment.log
+project/config/testing/www.example.com.ini
+project/exclude/testing/www.example.com.lst
+project/testing/example.com.ini

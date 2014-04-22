@@ -51,7 +51,10 @@ setup(
 		('etc', ['etc/task.cfg']),
 		('etc', ['etc/schedule.cfg']),
 		('log', ['log/deployment.log']),
-		('project', ['project/exclude','project/testing','project/production','project/development'])
+		('project/testing', ['project/testing/example.com.ini']),
+		('project/config/testing', ['project/config/testing/www.example.com.ini']),
+		('project/exclude/testing', ['project/exclude/testing/www.example.com.lst'])
+		
 	]
 )
 

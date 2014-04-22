@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 #-*- coding: utf-8 -*-
 ##############################################
 # Home	: http://netkiller.github.io
@@ -16,6 +16,7 @@ basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 try:
 	sys.path.append(basedir + '/lib/python3.3/site-packages')	
 	from rsync import *
+	import getpass
 except ImportError as err:
 	print("Error: %s" %(err))	 
 
@@ -101,6 +102,7 @@ class Deployment():
 		#self.parser.add_option('','--logfile', help='logs file.', default='backup.log')
 
 		self.config	= self.configure(CONFIG_DIR+'/deployment.cfg','main')
+		self.scm	= self.configure(CONFIG_DIR+'/deployment.cfg','scm')
 		self.node	= self.configure(CONFIG_DIR+'/deployment.cfg','node')
 		self.logging = self.logfile(self.config['logdir']+'/'+self.config['logfile'])
 		
@@ -155,7 +157,7 @@ class Deployment():
 		
 	def buildconfig(self, stage, domain, source):
 		try:
-			inifile = PROJECT_DIR+'/'+stage+'/config/'+domain+'.ini'
+			inifile = PROJECT_DIR+'/config/'+stage+'/'+domain+'.ini'
 			if os.path.exists(inifile):
 				sections = self.configure(inifile)
 				#print(sections)
@@ -356,7 +358,8 @@ class Deployment():
 		if self.debug:
 			print("===================================")
 			print(self.options, args)
-			#self.usage()
+			#os.getuid()
+			#os.getlogin()
 			print(self.config)
 			print("===================================")
 
@@ -365,6 +368,9 @@ class Deployment():
 		elif args[0] == 'branch':
 			self.branch(args)
 		elif args[0] in ('development','testing','production'):	
+			if self.scm[(args[0])] != getpass.getuser():
+				print("Current user "+os.getlogin()+" : Permission denied")
+				sys.exit(127)
 			if args.__len__() == 2:
 				self.stage = args[0]
 				self.domain =args[1]
