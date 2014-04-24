@@ -265,10 +265,10 @@ class Deployment():
 			
 			if('backup' in conf):
 				if conf['backup'] :
-					rsync.backup(os.path.expanduser(conf['backup']))
+					rsync.backup(conf['backup'])
 			else:
-				conf['backup'] = ''+self.node['backup']+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
-				rsync.backup(os.path.expanduser(conf['backup']))
+				conf['backup'] = '/'+'backup'+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
+				rsync.backup(conf['backup'])
 			
 			if('exclude' in conf):
 				rsync.exclude(PROJECT_DIR + '/exclude/' + conf['exclude'])
