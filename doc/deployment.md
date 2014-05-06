@@ -50,10 +50,25 @@ Configure
 	destination=example.com/www.example.com
 
 	[bbs]
-	repository=https://github.com/oscm/shell.git
+	repository=https://github.com/example.com/bbs.example.com.git
 	remote=www@192.168.2.15
 	destination=example.com/bbs.example.com
+	
+	[images]
+	repository=https://github.com/example.com/images.example.com.git
+	remote=www@192.168.2.15
+	destination=example.com/images.example.com
+	branch=freebsd
 
+### Config item 
+	repository: git uri
+	source: directory for checkout and rsync
+	option: rsync argv
+	exclude: exclude file for rsync
+	remote: remote host
+	destination: destination directory
+	branch: git branch, defualt is master
+	
 Deploy Project
 --------------
 	$ deployment testing bbs.example.com

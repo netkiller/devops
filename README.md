@@ -16,12 +16,12 @@ Install
 	
 Deployment
 ----------
-[Software deployment tools](https://github.com/netkiller/oscm/blob/master/doc/deployment.md).	
+[Software deployment tools](https://github.com/oscm/devops/blob/master/doc/deployment.md).	
 
 Backup
 ------
-[Data backup tools](https://github.com/netkiller/oscm/blob/master/doc/backup.md).	
+[Data backup tools](https://github.com/oscm/devops/blob/master/doc/backup.md).	
 
 Audit log
 ------
-[Audit log tools](https://github.com/netkiller/oscm/blob/master/doc/auditlog.md).
+[Audit log tools](https://github.com/oscm/devops/blob/master/doc/auditlog.md).
