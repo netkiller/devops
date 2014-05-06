@@ -69,6 +69,11 @@ Configure
 	destination: destination directory
 	branch: git branch, defualt is master
 	
+### show me the projects
+	$ deployment testing
+	example.com.ini
+	['www', 'images', 'api', 'bbs', 'news', 'blog', 'music', 'video']
+	
 Deploy Project
 --------------
 	$ deployment testing bbs.example.com
