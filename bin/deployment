@@ -191,9 +191,9 @@ class Deployment():
 			conf = self.configure(inifile, host)
 			
 			if ('source' not in conf):
-				source = self.node['source'] +'/'+ domain
+				source = self.node['source'] +'/'+ stage +'/'+ domain
 			else:
-				source = self.node['source'] +'/'+ conf['source'] +'/'+ domain
+				source = conf['source']
 			
 			source = os.path.expanduser(source)
 			
@@ -304,9 +304,9 @@ class Deployment():
 			conf = self.configure(inifile, host)
 			
 			if ('source' not in conf):
-				source = self.node['source'] +'/'+ domain
+				source = self.node['source'] +'/'+ stage +'/'+ domain
 			else:
-				source = self.node['source'] +'/'+ conf['source']
+				source = conf['source']
 			
 			#if os.path.isdir(source):
 			
