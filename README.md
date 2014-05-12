@@ -7,12 +7,12 @@ Install
 -------
 	$ git clone https://github.com/oscm/devops.git
 	$ cd devops
-	$ python3 setup.py sdist
-	$ python3 setup.py install
+	$ sudo python3 setup.py sdist
+	$ sudo python3 setup.py install
 
 	or 
 	
-	$ python setup.py install --prefix=/srv/devops
+	$ sudo python setup.py install --prefix=/srv/devops
 	
 Deployment
 ----------
