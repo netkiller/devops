@@ -152,7 +152,7 @@ Backup
 ------
 	$ deployment testing bbs.example.com --backup=/tmp/backup
 	
-Rest 
+Reset 
 ----
 	$ deployment testing bbs.example.com --clean
 	
