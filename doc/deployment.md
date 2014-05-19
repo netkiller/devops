@@ -155,7 +155,17 @@ Backup
 Reset 
 ----
 	$ deployment testing bbs.example.com --clean
+
+Merge
+-----
+	$ deployment merge www.example.com -t master -f testing
 	
+### merge to testing form development
+	$ deployment merge testing www.example.com 
+	
+### Merge to development from project1
+	$ deployment development www.example.com -f project1
+
 - - -
 
 Node

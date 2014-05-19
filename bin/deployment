@@ -34,11 +34,15 @@ class Git():
 	def clone(self, uri):
 		if self.workspace :
 			self.cmd.append('clone '+ uri +' '+ self.workspace)
+		return(self)
 	def pull(self):
 		if self.workspace :
-			os.chdir(self.workspace)
-			self.cmd.append('reset HEAD --hard')
-			self.cmd.append('pull --progress')
+			os.chdir(self.workspace)		
+		self.cmd.append('pull --progress')
+		return(self)
+	def reset(self):
+		self.cmd.append('reset HEAD --hard')
+		return(self)
 	def branch(self, branchname=None, op=None):
 		os.chdir(self.workspace)
 		if branchname :
@@ -52,14 +56,19 @@ class Git():
 				self.cmd.append('checkout -f '+branchname)
 		else:
 			self.cmd.append('branch')
-		
+		return(self)
+	def merge(self, branchname):
+		self.cmd.append('merge '+branchname)
+		return(self)
 	def tag(self, tagname):
 		os.chdir(self.workspace)
 		self.cmd.append('tag ' + tagname)
+		return(self)
 	def checkout(self, revision=None):
 		os.chdir(self.workspace)
 		if revision :
 			self.cmd.append('checkout -f '+revision)
+		return(self)
 	def debug(self):
 		cmd = ''
 		for line in self.cmd:
@@ -70,6 +79,7 @@ class Git():
 			os.system('git '+ line)
 			self.logging.debug('git '+ line)
 		self.cmd = []
+		print("-")
 
 class Deployment():
 	debug = False
@@ -82,7 +92,8 @@ class Deployment():
 		self.parser.add_option("-r", "--revert", dest="revert", default=False,help="revert to revision")
 		self.parser.add_option('','--backup', dest="backup", help='backup remote to local', default=None)
 		self.parser.add_option('','--clean', action="store_true", help='')
-		#self.parser.add_option("-d", "--debug", action="store_true", help="Print debug information")
+		self.parser.add_option("-s", "--silent", action="store_true", help="Silent mode. Don't output anything")
+		
 		group = OptionGroup(self.parser, "stage", "development | testing | production")
 		self.parser.add_option_group(group)
 		group = OptionGroup(self.parser, 'project', '<host>.<domain>')
@@ -94,13 +105,15 @@ class Deployment():
 		group.add_option("-d", "--delete", dest="delete", metavar="branch", help="delete branch")
 		group.add_option('','--release', dest="release", help='release version exampe:'+ time.strftime('%Y-%m-%d',time.localtime(time.time())) , default=None)
 		#group.add_option("-e", action="store_true", help="Print every action done")
-		
 		self.parser.add_option_group(group)
 		
-		#self.parser.add_option('-v','--version',action='store_true', help='print version number')
-		#self.parser.add_option('-d','--daemon', dest='daemon', action='store_true', help='run as daemon')
-		#self.parser.add_option('','--logfile', help='logs file.', default='backup.log')
-
+		group = OptionGroup(self.parser, "merge", "merge {development | testing | production}")
+		group.add_option('-t','--to', dest='to', metavar='master', help='such as master')
+		group.add_option('-f','--from', dest='froms', metavar='your', help='from branch')
+		#group.add_option('-t','--production', help='logs file.', default='backup.log')
+		#group.add_option('-f','--from', help='logs file.', default='backup.log')
+		self.parser.add_option_group(group)
+		
 		self.config	= self.configure(CONFIG_DIR+'/deployment.cfg','main')
 		self.scm	= self.configure(CONFIG_DIR+'/deployment.cfg','scm')
 		self.node	= self.configure(CONFIG_DIR+'/deployment.cfg','node')
@@ -177,9 +190,7 @@ class Deployment():
 						with open(cfgfile, 'w') as f:
 							for line in lines:
 								f.write(line)
-						
-			#print(inifile)
-			#print(source)
+
 		except IOError as err:
 			print("Error: %s %s" %(err, cfgfile))
 		
@@ -216,20 +227,15 @@ class Deployment():
 			if os.path.isdir(source):
 				if self.options.revert :
 					revision = self.options.revert
-					git.checkout(revision)
-					git.branch()
+					git.checkout(revision).branch().execute()
 					self.logging.info('revision '+ revision);
-					git.execute()
 				else:
-					git.pull()
+					git.reset().pull().execute()
 					self.logging.info('pull '+ conf['repository']);
-					git.execute()
 			else:
-				git.clone(conf['repository'])
-				git.execute()
+				git.clone(conf['repository']).execute()
 				if 'branch' in conf:
-					git.checkout(conf['branch'])
-					git.execute()
+					git.checkout(conf['branch']).execute()
 					self.logging.info('checkout branch '+ conf['branch']);
 				else:
 					self.logging.info('clone '+ conf['repository']);
@@ -308,6 +314,7 @@ class Deployment():
 			else:
 				source = conf['source']
 			
+			source = os.path.expanduser(source)
 			#if os.path.isdir(source):
 			
 			git = Git(source, self.logging)
@@ -334,6 +341,63 @@ class Deployment():
 		except FileNotFoundError as err:
 			self.logging.error(err)
 			print(err)
+	def merge(self,args, t=None, f=None):
+		try:
+			stage = args[1]
+			domain =args[2]
+
+			host = domain[:domain.find('.')]
+			conf = self.configure(PROJECT_DIR+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini' , host)
+
+			workspace = os.path.expanduser('~/.workspace')
+			#self.scm
+			project = workspace +'/'+ domain
+			git = Git(project, self.logging)
+			
+			if not os.path.exists(workspace):
+				os.makedirs(workspace)
+
+			if not os.path.exists(project):	
+				git.clone(conf['repository']).execute()
+			else:
+				git.reset().pull().execute()
+
+			if t and f :
+				git.checkout(f).execute()
+				git.pull().execute()
+				git.checkout(t).execute()
+				git.pull().execute()
+				git.merge(f).execute()
+				self.logging.info('merge branch to '+ t +' from '+f)
+			else:
+				if stage == 'testing' : 
+					git.checkout('development').execute()
+					git.pull().execute()
+					
+					git.checkout('testing').execute()
+					git.pull().execute()
+					
+					git.merge('development').execute()
+					self.logging.info('merge branch to testing from development')
+				if stage == 'production' : 
+					git.checkout('testing').execute()
+					git.pull().execute()
+					git.checkout('production').execute()
+					git.pull().execute()
+					git.merge('testing').execute()
+					self.logging.info('merge branch to production from testing')
+				if stage == 'development' : 	
+					git.checkout(f).execute()
+					git.pull().execute()
+					git.checkout('development').execute()
+					git.pull().execute()
+					git.merge(f).execute()
+					self.logging.info('merge branch to development from ' + f)
+		except configparser.NoSectionError as err:
+			print("Error: %s %s" %(err, ''))
+		except Exception as err:
+			print("Error: %s %s" %(err, ''))
+			sys.exit(1)
 	def list(self,stage):
 		try:
 			config = configparser.SafeConfigParser()
@@ -367,6 +431,9 @@ class Deployment():
 			self.usage()
 		elif args[0] == 'branch':
 			self.branch(args)
+		elif args[0] == 'merge':
+			if args[1] in ('development','testing','production'):	
+				self.merge(args, self.options.to, self.options.froms)
 		elif args[0] in ('development','testing','production'):	
 			if self.scm[(args[0])] != getpass.getuser():
 				print("Current user "+os.getlogin()+" : Permission denied")
