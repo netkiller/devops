@@ -110,8 +110,11 @@ class Deployment():
 		group = OptionGroup(self.parser, "merge", "merge {development | testing | production}")
 		group.add_option('-t','--to', dest='to', metavar='master', help='such as master')
 		group.add_option('-f','--from', dest='froms', metavar='your', help='from branch')
-		#group.add_option('-t','--production', help='logs file.', default='backup.log')
-		#group.add_option('-f','--from', help='logs file.', default='backup.log')
+		self.parser.add_option_group(group)
+		
+		group = OptionGroup(self.parser, "unittest", "unittest {development | testing | production}")
+		#group.add_option('','--testsuite', help='logs file.', default='backup.log')
+		#group.add_option('','--testcase', help='logs file.', default='backup.log')
 		self.parser.add_option_group(group)
 		
 		self.config	= self.configure(CONFIG_DIR+'/deployment.cfg','main')
