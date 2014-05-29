@@ -1,0 +1,75 @@
+#!/usr/bin/python3
+
+#-*- coding: utf-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+##############################################
+
+#basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))	
+
+try:
+	#sys.path.append(basedir + '/lib/python3.3/site-packages')	
+	import os,io,sys,subprocess
+	import logging, configparser
+	import threading
+	from optparse import OptionParser, OptionGroup
+	import time
+	from datetime import datetime	
+	import getpass
+except ImportError as err:
+	print("Error: %s" %(err))
+
+workspace=os.path.expanduser('~/workspace')
+config = None
+inifile = workspace+'/'+'git.ini'
+
+try:
+	if not os.path.exists(inifile):
+		raise Exception('Cannot open file', inifile)
+	config = configparser.SafeConfigParser()
+	config.read(inifile)
+
+except configparser.NoSectionError as err:
+	print("Error: %s %s" %(err, inifile))
+	sys.exit(1)
+except Exception as err:
+	print("Error: %s %s" %(err, inifile))
+	sys.exit(1)
+conf = {}
+
+if not os.path.isdir(workspace):
+	os.makedirs(workspace)
+os.chdir(workspace)
+for sect in config.sections():
+	print('===== '+sect+' =====')
+	conf = dict(config.items(sect))
+	source  = conf['origin'].split(':')[1]
+	#print(source)
+	if not os.path.isdir(source):
+		if not os.path.isdir(source+'/.git'):
+			cmd = 'git clone ' + conf['origin'] +' '+ source;
+			os.system(cmd)
+			#print(cmd)
+		if os.path.isdir(source) :
+			os.chdir(source)
+			for remote in conf['remote'].split(',') :
+				cmd = 'git remote add ' + remote
+				os.system(cmd)
+				#print(remote)
+				#print(cmd)
+		os.chdir(workspace)
+	else:
+		os.chdir(source)	
+		os.system('git reset --hard')
+		os.system('git pull origin')
+
+		cmd = 'git remote'
+		remote = subprocess.getoutput(cmd)
+		for current in remote.split("\n"):
+			if current != 'origin':
+				print('----- '+current+' -----')
+				push = 'git push '+current+ ' master'
+				os.system(push)
+		os.chdir(workspace)
+
