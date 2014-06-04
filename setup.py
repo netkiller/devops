@@ -14,11 +14,11 @@ changes = open('CHANGES.txt').read()
 #	 pass
 
 setup(
-	name='oscm',
+	name='devops',
 	version=__version__,
-	description="Collection of useful functions and classes",
+	description="DevOps of useful deployment and automation",
 	long_description=readme + '\n\n' + changes,
-	keywords='oscm',
+	keywords='devops',
 	author=__author__,
 	author_email='netkiller@msn.com',
 	url='http://netkiller.github.io',
@@ -34,7 +34,7 @@ setup(
 		'License :: OSI Approved :: BSD License',
 		'Operating System :: OS Independent',
 		'Programming Language :: Python',
-		'Programming Language :: Python :: 3.3',
+		'Programming Language :: Python :: 3.4',
 	],
 	package_dir={ '': 'library' },
 	packages=[
@@ -44,16 +44,17 @@ setup(
 		'bin/deployment',
 		'bin/backup',
 		'bin/mysqlshell',
-		'bin/auditlog'
+		'bin/auditlog',
+		'bin/gitsync'
 	],
 	data_files = [
 		('etc', ['etc/deployment.cfg']),
 		('etc', ['etc/task.cfg']),
 		('etc', ['etc/schedule.cfg']),
 		('log', ['log/deployment.log']),
-		('project/testing', ['project/testing/example.com.ini']),
-		('project/config/testing', ['project/config/testing/www.example.com.ini']),
-		('project/exclude/testing', ['project/exclude/testing/www.example.com.lst'])
+		('example/testing', ['example/testing/example.com.ini']),
+		('example/config/testing', ['example/config/testing/www.example.com.ini']),
+		('example/exclude/testing', ['example/exclude/testing/www.example.com.lst'])
 		
 	]
 )

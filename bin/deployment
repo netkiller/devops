@@ -14,73 +14,16 @@ from datetime import datetime
 basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))	
 	
 try:
-	sys.path.append(basedir + '/lib/python3.3/site-packages')	
+	sys.path.append(basedir + '/lib/python3.4/site-packages')	
 	from rsync import *
-	import getpass
+	from git import *
+	#import getpass
 except ImportError as err:
 	print("Error: %s" %(err))	 
 
 CONFIG_DIR= basedir + '/etc'
-PROJECT_DIR=basedir + '/project'
-##############################################	
-class Git():
-	cmd = []
-	def __init__(self, workspace = None, logging = None):
-		self.logging = logging
-		self.workspace = workspace
-	def option(self, opt):
-		if opt:
-			self.opt = opt
-	def clone(self, uri):
-		if self.workspace :
-			self.cmd.append('clone '+ uri +' '+ self.workspace)
-		return(self)
-	def pull(self):
-		if self.workspace :
-			os.chdir(self.workspace)		
-		self.cmd.append('pull --progress')
-		return(self)
-	def reset(self):
-		self.cmd.append('reset HEAD --hard')
-		return(self)
-	def branch(self, branchname=None, op=None):
-		os.chdir(self.workspace)
-		if branchname :
-			if op == 'delete':
-				self.cmd.append('branch -D '+branchname)
-			elif op == 'new':
-				self.cmd.append('checkout -fb '+branchname+' --')
-			else:
-				self.cmd.append('reset HEAD --hard')
-				self.cmd.append('fetch origin')
-				self.cmd.append('checkout -f '+branchname)
-		else:
-			self.cmd.append('branch')
-		return(self)
-	def merge(self, branchname):
-		self.cmd.append('merge '+branchname)
-		return(self)
-	def tag(self, tagname):
-		os.chdir(self.workspace)
-		self.cmd.append('tag ' + tagname)
-		return(self)
-	def checkout(self, revision=None):
-		os.chdir(self.workspace)
-		if revision :
-			self.cmd.append('checkout -f '+revision)
-		return(self)
-	def debug(self):
-		cmd = ''
-		for line in self.cmd:
-			cmd += 'git ' + line + '; '
-		return(cmd)
-	def execute(self):
-		for line in self.cmd:
-			os.system('git '+ line)
-			self.logging.debug('git '+ line)
-		self.cmd = []
-		print("-")
-
+#PROJECT_DIR = os.path.expanduser('~/project')
+##############################################
 class Deployment():
 	debug = False
 	def __init__(self):
@@ -117,9 +60,8 @@ class Deployment():
 		#group.add_option('','--testcase', help='logs file.', default='backup.log')
 		self.parser.add_option_group(group)
 		
-		self.config	= self.configure(CONFIG_DIR+'/deployment.cfg','main')
-		self.scm	= self.configure(CONFIG_DIR+'/deployment.cfg','scm')
-		self.node	= self.configure(CONFIG_DIR+'/deployment.cfg','node')
+		self.config	= self.configure(CONFIG_DIR+'/deployment.cfg','scm')
+		self.project	= self.configure(CONFIG_DIR+'/deployment.cfg','project')
 		self.logging = self.logfile(self.config['logdir']+'/'+self.config['logfile'])
 		
 	def configure(self,inifile, section = None):
@@ -173,7 +115,7 @@ class Deployment():
 		
 	def buildconfig(self, stage, domain, source):
 		try:
-			inifile = PROJECT_DIR+'/config/'+stage+'/'+domain+'.ini'
+			inifile = os.path.expanduser(self.project['cfgdir']+'/config/'+stage+'/'+domain+'.ini')
 			if os.path.exists(inifile):
 				sections = self.configure(inifile)
 				#print(sections)
@@ -200,12 +142,12 @@ class Deployment():
 	def deploy(self, stage, domain):
 		self.logging.info('deployment '+ self.stage+' '+self.domain)
 		try:
-			inifile = PROJECT_DIR+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini'
+			inifile = os.path.expanduser(self.project['cfgdir']+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini')
 			host = domain[:domain.find('.')]
 			conf = self.configure(inifile, host)
 			
 			if ('source' not in conf):
-				source = self.node['source'] +'/'+ stage +'/'+ domain
+				source = self.project['source'] +'/'+ stage +'/'+ domain
 			else:
 				source = conf['source']
 			
@@ -250,9 +192,9 @@ class Deployment():
 			rsync = Rsync()
 			
 			if('option' in conf):
-				rsync.option('-auzv --exclude=.git --exclude=.svn ' + conf['option'])
+				rsync.option('-auzv --exclude=.git --exclude=.svn --exclude=.gitignore' + conf['option'])
 			else:
-				rsync.option('-auzv --exclude=.git --exclude=.svn')
+				rsync.option('-auzv --exclude=.git --exclude=.svn --exclude=.gitignore')
 			
 			if('delete' in conf):
 				if conf['delete'].lower() in ("yes", "true", "y", "enable") :
@@ -262,7 +204,7 @@ class Deployment():
 				if conf['logfile'] :
 					rsync.logfile(conf['logfile'])
 			else:
-				logdir = self.node['logdir']+'/'+stage
+				logdir = os.path.expanduser(self.project['logdir']+'/'+stage)
 				if not os.path.exists(logdir):
 					os.makedirs(logdir)
 				conf['logfile'] = logdir+'/'+domain+'.'+datetime.today().strftime('%Y-%m-%d')+'.log'
@@ -270,7 +212,7 @@ class Deployment():
 				rsync.logfile(conf['logfile'])
 			
 			if('password' in conf):
-				rsync.password(conf['password'])
+				rsync.password(os.path.expanduser(conf['password']))
 			
 			if('backup' in conf):
 				if conf['backup'] :
@@ -280,7 +222,7 @@ class Deployment():
 				rsync.backup(conf['backup'])
 			
 			if('exclude' in conf):
-				rsync.exclude(PROJECT_DIR + '/exclude/' + conf['exclude'])
+				rsync.exclude(os.path.expanduser(self.project['cfgdir'] + '/exclude/' + conf['exclude']))
 			
 			rsync.source(source+'/')
 			
@@ -308,12 +250,12 @@ class Deployment():
 		stage = args[1]
 		domain =args[2]
 		try:
-			inifile = PROJECT_DIR+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini'
+			inifile = os.path.expanduser(self.project['cfgdir']+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini')
 			host = domain[:domain.find('.')]
 			conf = self.configure(inifile, host)
 			
 			if ('source' not in conf):
-				source = self.node['source'] +'/'+ stage +'/'+ domain
+				source = self.project['source'] +'/'+ stage +'/'+ domain
 			else:
 				source = conf['source']
 			
@@ -350,10 +292,10 @@ class Deployment():
 			domain =args[2]
 
 			host = domain[:domain.find('.')]
-			conf = self.configure(PROJECT_DIR+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini' , host)
+			conf = self.configure(os.path.expanduser(self.project['cfgdir']+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini' , host))
 
 			workspace = os.path.expanduser('~/.workspace')
-			#self.scm
+
 			project = workspace +'/'+ domain
 			git = Git(project, self.logging)
 			
@@ -405,9 +347,9 @@ class Deployment():
 		try:
 			config = configparser.SafeConfigParser()
 			#if domain == None:
-			for file in os.listdir(PROJECT_DIR+'/'+stage):
+			for file in os.listdir(os.path.expanduser(self.project['cfgdir']+'/'+stage)):
 				if file.endswith(".ini"):
-					config.read(PROJECT_DIR+'/'+stage+'/'+file)
+					config.read(os.path.expanduser(self.project['cfgdir']+'/'+stage+'/'+file))
 					print(file)
 					#for project in config.sections():
 					#	print(project, end = ', ');
@@ -438,9 +380,9 @@ class Deployment():
 			if args[1] in ('development','testing','production'):	
 				self.merge(args, self.options.to, self.options.froms)
 		elif args[0] in ('development','testing','production'):	
-			if self.scm[(args[0])] != getpass.getuser():
-				print("Current user "+os.getlogin()+" : Permission denied")
-				sys.exit(127)
+			#if self.scm[(args[0])] != getpass.getuser():
+			#	print("Current user "+os.getlogin()+" : Permission denied")
+			#	sys.exit(127)
 			if args.__len__() == 2:
 				self.stage = args[0]
 				self.domain =args[1]
