@@ -52,9 +52,10 @@ setup(
 		('etc', ['etc/task.cfg']),
 		('etc', ['etc/schedule.cfg']),
 		('log', ['log/deployment.log']),
-		('example/testing', ['example/testing/example.com.ini']),
-		('example/config/testing', ['example/config/testing/www.example.com.ini']),
-		('example/exclude/testing', ['example/exclude/testing/www.example.com.lst'])
+		('share', ['share/example/testing/example.com.ini'])
+		#('example/testing', ['example/testing/example.com.ini']),
+		#('example/config/testing', ['example/config/testing/www.example.com.ini']),
+		#('example/exclude/testing', ['example/exclude/testing/www.example.com.lst'])
 		
 	]
 )
