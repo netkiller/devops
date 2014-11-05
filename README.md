@@ -21,6 +21,7 @@ Deployment
 Backup
 ------
 [Data backup tools](https://github.com/oscm/devops/blob/master/doc/backup.md).	
+[Database backup](https://github.com/oscm/devops/blob/master/doc/database.md).	
 
 Audit log
 ------
