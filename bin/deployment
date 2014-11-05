@@ -235,15 +235,12 @@ class Deployment():
 
 			rsync.source(source+'/')
 
-			if conf['remote'].find(',') :
-				for rhost in conf['remote'].split(',') :
-					rsync.destination(rhost.strip()+'::'+conf['destination'])
-					rsync.execute()
-					self.logging.debug(rsync.debug());
-			else:
-				rsync.destination(conf['remote']+'::'+conf['destination'])
+
+			for rhost in conf['remote'].split(',') :
+				rsync.destination(rhost.strip()+'::'+conf['destination'])
 				rsync.execute()
 				self.logging.debug(rsync.debug());
+
 
 		except NameError as err:
 			print(err)
