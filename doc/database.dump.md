@@ -1,12 +1,11 @@
 Database
 ========
 
-Backup struct of database
+Backup database
 
-Help
+Installion
 ------
-    ./backup.mysql.struct.sh
-	Usage: ./backup.mysql.struct.sh {init|start|stop|status|restart}
+    # cp shell/backup.mysql.sh /etc/cron.daily
 
 Create backup user for your database.
 ------
@@ -19,42 +18,15 @@ Create backup user for your database.
 Database connect infomation
 ------
 	BACKUP_HOST="localhost"
-	BACKUP_USER="netkiller"
-	BACKUP_PASS="chen"
-	BACKUP_DBNAME="test aabbcc"
-	BACKUP_DIR=~/backup
+	BACKUP_USER="backup"
+	BACKUP_PASS="SaJePoM6BAPOmOFOd7Xo3e1A52vEPE"
+	BACKUP_DIR=/backup/database
+	BACKUP_DBNAME="dbname"
 
 Initialize the working directory
 ------
-	$ ./backup.mysql.struct.sh init
-	Initialized empty Git repository in /home/neo/backup/.git/
+	$ mkdir -p /backup/database
 	
-Start 
+Running 
 ------
-    $ ./backup.mysql.struct.sh start
-
-Stop
-------
-	$ ./backup.mysql.struct.sh stop
-
-Status
------
-	$ ./backup.mysql.struct.sh status
-	19837 pts/0    S      0:00 /bin/bash ./backup.mysql.struct.sh start
-
-Diff
------
-	$ cd ~/backup
-	$ git diff HEAD^ test.sql
-	diff --git a/localhost/test.sql b/localhost/test.sql
-	index a749b5a..402d6d1 100644
-	--- a/localhost/test.sql
-	+++ b/localhost/test.sql
-	@@ -53,6 +53,7 @@ DROP TABLE IF EXISTS `test`;
-	 /*!40101 SET character_set_client = utf8 */;
-	 CREATE TABLE `test` (
-	   `id` int(11) DEFAULT NULL,
-	+  `key` char(50) DEFAULT NULL,
-	   `val` char(10) DEFAULT NULL
-	 ) ENGINE=BLACKHOLE DEFAULT CHARSET=latin1;
-	 /*!40101 SET character_set_client = @saved_cs_client */;
+    # /etc/cron.daily/backup.mysql.sh

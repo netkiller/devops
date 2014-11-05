@@ -7,4 +7,4 @@ Backup struct of database
 
 Backup data
 -----
-[Data backup](https://github.com/oscm/devops/blob/master/doc/backup.dump.md).	
+[Data backup](https://github.com/oscm/devops/blob/master/doc/database.dump.md).	
