@@ -19,9 +19,10 @@ BACKUP_DBNAME="dbname"
 COPIES=30
 ####################################
 MYSQLDUMP="/usr/bin/mysqldump"
+LOGFILE=/var/tmp/mysql.backup.log
 TIMEPOINT=$(date -u +%Y-%m-%d)
 #TIMEPOINT=$(date -u +%Y-%m-%d.%H:%M:%S)
-MYSQLDUMP_OPTS="-h $BACKUP_HOST -u$BACKUP_USER -p$BACKUP_PASS"
+MYSQLDUMP_OPTS="-h $BACKUP_HOST -u$BACKUP_USER -p$BACKUP_PASS --log-error=$LOGFILE"
 ####################################
 umask 0077
 test ! -d "$BACKUP_DIR" && mkdir -p "$BACKUP_DIR"
@@ -31,6 +32,6 @@ for dbname in $BACKUP_DBNAME
 do
 	test ! -d "$BACKUP_DIR/$dbname" && mkdir -p "$BACKUP_DIR/$dbname"
 
-	$MYSQLDUMP $MYSQLDUMP_OPTS $dbname | gzip > $BACKUP_DIR/$dbname/$dbname.$TIMEPOINT.sql.gz
+	$MYSQLDUMP $MYSQLDUMP_OPTS $dbname | gzip > $BACKUP_DIR/$dbname/$dbname.$TIMEPOINT.sql.gz > /dev/null 2>&1
 done
 find $BACKUP_DIR -type f -mtime +$COPIES -delete
