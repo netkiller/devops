@@ -22,7 +22,7 @@ PROG=$BASEDIR/bin/$(basename $0)
 LOGFILE=/var/tmp/$NAME.log
 PIDFILE=/var/tmp/$NAME.pid
 MYSQLDUMP="/usr/bin/mysqldump"
-MYSQLDUMP_OPTS="-h $BACKUP_HOST -u$BACKUP_USER -p$BACKUP_PASS --skip-comments -d"
+MYSQLDUMP_OPTS="-h $BACKUP_HOST -u$BACKUP_USER -p$BACKUP_PASS --skip-comments --log-error=$LOGFILE -d"
 ####################################
 umask 0077
 ##############################################
@@ -35,7 +35,7 @@ function backup(){
 	for dbname in $BACKUP_DBNAME
 	do
 		test ! -d "$BACKUP_DIR/$BACKUP_HOST" && mkdir -p "$BACKUP_DIR/$BACKUP_HOST"
-		$MYSQLDUMP $MYSQLDUMP_OPTS $dbname > $BACKUP_DIR/$BACKUP_HOST/$dbname.sql
+		$MYSQLDUMP $MYSQLDUMP_OPTS $dbname > $BACKUP_DIR/$BACKUP_HOST/$dbname.sql > /dev/null 2>&1
 	done
 	TIMEPOINT=$(date -u +%Y-%m-%d.%H:%M:%S)
 	git add .
