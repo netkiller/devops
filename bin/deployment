@@ -5,7 +5,7 @@
 # Author: Neo <netkiller@msn.com>
 ##############################################
 import os,io,sys
-import logging, ,logging.handlers, configparser
+import logging, logging.handlers, configparser
 import threading
 from optparse import OptionParser, OptionGroup
 import time
