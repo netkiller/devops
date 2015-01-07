@@ -54,7 +54,8 @@ Help
 Configure
 ---------
 	$ mkdir ~/{development,testing,production}
-	$ mkdir ~/exclude
+	$ mkdir ~/{exclude,log}
+	
 	$ vim ~/testing/example.com.ini 
 	[www]
 	;repository=git@192.168.2.1:example.com/www.example.com

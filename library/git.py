@@ -14,8 +14,11 @@ class Git():
 		return(self)
 	def pull(self):
 		if self.workspace :
-			os.chdir(self.workspace)		
+			os.chdir(self.workspace)
 		self.cmd.append('pull --progress')
+		return(self)
+	def push(self):
+		self.cmd.append('push --progress')
 		return(self)
 	def reset(self):
 		self.cmd.append('reset HEAD --hard')

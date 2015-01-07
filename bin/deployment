@@ -300,7 +300,7 @@ class Deployment():
 			domain =args[2]
 
 			host = domain[:domain.find('.')]
-			conf = self.configure(os.path.expanduser(self.project['cfgdir']+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini' , host))
+			conf = self.configure(os.path.expanduser(self.project['cfgdir']+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini') , host)
 
 			workspace = os.path.expanduser('~/.workspace')
 
@@ -321,31 +321,33 @@ class Deployment():
 				git.checkout(t).execute()
 				git.pull().execute()
 				git.merge(f).execute()
+				git.push().execute()
 				self.logging.info('merge branch to '+ t +' from '+f)
-			else:
-				if stage == 'testing' :
-					git.checkout('development').execute()
-					git.pull().execute()
-
-					git.checkout('testing').execute()
-					git.pull().execute()
-
-					git.merge('development').execute()
-					self.logging.info('merge branch to testing from development')
-				if stage == 'production' :
-					git.checkout('testing').execute()
-					git.pull().execute()
-					git.checkout('production').execute()
-					git.pull().execute()
-					git.merge('testing').execute()
-					self.logging.info('merge branch to production from testing')
-				if stage == 'development' :
-					git.checkout(f).execute()
-					git.pull().execute()
-					git.checkout('development').execute()
-					git.pull().execute()
-					git.merge(f).execute()
-					self.logging.info('merge branch to development from ' + f)
+			#else:
+				#
+				#if stage == 'testing' :
+				#	git.checkout('development').execute()
+				#	git.pull().execute()
+                #
+				#	git.checkout('testing').execute()
+				#	git.pull().execute()
+                #
+				#	git.merge('development').execute()
+				#	self.logging.info('merge branch to testing from development')
+				#if stage == 'production' :
+				#	git.checkout('testing').execute()
+				#	git.pull().execute()
+				#	git.checkout('production').execute()
+				#	git.pull().execute()
+				#	git.merge('testing').execute()
+				#	self.logging.info('merge branch to production from testing')
+				#if stage == 'development' :
+				#	git.checkout(f).execute()
+				#	git.pull().execute()
+				#	git.checkout('development').execute()
+				#	git.pull().execute()
+				#	git.merge(f).execute()
+				#	self.logging.info('merge branch to development from ' + f)
 		except configparser.NoSectionError as err:
 			print("Error: %s %s" %(err, ''))
 		except Exception as err:
