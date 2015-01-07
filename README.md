@@ -12,7 +12,9 @@ Install
 
 	or 
 	
-	$ python setup.py install --prefix=/srv/devops
+	$ python3 setup.py install --prefix=/srv/devops
+	
+	$ sudo cp share/profile.d/devops.sh /etc/profile.d/
 	
 Deployment
 ----------

@@ -44,7 +44,7 @@ setup(
 		'bin/deployment',
 		'bin/backup',
 		'bin/mysqlshell',
-		'bin/auditlog',
+		'bin/chpasswd.sh',
 		'bin/gitsync'
 	],
 	data_files = [
@@ -52,7 +52,8 @@ setup(
 		('etc', ['etc/task.cfg']),
 		('etc', ['etc/schedule.cfg']),
 		('log', ['log/deployment.log']),
-		('share', ['share/example/testing/example.com.ini'])
+		('share', ['share/example/testing/example.com.ini']),
+		('share', ['share/profile.d/devops.sh'])
 		#('example/testing', ['example/testing/example.com.ini']),
 		#('example/config/testing', ['example/config/testing/www.example.com.ini']),
 		#('example/exclude/testing', ['example/exclude/testing/www.example.com.lst'])
