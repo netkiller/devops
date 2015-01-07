@@ -4,21 +4,25 @@ Software Deployment Utility Programs
 Help
 ----
 	$ deployment 
-	Usage: deployment [options] stage project <other>
+	Usage: deployment [options] {branch|stage} project
 
 	Options:
 	  -h, --help            show this help message and exit
-	  -r, --revert          revert to revision
-	  --backup=BACKUP       backup remote to local
-	  --clean               
 
 	  stage:
-		development | testing | production
+		{development | testing | production} <host>.<domain>
 
-	  project:
-		<host>.<domain>
+		-r REVERT, --revert=REVERT
+							revert to revision
+		--clean             
+		-s, --silent        Silent mode. Don't output anything
 
-	  Branch:
+	  backup:
+		backup <host>.<domain>
+
+		--backup=BACKUP     backup remote to local
+
+	  branch:
 		branch management
 
 		-c master|trunk, --checkout=master|trunk
@@ -27,7 +31,18 @@ Help
 							Create new branch
 		-d branch, --delete=branch
 							delete branch
-		--release=RELEASE   release version exampe:2014-01-23
+		--release=RELEASE   release version exampe:2015-01-07
+
+	  merge:
+		merge {development | testing | production}
+
+		-t master, --to=master
+							such as master
+		-f your, --from=your
+							from branch
+
+	  unittest:
+		unittest {development | testing | production}
 
 	  Example: 
 		deployment testing www.example.com
@@ -38,7 +53,9 @@ Help
 
 Configure
 ---------
-	$ cat etc/testing/example.com.ini 
+	$ mkdir ~/{development,testing,production}
+	$ mkdir ~/exclude
+	$ vim ~/testing/example.com.ini 
 	[www]
 	;repository=git@192.168.2.1:example.com/www.example.com
 	repository=https://github.com/oscm/shell.git
@@ -60,7 +77,7 @@ Configure
 	destination=example.com/images.example.com
 	branch=freebsd
 
-### Config item 
+### Format of config item
 	repository: git uri
 	source: directory for checkout and rsync
 	option: rsync argv

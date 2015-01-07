@@ -5,7 +5,7 @@
 # Author: Neo <netkiller@msn.com>
 ##############################################
 import os,io,sys
-import logging, configparser
+import logging, ,logging.handlers, configparser
 import threading
 from optparse import OptionParser, OptionGroup
 import time
@@ -26,13 +26,14 @@ CONFIG_DIR= basedir + '/etc'
 ##############################################
 class Deployment():
 	debug = False
+	stage = ('development','testing','production','stable','unstable','alpha','beta')
 	def __init__(self):
 		self.config = {}
 
 		usage = "usage: %prog [options] {branch|stage} project"
 		self.parser = OptionParser(usage)
 
-		group = OptionGroup(self.parser, "stage", "{development | testing | production} <host>.<domain>")
+		group = OptionGroup(self.parser, "stage", "{development | testing | production | stable | unstable | alpha | beta} <host>.<domain>")
 		group.add_option("-r", "--revert", dest="revert", default=False,help="revert to revision")
 		group.add_option('','--clean', action="store_true", help='')
 		group.add_option("-s", "--silent", action="store_true", help="Silent mode. Don't output anything")
@@ -68,7 +69,7 @@ class Deployment():
 
 		self.config	= self.configure(CONFIG_DIR+'/deployment.cfg','scm')
 		self.project	= self.configure(CONFIG_DIR+'/deployment.cfg','project')
-		self.logging = self.logfile(self.config['logdir']+'/'+self.config['logfile'])
+		self.logging = self.logfile(os.path.expanduser(self.config['logdir']+'/'+self.config['logfile']))
 
 	def configure(self,inifile, section = None):
 		conf = {}
@@ -105,9 +106,10 @@ class Deployment():
 				filemode='a'
 			)
 			log = logging.getLogger()
-			#handler = logging.handlers.TimedRotatingFileHandler(file, 'M', 1, 0)
+			handler = logging.handlers.TimedRotatingFileHandler(file, 'D', 1, 0)
 			#handler.suffix = "%Y%m%d-%H%M.log"
-			#log.addHandler(handler)
+			handler.suffix = "%Y-%m-%d.log"
+			log.addHandler(handler)
 		except AttributeError as err:
 			print("Error: %s %s" %(err, file))
 			sys.exit(2)
@@ -201,9 +203,9 @@ class Deployment():
 			rsync = Rsync()
 
 			if('option' in conf):
-				rsync.option('-auzv --exclude=.git --exclude=.svn --exclude=.gitignore' + conf['option'])
+				rsync.option('-auzv --exclude=.git --exclude=.svn --exclude=.gitignore ' + conf['option'])
 			else:
-				rsync.option('-auzv --exclude=.git --exclude=.svn --exclude=.gitignore')
+				rsync.option('-auzv --exclude=.git --exclude=.svn --exclude=.gitignore ')
 
 			if('delete' in conf):
 				if conf['delete'].lower() in ("yes", "true", "y", "enable") :
@@ -216,8 +218,7 @@ class Deployment():
 				logdir = os.path.expanduser(self.project['logdir']+'/'+stage)
 				if not os.path.exists(logdir):
 					os.makedirs(logdir)
-				conf['logfile'] = logdir+'/'+domain+'.'+datetime.today().strftime('%Y-%m-%d')+'.log'
-				#.%H:%M:%S
+				conf['logfile'] = logdir+'/'+domain+'.'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')+'.log'
 				rsync.logfile(conf['logfile'])
 
 			if('password' in conf):
@@ -231,22 +232,23 @@ class Deployment():
 				rsync.backup(conf['backup'])
 
 			if('exclude' in conf):
-				rsync.exclude(os.path.expanduser(self.project['cfgdir'] + '/exclude/' + conf['exclude']))
-
+				exclude = os.path.expanduser(self.project['cfgdir'] + '/exclude/' + conf['exclude'])
+				if os.path.exists(exclude):
+					rsync.exclude(exclude)
+				else:
+					raise FileNotFoundError('Cannot open exclude file '+ exclude)
 			rsync.source(source+'/')
-
 
 			for rhost in conf['remote'].split(',') :
 				rsync.destination(rhost.strip()+'::'+conf['destination'])
 				rsync.execute()
 				self.logging.debug(rsync.debug());
 
-
 		except NameError as err:
 			print(err)
 		except KeyError as err:
 			print("Error: %s %s" %(err, conf))
-		except IOError as err:
+		except (FileNotFoundError, IOError) as err:
 			print(err)
 		except AttributeError as err:
 			print(err)
@@ -383,9 +385,9 @@ class Deployment():
 		elif args[0] == 'branch':
 			self.branch(args)
 		elif args[0] == 'merge':
-			if args[1] in ('development','testing','production'):
+			if args[1] in self.stage:
 				self.merge(args, self.options.to, self.options.froms)
-		elif args[0] in ('development','testing','production'):
+		elif args[0] in self.stage:
 			#if self.scm[(args[0])] != getpass.getuser():
 			#	print("Current user "+os.getlogin()+" : Permission denied")
 			#	sys.exit(127)

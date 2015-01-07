@@ -1,2 +1,1 @@
-#!/bin/bash
-PATH=/srv/devops/bin:$PATH
+export PATH=$PATH/srv/devops/bin
