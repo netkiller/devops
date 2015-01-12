@@ -272,6 +272,7 @@ class Deployment():
 
 			git = Git(source, self.logging)
 			if self.options.checkout:
+				git.pull()
 				git.branch(self.options.checkout)
 				self.logging.info('checkout branch '+ stage+' '+domain+' -> '+self.options.checkout)
 			elif self.options.delete:
