@@ -78,6 +78,19 @@ Configure
 	destination=example.com/images.example.com
 	branch=freebsd
 
+Parameter replaces
+-----
+	create config file under the stage folder.
+	vim config/testing/www.example.com.ini
+	[config/database.php]
+	host=localhost
+	port=3306
+	user=root
+	password=passw0rd
+	[config/redis.php]
+	host=localhost
+	port=6379
+	
 ### Format of config item
 	repository: git uri
 	source: directory for checkout and rsync
