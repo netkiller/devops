@@ -3,23 +3,20 @@ Software Deployment Utility Programs
 
 Help
 ----
-	$ deployment 
+	$ deployment backup production appmanager.hx9999.com
 	Usage: deployment [options] {branch|stage} project
 
 	Options:
 	  -h, --help            show this help message and exit
 
 	  stage:
-		{development | testing | production} <host>.<domain>
+		{development | testing | production | stable | unstable | alpha |
+		beta} <host>.<domain>
 
 		-r REVERT, --revert=REVERT
 							revert to revision
 		--clean             
 		-s, --silent        Silent mode. Don't output anything
-
-	  backup:
-		backup <host>.<domain>
-
 		--backup=BACKUP     backup remote to local
 
 	  branch:
@@ -31,7 +28,7 @@ Help
 							Create new branch
 		-d branch, --delete=branch
 							delete branch
-		--release=RELEASE   release version exampe:2015-01-07
+		--release=RELEASE   release version exampe:2015-01-15
 
 	  merge:
 		merge {development | testing | production}

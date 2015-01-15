@@ -37,11 +37,11 @@ class Deployment():
 		group.add_option("-r", "--revert", dest="revert", default=False,help="revert to revision")
 		group.add_option('','--clean', action="store_true", help='')
 		group.add_option("-s", "--silent", action="store_true", help="Silent mode. Don't output anything")
-		self.parser.add_option_group(group)
-
-		group = OptionGroup(self.parser, 'backup', 'backup <host>.<domain>')
 		group.add_option('','--backup', dest="backup", help='backup remote to local', default=None)
 		self.parser.add_option_group(group)
+
+		#group = OptionGroup(self.parser, 'backup', 'backup <host>.<domain>')
+		#self.parser.add_option_group(group)
 
 		group = OptionGroup(self.parser, "branch", "branch management")
 		group.add_option("-c", "--checkout", dest="checkout", metavar="master|trunk", default='', help="checkout branch")
@@ -165,20 +165,25 @@ class Deployment():
 
 			source = os.path.expanduser(source)
 
-			if self.options.clean:
-				import shutil
-				shutil.rmtree(source)
-				self.logging.warning('clean '+ source);
-
 			if self.options.backup:
+				if conf['mode'] == 'ssh':
+					source = conf['remote']+':'+conf['destination']
+				else:
+					source = conf['remote']+'::'+conf['destination']
+			
 				backup = Rsync()
 				backup.option('-auzv')
-				backup.source(conf['remote']+'::'+conf['destination'])
+				backup.source(source)
 				backup.destination(self.options.backup)
 				backup.execute()
 				self.logging.debug(backup.string());
 				self.logging.info('backup '+conf['remote']+'::'+conf['destination']+' -> '+self.options.backup);
 				return()
+			
+			if self.options.clean:
+				import shutil
+				shutil.rmtree(source)
+				self.logging.warning('clean '+ source);
 
 			git = Git(source, self.logging)
 			if os.path.isdir(source):
@@ -206,6 +211,9 @@ class Deployment():
 
 			rsync = Rsync()
 
+			if not 'mode' in conf:
+				conf['mode'] = None
+			
 			if('option' in conf):
 				rsync.option('-auzv --exclude=.git --exclude=.svn --exclude=.gitignore ' + conf['option'])
 			else:
@@ -232,7 +240,7 @@ class Deployment():
 				if conf['backup'] :
 					rsync.backup(conf['backup'])
 			else:
-				conf['backup'] = '/'+'backup'+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
+				conf['backup'] = self.project['backup']+'/'+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
 				rsync.backup(conf['backup'])
 
 			if('exclude' in conf):
@@ -244,18 +252,17 @@ class Deployment():
 			rsync.source(source+'/')
 
 			for rhost in conf['remote'].split(',') :
-				if('mode' in conf):
-					if conf['mode'] == 'ssh':
+
+				if conf['mode'] == 'ssh':
 						rsync.destination(rhost.strip()+':'+conf['destination'])
 				else:
 					rsync.destination(rhost.strip()+'::'+conf['destination'])
 				
-				if 'mode' in conf:
-					if conf['mode'] == 'ssh':
-						if('remote_before' in conf) and os.path.exists(self.project['cfgdir'] +'/libexec/'+domain+'.before'):
-							cmd = 'ssh -T '+rhost.strip()+' < '+self.project['cfgdir'] +'/libexec/'+domain+'.before'
-							os.system(cmd)
-							self.logging.debug('BEFORE ' + cmd);
+				if conf['mode'] == 'ssh':
+					if('remote_before' in conf) and os.path.exists(self.project['cfgdir'] +'/libexec/'+domain+'.before'):
+						cmd = 'ssh -T '+rhost.strip()+' < '+self.project['cfgdir'] +'/libexec/'+domain+'.before'
+						os.system(cmd)
+						self.logging.debug('BEFORE ' + cmd);
 				
 				cmd = 'cp -a ' + self.project['cfgdir']+'/config/'+stage+'/'+domain+'/* '+source
 				os.system(cmd)
@@ -263,12 +270,11 @@ class Deployment():
 				
 				rsync.execute()
 				
-				if 'mode' in conf:
-					if conf['mode'] == 'ssh':
-						if('remote_after' in conf) and os.path.exists(self.project['cfgdir'] + '/libexec/'+domain+'.after'):
-							cmd = 'ssh -T '+rhost.strip()+' < '+self.project['cfgdir'] + '/libexec/'+domain+'.after'
-							os.system(cmd)
-							self.logging.debug('AFTER ' + cmd);
+				if conf['mode'] == 'ssh':
+					if('remote_after' in conf) and os.path.exists(self.project['cfgdir'] + '/libexec/'+domain+'.after'):
+						cmd = 'ssh -T '+rhost.strip()+' < '+self.project['cfgdir'] + '/libexec/'+domain+'.after'
+						os.system(cmd)
+						self.logging.debug('AFTER ' + cmd);
 				self.logging.debug(rsync.debug());
 
 		except NameError as err:
@@ -279,8 +285,7 @@ class Deployment():
 			print(err)
 		except AttributeError as err:
 			print(err)
-		#	self.logging.error(err)
-
+		#	self.logging.error(err)	
 	def branch(self,args):
 		stage = args[1]
 		domain =args[2]
