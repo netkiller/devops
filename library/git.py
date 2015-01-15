@@ -15,6 +15,7 @@ class Git():
 	def clean(self, param=''):
 		#git clean -df
 		self.cmd.append('git clean '+param)
+		return(self)
 	def pull(self):
 		if self.workspace :
 			os.chdir(self.workspace)
