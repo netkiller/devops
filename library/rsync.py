@@ -1,7 +1,8 @@
 #-*- coding: utf-8 -*-
 import os, sys
 class Rsync():
-	def __init__(self): 
+	def __init__(self, mode=None): 
+		self.mode = mode
 		self.cmd = {}
 		self.opt = []
 	def option(self, opt):

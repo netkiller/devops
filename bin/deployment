@@ -69,6 +69,10 @@ class Deployment():
 
 		self.config	= self.configure(CONFIG_DIR+'/deployment.cfg','scm')
 		self.project	= self.configure(CONFIG_DIR+'/deployment.cfg','project')
+		
+		filepath = os.path.expanduser(self.config['logdir'])
+		if not os.path.exists(filepath):
+			os.mkdir(filepath)
 		self.logging = self.logfile(os.path.expanduser(self.config['logdir']+'/'+self.config['logfile']))
 
 	def configure(self,inifile, section = None):
@@ -114,7 +118,7 @@ class Deployment():
 			print("Error: %s %s" %(err, file))
 			sys.exit(2)
 		except FileNotFoundError as err:
-			print("Error: %s %s" %(err, file))
+			print("%s" %(err))
 			sys.exit(2)
 		except PermissionError as err:
 			print("Error: %s %s" %(err, file))
@@ -183,7 +187,7 @@ class Deployment():
 					git.checkout(revision).branch().execute()
 					self.logging.info('revision '+ revision);
 				else:
-					git.reset().pull().execute()
+					git.clean('-df').reset().pull().execute()
 					self.logging.info('pull '+ conf['repository']);
 			else:
 				git.clone(conf['repository']).execute()
@@ -240,8 +244,31 @@ class Deployment():
 			rsync.source(source+'/')
 
 			for rhost in conf['remote'].split(',') :
-				rsync.destination(rhost.strip()+'::'+conf['destination'])
+				if('mode' in conf):
+					if conf['mode'] == 'ssh':
+						rsync.destination(rhost.strip()+':'+conf['destination'])
+				else:
+					rsync.destination(rhost.strip()+'::'+conf['destination'])
+				
+				if 'mode' in conf:
+					if conf['mode'] == 'ssh':
+						if('remote_before' in conf) and os.path.exists(self.project['cfgdir'] +'/libexec/'+domain+'.before'):
+							cmd = 'ssh -T '+rhost.strip()+' < '+self.project['cfgdir'] +'/libexec/'+domain+'.before'
+							os.system(cmd)
+							self.logging.debug('BEFORE ' + cmd);
+				
+				cmd = 'cp -a ' + self.project['cfgdir']+'/config/'+stage+'/'+domain+'/* '+source
+				os.system(cmd)
+				self.logging.debug('Overwrite config ' + cmd);
+				
 				rsync.execute()
+				
+				if 'mode' in conf:
+					if conf['mode'] == 'ssh':
+						if('remote_after' in conf) and os.path.exists(self.project['cfgdir'] + '/libexec/'+domain+'.after'):
+							cmd = 'ssh -T '+rhost.strip()+' < '+self.project['cfgdir'] + '/libexec/'+domain+'.after'
+							os.system(cmd)
+							self.logging.debug('AFTER ' + cmd);
 				self.logging.debug(rsync.debug());
 
 		except NameError as err:

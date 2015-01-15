@@ -12,6 +12,9 @@ class Git():
 		if self.workspace :
 			self.cmd.append('clone '+ uri +' '+ self.workspace)
 		return(self)
+	def clean(self, param=''):
+		#git clean -df
+		self.cmd.append('git clean '+param)
 	def pull(self):
 		if self.workspace :
 			os.chdir(self.workspace)
