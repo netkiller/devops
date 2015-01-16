@@ -3,7 +3,7 @@ Software Deployment Utility Programs
 
 Help
 ----
-	$ deployment backup production appmanager.hx9999.com
+	$ deployment backup production appmanager.example.com
 	Usage: deployment [options] {branch|stage} project
 
 	Options:
@@ -74,6 +74,14 @@ Configure
 	remote=www@192.168.2.15
 	destination=example.com/images.example.com
 	branch=freebsd
+	
+	[windows]
+	repository=git@192.168.2.1:example.com/windows.example.com
+	delete=Y
+	mode=ssh
+	backup=/cygdrive/d/backup
+	remote=administrator@158.99.11.168
+	destination=/cygdrive/d/windows.example.com
 
 Parameter replaces
 -----

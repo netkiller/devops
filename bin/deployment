@@ -130,7 +130,7 @@ class Deployment():
 			inifile = os.path.expanduser(self.project['cfgdir']+'/config/'+stage+'/'+domain+'.ini')
 			if os.path.exists(inifile):
 				sections = self.configure(inifile)
-				#print(sections)
+
 				for filename in sections:
 					cfgfile = source+'/'+filename
 					#print(cfgfile)
@@ -240,7 +240,7 @@ class Deployment():
 				if conf['backup'] :
 					rsync.backup(conf['backup'])
 			else:
-				conf['backup'] = self.project['backup']+'/'+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
+				conf['backup'] = self.project['backup']+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
 				rsync.backup(conf['backup'])
 
 			if('exclude' in conf):
@@ -252,7 +252,8 @@ class Deployment():
 			rsync.source(source+'/')
 
 			for rhost in conf['remote'].split(',') :
-
+				print(">>> deploy to host %s" % (rhost))
+				self.logging.debug('=====');
 				if conf['mode'] == 'ssh':
 						rsync.destination(rhost.strip()+':'+conf['destination'])
 				else:
@@ -264,9 +265,11 @@ class Deployment():
 						os.system(cmd)
 						self.logging.debug('BEFORE ' + cmd);
 				
-				cmd = 'cp -a ' + self.project['cfgdir']+'/config/'+stage+'/'+domain+'/* '+source
-				os.system(cmd)
-				self.logging.debug('Overwrite config ' + cmd);
+				overwrite = self.project['cfgdir']+'/config/'+stage+'/'+domain
+				if os.path.exists(overwrite):
+					cmd = 'cp -a ' + overwrite+'/* '+source
+					os.system(cmd)
+					self.logging.debug('Overwrite config ' + cmd);
 				
 				rsync.execute()
 				
@@ -276,6 +279,8 @@ class Deployment():
 						os.system(cmd)
 						self.logging.debug('AFTER ' + cmd);
 				self.logging.debug(rsync.debug());
+				
+				print('#######################################################')
 
 		except NameError as err:
 			print(err)
