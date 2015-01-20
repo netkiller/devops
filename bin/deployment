@@ -100,20 +100,24 @@ class Deployment():
 		return(conf)
 
 	def logfile(self,file):
-		log = None
+		logger = None
 		try:
-			logging.basicConfig(
-				level=logging.NOTSET,
-				format='%(asctime)s %(levelname)-8s %(message)s',
-				datefmt='%Y-%m-%d %H:%M:%S',
-				filename=file,
-				filemode='a'
-			)
-			log = logging.getLogger()
+			#logging.basicConfig(
+			#	level=logging.NOTSET,
+			#	format='%(asctime)s %(levelname)-8s %(message)s',
+			#	datefmt='%Y-%m-%d %H:%M:%S',
+			#	filename=file,
+			#	filemode='a'
+			#)
+			logger = logging.getLogger()
+			logger.setLevel(logging.DEBUG)
 			handler = logging.handlers.TimedRotatingFileHandler(file, 'D', 1, 0)
 			#handler.suffix = "%Y%m%d-%H%M.log"
 			handler.suffix = "%Y-%m-%d.log"
-			log.addHandler(handler)
+			formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+			handler.setFormatter(formatter)
+			
+			logger.addHandler(handler)
 		except AttributeError as err:
 			print("Error: %s %s" %(err, file))
 			sys.exit(2)
@@ -123,7 +127,7 @@ class Deployment():
 		except PermissionError as err:
 			print("Error: %s %s" %(err, file))
 			sys.exit(2)
-		return(log)
+		return(logger)
 
 	def buildconfig(self, stage, domain, source):
 		try:
@@ -133,7 +137,6 @@ class Deployment():
 
 				for filename in sections:
 					cfgfile = source+'/'+filename
-					#print(cfgfile)
 					self.logging.debug('build config file: '+cfgfile);
 					if os.path.isfile(cfgfile) and os.access(cfgfile, os.R_OK):
 						conf = self.configure(inifile, filename)
@@ -141,7 +144,6 @@ class Deployment():
 							lines = []
 							for line in f.readlines():
 								for key, val in conf.items():
-									#print(key+':'+val)
 									self.logging.debug('replace config item: '+key+'=>'+val);
 									lines.append(line.replace('{{'+key+'}}', val))
 						with open(cfgfile, 'w') as f:
@@ -207,7 +209,6 @@ class Deployment():
 			
 			if ('build' in conf):
 				os.system(os.path.expanduser(self.project['cfgdir']+'/build/'+domain+'.sh'))
-			#sys.exit()
 
 			rsync = Rsync()
 
@@ -215,9 +216,9 @@ class Deployment():
 				conf['mode'] = None
 			
 			if('option' in conf):
-				rsync.option('-auzv --exclude=.git --exclude=.svn --exclude=.gitignore ' + conf['option'])
+				rsync.option('-azv --exclude=.git --exclude=.svn --exclude=.gitignore ' + conf['option'])
 			else:
-				rsync.option('-auzv --exclude=.git --exclude=.svn --exclude=.gitignore ')
+				rsync.option('-azv --exclude=.git --exclude=.svn --exclude=.gitignore ')
 
 			if('delete' in conf):
 				if conf['delete'].lower() in ("yes", "true", "y", "enable") :
@@ -253,34 +254,32 @@ class Deployment():
 
 			for rhost in conf['remote'].split(',') :
 				print(">>> deploy to host %s" % (rhost))
-				self.logging.debug('=====');
+				self.logging.debug('----- '+ rhost + ' -----');
 				if conf['mode'] == 'ssh':
 						rsync.destination(rhost.strip()+':'+conf['destination'])
 				else:
 					rsync.destination(rhost.strip()+'::'+conf['destination'])
 				
 				if conf['mode'] == 'ssh':
-					if('remote_before' in conf) and os.path.exists(self.project['cfgdir'] +'/libexec/'+domain+'.before'):
+					if('remote_before' in conf) and os.path.exists(os.path.expanduser(self.project['cfgdir'] +'/libexec/'+domain+'.before')):
 						cmd = 'ssh -T '+rhost.strip()+' < '+self.project['cfgdir'] +'/libexec/'+domain+'.before'
 						os.system(cmd)
 						self.logging.debug('BEFORE ' + cmd);
 				
 				overwrite = self.project['cfgdir']+'/config/'+stage+'/'+domain
-				if os.path.exists(overwrite):
+				if os.path.exists(os.path.expanduser(overwrite)):
 					cmd = 'cp -a ' + overwrite+'/* '+source
 					os.system(cmd)
 					self.logging.debug('Overwrite config ' + cmd);
 				
 				rsync.execute()
+				self.logging.debug(rsync.debug());
 				
 				if conf['mode'] == 'ssh':
-					if('remote_after' in conf) and os.path.exists(self.project['cfgdir'] + '/libexec/'+domain+'.after'):
+					if('remote_after' in conf) and os.path.exists(os.path.expanduser(self.project['cfgdir'] + '/libexec/'+domain+'.after')):
 						cmd = 'ssh -T '+rhost.strip()+' < '+self.project['cfgdir'] + '/libexec/'+domain+'.after'
 						os.system(cmd)
 						self.logging.debug('AFTER ' + cmd);
-				self.logging.debug(rsync.debug());
-				
-				print('#######################################################')
 
 		except NameError as err:
 			print(err)
