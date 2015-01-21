@@ -31,7 +31,7 @@ class Deployment():
 		self.config = {}
 
 		usage = "usage: %prog [options] {branch|stage} project"
-		self.parser = OptionParser(usage)
+		self.parser = OptionParser(usage, version="%prog 1.0.2", description='Software Configuration Management')
 
 		group = OptionGroup(self.parser, "stage", "{development | testing | production | stable | unstable | alpha | beta} <host>.<domain>")
 		group.add_option("-r", "--revert", dest="revert", default=False,help="revert to revision")

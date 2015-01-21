@@ -1,0 +1,171 @@
+#!/usr/bin/python3
+#-*- coding: utf-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+##############################################
+
+try:
+	import time
+	import os, sys
+	import socket
+	import logging, logging.handlers
+	import socketserver
+	import configparser
+	from optparse import OptionParser, OptionGroup
+except ImportError as err:
+	print("Error: %s" %(err))
+
+try:
+	basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+	sys.path.append(basedir + '/lib/python3.4/site-packages')
+	sys.path.append(basedir + '/library')
+	from rsync import *
+	from git import *
+	
+	from datetime import datetime
+except ImportError as err:
+	print("Error: %s" %(err))
+
+class OsConf():
+
+	def __init__(self):
+
+		self.basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+		self.cfgfile=self.basedir+'/etc/os.ini'
+
+		if not os.path.exists(self.cfgfile):
+			raise Exception('Cannot open file', self.cfgfile)
+
+		self.config = configparser.SafeConfigParser()
+		self.config.read(self.cfgfile)
+		self.conf = dict(self.config.items('main'))
+		
+		#print(self.config)
+		logfile = self.conf['logfile']
+		self.logger = logging.getLogger()
+		self.logger.setLevel(logging.DEBUG)
+		handler = logging.handlers.TimedRotatingFileHandler(logfile, 'D', 1, 0)
+		handler.suffix = "%Y-%m-%d.log"
+		formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+		handler.setFormatter(formatter)
+		self.logger.addHandler(handler)
+
+	def list(self, remote):
+		try:
+			#for sect in self.config.sections():
+			#	item = dict(self.config.items(sect))
+			#	print(sect+ ':')
+				#print("\t")
+			#	print(item)
+				#if 'desc' in item :
+				#	print(sect.strip(''), '-',item['desc'])
+				#else:
+			os.system('cd ' +self.conf['repositories']+'/'+remote+ ';find '+ ' | sed "s/.\//\//"')
+		except Exception as err:
+			print("Error: %s %s" %(err, self.cfgfile))
+			sys.exit(1)
+	def module(self, mod):
+		self.config.read(self.cfgfile)
+		item = dict(self.config.items(mod))
+		port = int(self.config.get(mod,'port'))
+		server = socketserver.UDPServer(('0.0.0.0', port), ShowLog)
+		server.serve_forever()
+	def get(self, remote, filepath):
+		source 		= remote+':'+filepath
+		destination	= self.conf['repositories']+'/'+remote+''+filepath
+		path = os.path.dirname(os.path.expanduser(destination))
+		if not os.path.exists(path) :
+			os.makedirs(path)
+		self.transfer(remote, source, destination)
+		self.logger.info("get %s %s" % (source, destination))
+	def put(self, remote, filepath):
+		source 		= self.conf['repositories']+'/'+remote+''+filepath
+		destination	= remote+':'+filepath
+		self.transfer(remote, source, destination)
+		self.logger.info("get %s %s" % (source, destination))
+	def transfer(self, host, source, destination):
+		logfile = self.conf['logdir']+'/'+host+'.'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')+'.log'
+		backup = self.conf['backup']+'/'+host+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
+		rsync = Rsync()
+		rsync.option('-azv').logfile(logfile).backup(backup).source(source).destination(destination).execute()
+		self.logger.debug(rsync.debug());
+	def edit(self, editor, remote, filepath):
+		cmd = "%s %s" % (editor, self.conf['repositories']+'/'+remote+''+filepath)
+		print(cmd)
+		os.system(cmd)
+	def daemon(self):
+		pid = os.fork()
+		if pid > 0:
+			sys.exit(0)
+	def usage(self):
+		print("\n  Homepage: http://netkiller.github.io\tAuthor: Neo <netkiller@msn.com>")
+	def main(self):
+		try:
+			parser = OptionParser(usage='usage: %prog [options] node file', version="%prog 1.0.0", description='System Configuration Management')
+			parser.add_option('-d','--daemon', dest='daemon', default=False, action='store_true', help='run as daemon')
+			parser.add_option('-g', '--get', dest='get', default=False, action='store_true', help='get config from remote')
+			parser.add_option('-p', '--put', dest='put', default=False, action='store_true', help='put config to remote')
+			#parser.add_option('-p', '--port', dest='port', default=0, metavar='1214', type='int',  help='port')
+			#parser.add_option('-l', '--logfile', dest='logfile', default='', metavar='/tmp/test.log', type='str', help='log file')
+			#parser.add_option('', '--list', dest='list', default=False, action='store_true', help='show module message')
+			#parser.add_option('', '--all', dest='all', default=False, action='store_true', help='show module message')
+
+			group = OptionGroup(parser, "editor", '')
+			group.add_option('-e', '', dest='edit', default=False, metavar='nano', action='store_true', help='default editor is vim')
+			group.add_option('', '--edit', dest='edit', default='vi', metavar='nano', choices=['vi','vim','nano'], type='choice', help='choose from vi, vim, nano')
+			parser.add_option_group(group)
+
+			group = OptionGroup(parser, "repositories", '')
+			#group.add_option('-t','--to', dest='to', metavar='master', help='such as master')
+			#group.add_option('-f','--from', dest='froms', metavar='your', help='from branch')
+			group.add_option('', '--pull', dest='pull', default=False, action='store_true', help='pull config from remote repositories')
+			group.add_option('', '--push', dest='push', default=False, action='store_true', help='push config to remote repositories')
+			parser.add_option_group(group)
+
+			(options, args) = parser.parse_args()
+			#if not options :
+			#else:
+			#print(options)
+			#if options.list :
+			#sys.exit(1)
+				
+				#self.module(args[0])
+			if len(args) == 2 :
+				if options.get :
+					if options.daemon:
+						self.daemon()
+					self.get(remote = args[0], filepath = args[1])
+				if options.put :
+					if options.daemon:
+						self.daemon()
+					self.put(remote = args[0], filepath = args[1])
+				if options.edit == True :
+					self.edit(editor = 'vim', remote = args[0], filepath = args[1])
+				elif options.edit in ('vi', 'vim', 'nano') :
+					self.edit(editor = options.edit, remote = args[0], filepath = args[1])
+				print(options.edit)
+			#	if options.logfile :
+			#		self.save(options.port, options.logfile)
+			elif len(args) == 1:
+				self.list(remote = args[0])
+			else:
+				parser.print_help()
+				self.usage()
+				sys.exit(1)
+
+			if not len(args) == 1:
+				parser.print_help()
+				self.usage()
+				sys.exit(1)
+
+		except Exception as err:
+			print("Error: %s %s" %(err, ''))
+			sys.exit(1)
+
+if __name__ == '__main__':
+	try:
+		log = OsConf()
+		log.main()
+	except KeyboardInterrupt:
+		print ("Crtl+C Pressed. Shutting down.")
