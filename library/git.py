@@ -16,6 +16,11 @@ class Git():
 		#git clean -df
 		self.cmd.append('clean '+param)
 		return(self)
+	def init(self):
+		if self.workspace :
+			os.chdir(self.workspace)
+			self.cmd.append('init')
+		return(self)
 	def pull(self):
 		if self.workspace :
 			os.chdir(self.workspace)
