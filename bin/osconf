@@ -22,7 +22,7 @@ try:
 	sys.path.append(basedir + '/library')
 	from rsync import *
 	from git import *
-	
+
 	from datetime import datetime
 except ImportError as err:
 	print("Error: %s" %(err))
@@ -40,7 +40,7 @@ class OsConf():
 		self.config = configparser.SafeConfigParser()
 		self.config.read(self.cfgfile)
 		self.conf = dict(self.config.items('main'))
-		
+
 		#print(self.config)
 		logfile = self.conf['logfile']
 		self.logger = logging.getLogger()
@@ -98,6 +98,22 @@ class OsConf():
 		pid = os.fork()
 		if pid > 0:
 			sys.exit(0)
+	def clone(self, uri):
+		source = self.conf['repositories']
+		git = Git(source, self.logger)
+		git.clone(uri).execute()
+	def pull(self):
+		source = self.conf['repositories']
+		git = Git(source, self.logger)
+		git.pull().execute()
+	def push(self):
+		source = self.conf['repositories']
+		git = Git(source, self.logger)
+		git.push().execute()
+	def commit(self):
+		source = self.conf['repositories']
+		git = Git(source, self.logger)
+		git.commit().execute()
 	def usage(self):
 		print("\n  Homepage: http://netkiller.github.io\tAuthor: Neo <netkiller@msn.com>")
 	def main(self):
@@ -118,18 +134,28 @@ class OsConf():
 
 			group = OptionGroup(parser, "repositories", '')
 			#group.add_option('-t','--to', dest='to', metavar='master', help='such as master')
-			#group.add_option('-f','--from', dest='froms', metavar='your', help='from branch')
+			group.add_option('','--clone', dest='clone', metavar='http://domain/project.git', help='clone git repositories')
 			group.add_option('', '--pull', dest='pull', default=False, action='store_true', help='pull config from remote repositories')
 			group.add_option('', '--push', dest='push', default=False, action='store_true', help='push config to remote repositories')
+			group.add_option('', '--commit', dest='commit', default=False, action='store_true', help='commit config to repositories')
 			parser.add_option_group(group)
 
 			(options, args) = parser.parse_args()
 			#if not options :
 			#else:
 			#print(options)
-			#if options.list :
-			#sys.exit(1)
-				
+			if options.clone :
+				self.clone(options.clone)
+				sys.exit(1)
+			if options.pull :
+				self.pull()
+				sys.exit(1)
+			if options.push :
+				self.push()
+				sys.exit(1)
+			if options.commit :
+				self.commit()
+				sys.exit(1)
 				#self.module(args[0])
 			if len(args) == 2 :
 				if options.get :

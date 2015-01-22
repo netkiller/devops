@@ -43,6 +43,7 @@ setup(
 	scripts=[
 		'bin/deployment',
 		'bin/backup',
+		'bin/osconf',
 		'bin/mysqlshell',
 		'bin/chpasswd.sh',
 		'bin/gitsync'
@@ -51,6 +52,7 @@ setup(
 		('etc', ['etc/deployment.cfg']),
 		('etc', ['etc/task.cfg']),
 		('etc', ['etc/schedule.cfg']),
+		('etc', ['etc/os.ini']),
 		('log', ['log/deployment.log']),
 		('share', ['share/example/testing/example.com.ini']),
 		('share', ['share/profile.d/devops.sh'])
