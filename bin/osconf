@@ -102,6 +102,10 @@ class OsConf():
 		source = self.conf['repositories']
 		git = Git(source, self.logger)
 		git.clone(uri).execute()
+	def init(self):
+		source = self.conf['repositories']
+		git = Git(source, self.logger)
+		git.init().execute()
 	def pull(self):
 		source = self.conf['repositories']
 		git = Git(source, self.logger)
@@ -135,6 +139,7 @@ class OsConf():
 			group = OptionGroup(parser, "repositories", '')
 			#group.add_option('-t','--to', dest='to', metavar='master', help='such as master')
 			group.add_option('','--clone', dest='clone', metavar='http://domain/project.git', help='clone git repositories')
+			group.add_option('', '--init', dest='init', default=False, action='store_true', help='init local repositories')
 			group.add_option('', '--pull', dest='pull', default=False, action='store_true', help='pull config from remote repositories')
 			group.add_option('', '--push', dest='push', default=False, action='store_true', help='push config to remote repositories')
 			group.add_option('', '--commit', dest='commit', default=False, action='store_true', help='commit config to repositories')
@@ -147,6 +152,9 @@ class OsConf():
 			if options.clone :
 				self.clone(options.clone)
 				sys.exit(1)
+			if options.init :
+				self.init()
+				sys.exit(1)				
 			if options.pull :
 				self.pull()
 				sys.exit(1)
@@ -162,7 +170,7 @@ class OsConf():
 					if options.daemon:
 						self.daemon()
 					self.get(remote = args[0], filepath = args[1])
-				if options.put :
+				if options.put : 
 					if options.daemon:
 						self.daemon()
 					self.put(remote = args[0], filepath = args[1])
