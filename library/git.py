@@ -2,9 +2,11 @@
 import os, sys
 class Git():
 	cmd = []
-	def __init__(self, workspace = None, logging = None):
-		self.logging = logging
-		self.workspace = workspace
+	def __init__(self, workspace = None, logger = None):
+		self.logger = logger
+		self.workspace = os.path.expanduser(workspace)
+		if os.path.exists(self.workspace) :
+			os.chdir(self.workspace)
 	def option(self, opt):
 		if opt:
 			self.opt = opt
@@ -18,8 +20,19 @@ class Git():
 		return(self)
 	def init(self):
 		if self.workspace :
-			os.chdir(self.workspace)
 			self.cmd.append('init')
+		return(self)
+	def add(self, path, param=''):
+		self.cmd.append('add '+path+' '+param)
+		return(self)
+	def commit(self, msg = '', param=''):
+		self.cmd.append('commit '+param+' -m "'+msg+'"')
+		return(self)
+	def status(self):
+		self.cmd.append('status')
+		return(self)
+	def log(self):
+		self.cmd.append('log')
 		return(self)
 	def pull(self):
 		if self.workspace :
@@ -66,6 +79,6 @@ class Git():
 	def execute(self):
 		for line in self.cmd:
 			os.system('git '+ line)
-			self.logging.debug('git '+ line)
+			self.logger.debug('git '+ line)
 		self.cmd = []
 		print("-")

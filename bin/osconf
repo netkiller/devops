@@ -116,10 +116,22 @@ class OsConf():
 		source = self.conf['repositories']
 		git = Git(source, self.logger)
 		git.push().execute()
-	def commit(self):
+	def add(self, file):
+		source = os.path.expanduser(self.conf['repositories'])
+		git = Git(source, self.logger)
+		git.add(file).execute()
+	def status(self):
 		source = self.conf['repositories']
 		git = Git(source, self.logger)
-		git.commit().execute()
+		git.status().execute()
+	def log(self):
+		source = self.conf['repositories']
+		git = Git(source, self.logger)
+		git.log().execute()
+	def commit(self, msg):
+		source = os.path.expanduser(self.conf['repositories'])
+		git = Git(source, self.logger)
+		git.commit(msg, '-a').execute()
 	def usage(self):
 		print("\n  Homepage: http://netkiller.github.io\tAuthor: Neo <netkiller@msn.com>")
 	def main(self):
@@ -128,7 +140,6 @@ class OsConf():
 			parser.add_option('-d','--daemon', dest='daemon', default=False, action='store_true', help='run as daemon')
 			parser.add_option('-g', '--get', dest='get', default=False, action='store_true', help='get config from remote')
 			parser.add_option('-p', '--put', dest='put', default=False, action='store_true', help='put config to remote')
-			#parser.add_option('-p', '--port', dest='port', default=0, metavar='1214', type='int',  help='port')
 			#parser.add_option('-l', '--logfile', dest='logfile', default='', metavar='/tmp/test.log', type='str', help='log file')
 			#parser.add_option('', '--list', dest='list', default=False, action='store_true', help='show module message')
 			#parser.add_option('', '--all', dest='all', default=False, action='store_true', help='show module message')
@@ -143,7 +154,10 @@ class OsConf():
 			group.add_option('', '--clone', dest='clone', metavar='http://domain/project.git', help='clone git repositories')
 			group.add_option('', '--pull', dest='pull', default=False, action='store_true', help='pull config from remote repositories')
 			group.add_option('', '--push', dest='push', default=False, action='store_true', help='push config to remote repositories')
-			group.add_option('', '--commit', dest='commit', default=False, action='store_true', help='commit config to repositories')
+			group.add_option('', '--add', dest='add', default='', metavar='/path/to/file', type='string',  help='add file to repositories')
+			group.add_option('', '--status', dest='status', default=False, action='store_true', help='show status')
+			group.add_option('', '--commit', dest='commit', metavar='message', help='commit to local repositories')
+			group.add_option('', '--log', dest='log', default=False, action='store_true', help='show log')
 			parser.add_option_group(group)
 
 			(options, args) = parser.parse_args()
@@ -162,19 +176,29 @@ class OsConf():
 			if options.push :
 				self.push()
 				sys.exit(1)
-			if options.commit :
-				self.commit()
+			if options.add :
+				self.add(options.add)
+				sys.exit(1)	
+			if options.status :
+				self.status()
 				sys.exit(1)
-				#self.module(args[0])
+			if options.commit :
+				self.commit(options.commit)
+				sys.exit(1)
+			if options.log :
+				self.log()
+				sys.exit(1)
 			if len(args) == 2 :
 				if options.get :
 					if options.daemon:
 						self.daemon()
 					self.get(remote = args[0], filepath = args[1])
+					sys.exit(1)
 				if options.put : 
 					if options.daemon:
 						self.daemon()
 					self.put(remote = args[0], filepath = args[1])
+					sys.exit(1)
 				if options.edit == True :
 					self.edit(editor = 'vim', remote = args[0], filepath = args[1])
 				elif options.edit in ('vi', 'vim', 'nano') :

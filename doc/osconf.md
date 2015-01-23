@@ -34,3 +34,10 @@ Clone repo
 	$ osconf --clone=/tmp/test
 	$ osconf --clone=https://github.com/oscm/shell.git
 	
+get config file
+-----
+	# get directory
+	$ osconf -g root@192.168.6.10 /etc/nginx/
+	
+	# get a file
+	$ osconf -g root@192.168.6.10 /etc/passwd
