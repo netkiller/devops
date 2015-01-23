@@ -51,7 +51,7 @@ class OsConf():
 		handler.setFormatter(formatter)
 		self.logger.addHandler(handler)
 
-	def list(self, remote):
+	def list(self, remote = None):
 		try:
 			#for sect in self.config.sections():
 			#	item = dict(self.config.items(sect))
@@ -61,7 +61,10 @@ class OsConf():
 				#if 'desc' in item :
 				#	print(sect.strip(''), '-',item['desc'])
 				#else:
-			os.system('cd ' +self.conf['repositories']+'/'+remote+ ';find '+ ' | sed "s/.\//\//"')
+			if remote :
+				os.system('cd ' +self.conf['repositories']+'/'+remote+ '; find '+ ' | grep -v .git | sed "s/.\//\//"')
+			else:
+				os.system('ls -1 ' +self.conf['repositories'])
 		except Exception as err:
 			print("Error: %s %s" %(err, self.cfgfile))
 			sys.exit(1)
@@ -71,6 +74,7 @@ class OsConf():
 		port = int(self.config.get(mod,'port'))
 		server = socketserver.UDPServer(('0.0.0.0', port), ShowLog)
 		server.serve_forever()
+		
 	def get(self, remote, filepath):
 		source 		= remote+':'+filepath
 		destination	= self.conf['repositories']+'/'+remote+''+filepath
@@ -92,7 +96,6 @@ class OsConf():
 		self.logger.debug(rsync.debug());
 	def edit(self, editor, remote, filepath):
 		cmd = "%s %s" % (editor, self.conf['repositories']+'/'+remote+''+filepath)
-		print(cmd)
 		os.system(cmd)
 	def daemon(self):
 		pid = os.fork()
@@ -141,15 +144,15 @@ class OsConf():
 			parser.add_option('-g', '--get', dest='get', default=False, action='store_true', help='get config from remote')
 			parser.add_option('-p', '--put', dest='put', default=False, action='store_true', help='put config to remote')
 			#parser.add_option('-l', '--logfile', dest='logfile', default='', metavar='/tmp/test.log', type='str', help='log file')
-			#parser.add_option('', '--list', dest='list', default=False, action='store_true', help='show module message')
 			#parser.add_option('', '--all', dest='all', default=False, action='store_true', help='show module message')
 
-			group = OptionGroup(parser, "editor", '')
+			group = OptionGroup(parser, "Configuration Management", '')
+			group.add_option('', '--list', dest='list', default=False, action='store_true', help='show module message')
 			group.add_option('-e', '', dest='edit', default=False, metavar='nano', action='store_true', help='default editor is vim')
 			group.add_option('', '--edit', dest='edit', default='vi', metavar='nano', choices=['vi','vim','nano'], type='choice', help='choose from vi, vim, nano')
 			parser.add_option_group(group)
 
-			group = OptionGroup(parser, "repositories", '')
+			group = OptionGroup(parser, "Repositories Management", '')
 			group.add_option('', '--init', dest='init', metavar='directory', help='init local repositories')
 			group.add_option('', '--clone', dest='clone', metavar='http://domain/project.git', help='clone git repositories')
 			group.add_option('', '--pull', dest='pull', default=False, action='store_true', help='pull config from remote repositories')
@@ -161,7 +164,10 @@ class OsConf():
 			parser.add_option_group(group)
 
 			(options, args) = parser.parse_args()
-			#if not options :
+			
+			if options.list :
+				self.list()
+				sys.exit(1)
 			#else:
 			#print(options)
 			if options.clone :
@@ -203,7 +209,6 @@ class OsConf():
 					self.edit(editor = 'vim', remote = args[0], filepath = args[1])
 				elif options.edit in ('vi', 'vim', 'nano') :
 					self.edit(editor = options.edit, remote = args[0], filepath = args[1])
-				print(options.edit)
 			#	if options.logfile :
 			#		self.save(options.port, options.logfile)
 			elif len(args) == 1:
