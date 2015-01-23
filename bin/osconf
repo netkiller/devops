@@ -41,16 +41,19 @@ class OsConf():
 		self.config.read(self.cfgfile)
 		self.conf = dict(self.config.items('main'))
 
-		#print(self.config)
-		logfile = self.conf['logfile']
-		self.logger = logging.getLogger()
-		self.logger.setLevel(logging.DEBUG)
-		handler = logging.handlers.TimedRotatingFileHandler(logfile, 'D', 1, 0)
-		handler.suffix = "%Y-%m-%d.log"
-		formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-		handler.setFormatter(formatter)
-		self.logger.addHandler(handler)
-
+		try:
+			logfile = os.path.expanduser(self.conf['logfile'])
+			self.logger = logging.getLogger()
+			self.logger.setLevel(logging.DEBUG)
+			handler = logging.handlers.TimedRotatingFileHandler(logfile, 'D', 1, 0)
+			handler.suffix = "%Y-%m-%d.log"
+			formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+			handler.setFormatter(formatter)
+			self.logger.addHandler(handler)
+			
+		except FileNotFoundError as err:
+			print("%s %s" %(err, ''))
+			sys.exit(1)
 	def list(self, remote = None):
 		try:
 			#for sect in self.config.sections():
@@ -81,19 +84,26 @@ class OsConf():
 		path = os.path.dirname(os.path.expanduser(destination))
 		if not os.path.exists(path) :
 			os.makedirs(path)
-		self.transfer(remote, source, destination)
+		
+		logfile = os.path.expanduser(self.conf['logdir']+'/'+remote+'.'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')+'.log')
+		backup = os.path.expanduser(self.conf['backup']+'/'+remote+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S'))
+		
+		rsync = Rsync()
+		rsync.option(self.option).logfile(logfile).backup(backup).source(source).destination(destination).execute()
+		self.logger.debug(rsync.debug());
+		
 		self.logger.info("get %s %s" % (source, destination))
 	def put(self, remote, filepath):
 		source 		= self.conf['repositories']+'/'+remote+''+filepath
 		destination	= remote+':'+filepath
-		self.transfer(remote, source, destination)
-		self.logger.info("get %s %s" % (source, destination))
-	def transfer(self, host, source, destination):
-		logfile = self.conf['logdir']+'/'+host+'.'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')+'.log'
-		backup = self.conf['backup']+'/'+host+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
+		
+		logfile = os.path.expanduser(self.conf['logdir']+'/'+remote+'.'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')+'.log')
+		backup = self.conf['backup']+'/'+remote+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
 		rsync = Rsync()
-		rsync.option('-azv').logfile(logfile).backup(backup).source(source).destination(destination).execute()
+		rsync.option(self.option).logfile(logfile).backup(backup).source(source).destination(destination).execute()
 		self.logger.debug(rsync.debug());
+		
+		self.logger.info("get %s %s" % (source, destination))	
 	def edit(self, editor, remote, filepath):
 		cmd = "%s %s" % (editor, self.conf['repositories']+'/'+remote+''+filepath)
 		os.system(cmd)
@@ -120,7 +130,7 @@ class OsConf():
 		git = Git(source, self.logger)
 		git.push().execute()
 	def add(self, file):
-		source = os.path.expanduser(self.conf['repositories'])
+		source = self.conf['repositories']
 		git = Git(source, self.logger)
 		git.add(file).execute()
 	def status(self):
@@ -132,7 +142,7 @@ class OsConf():
 		git = Git(source, self.logger)
 		git.log().execute()
 	def commit(self, msg):
-		source = os.path.expanduser(self.conf['repositories'])
+		source = self.conf['repositories']
 		git = Git(source, self.logger)
 		git.commit(msg, '-a').execute()
 	def usage(self):
@@ -144,7 +154,7 @@ class OsConf():
 			parser.add_option('-g', '--get', dest='get', default=False, action='store_true', help='get config from remote')
 			parser.add_option('-p', '--put', dest='put', default=False, action='store_true', help='put config to remote')
 			#parser.add_option('-l', '--logfile', dest='logfile', default='', metavar='/tmp/test.log', type='str', help='log file')
-			#parser.add_option('', '--all', dest='all', default=False, action='store_true', help='show module message')
+			parser.add_option('', '--verbose', dest='verbose', default=False, action='store_true', help='increase verbosity')
 
 			group = OptionGroup(parser, "Configuration Management", '')
 			group.add_option('', '--list', dest='list', default=False, action='store_true', help='show module message')
@@ -164,6 +174,12 @@ class OsConf():
 			parser.add_option_group(group)
 
 			(options, args) = parser.parse_args()
+			
+			self.verbose = options.verbose
+			if self.verbose :
+				self.option = '-azvP'
+			else:
+				self.option = '-az'
 			
 			if options.list :
 				self.list()

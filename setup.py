@@ -53,7 +53,7 @@ setup(
 		('etc', ['etc/task.cfg']),
 		('etc', ['etc/schedule.cfg']),
 		('etc', ['etc/os.ini']),
-		('log', ['log/deployment.log']),
+		#('log', ['log/deployment.log']),
 		('share', ['share/example/testing/example.com.ini']),
 		('share', ['share/profile.d/devops.sh'])
 		#('example/testing', ['example/testing/example.com.ini']),
