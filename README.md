@@ -26,3 +26,7 @@ Backup
 [Database backup](https://github.com/oscm/devops/blob/master/doc/database.md).	
 
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/oscm/devops/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
