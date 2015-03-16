@@ -1,1 +1,1 @@
-export PATH=$PATH/srv/devops/bin
+export PATH=$PATH:/srv/devops/bin
