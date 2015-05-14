@@ -134,18 +134,19 @@ class Deployment():
 			inifile = os.path.expanduser(self.project['cfgdir']+'/config/'+stage+'/'+domain+'.ini')
 			if os.path.exists(inifile):
 				sections = self.configure(inifile)
-
 				for filename in sections:
 					cfgfile = source+'/'+filename
 					self.logging.debug('build config file: '+cfgfile);
 					if os.path.isfile(cfgfile) and os.access(cfgfile, os.R_OK):
 						conf = self.configure(inifile, filename)
-						with open(cfgfile,'r') as f:
+						with open(cfgfile+'.in','r') as f:
 							lines = []
 							for line in f.readlines():
 								for key, val in conf.items():
-									self.logging.debug('replace config item: '+key+'=>'+val);
-									lines.append(line.replace('{{'+key+'}}', val))
+									if line.find('{{'+key+'}}') :
+										line = line.replace('{{'+key+'}}', val)
+										self.logging.debug('replace config item: '+key+'=>'+val);
+								lines.append(line)
 						with open(cfgfile, 'w') as f:
 							for line in lines:
 								f.write(line)
