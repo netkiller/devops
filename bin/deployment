@@ -240,10 +240,15 @@ class Deployment():
 
 			if('backup' in conf):
 				if conf['backup'] :
+					conf['backup'] = conf['backup'] +'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
 					rsync.backup(conf['backup'])
 			else:
-				conf['backup'] = self.project['backup']+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
+				backup_dir_prefix = ''
+				if conf['mode'] == 'ssh':
+					backup_dir_prefix = '~'
+				conf['backup'] = backup_dir_prefix + self.project['backup']+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
 				rsync.backup(conf['backup'])
+			
 
 			if('exclude' in conf):
 				exclude = os.path.expanduser(self.project['cfgdir'] + '/exclude/' + conf['exclude'])
