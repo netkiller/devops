@@ -18,8 +18,8 @@ Install
 	$ sudo cp share/profile.d/devops.sh /etc/profile.d/
 	
 	$ cat >> /etc/profile.d/devops.sh <<'EOF'
-export PATH=/srv/devops/bin:$PATH
-EOF
+	export PATH=/srv/devops/bin:$PATH
+	EOF
 	
 	
 Deployment
