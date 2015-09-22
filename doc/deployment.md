@@ -1,6 +1,62 @@
 Software Deployment Utility Programs
 ======
 
+Create a user for deploy
+-----
+
+	groupadd -g 80 www
+	adduser -o --home /www --uid 80 --gid 80 -c "Web Application" www
+
+Deploy public key
+-----
+	$ ssh-keygen 
+	Generating public/private rsa key pair.
+	Enter file in which to save the key (/www/.ssh/id_rsa): 
+	Created directory '/www/.ssh'.
+	Enter passphrase (empty for no passphrase): 
+	Enter same passphrase again: 
+	Your identification has been saved in /www/.ssh/id_rsa.
+	Your public key has been saved in /www/.ssh/id_rsa.pub.
+	The key fingerprint is:
+	dd:bb:51:f6:4e:f7:33:49:c6:7c:4c:5c:a7:fb:05:00 www@iZ62yln3rjjZ
+	The key's randomart image is:
+	+--[ RSA 2048]----+
+	|          E.     |
+	|            .   o|
+	|             . oo|
+	|         . .  o o|
+	|        S . . == |
+	|             +.*+|
+	|            o o.B|
+	|             o *+|
+	|            .   =|
+	+-----------------+
+
+	Copy key file to remote server.
+	
+	$ ssh-copy-id www@203.88.18.17
+	The authenticity of host '203.88.18.17 (203.88.18.17)' can't be established.
+	ECDSA key fingerprint is b8:58:b5:65:00:27:0b:a8:c6:d8:dc:71:58:f9:00:db.
+	Are you sure you want to continue connecting (yes/no)? yes
+	/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+	/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+	www@203.88.18.17's password: 
+
+	Number of key(s) added: 1
+
+	Now try logging into the machine, with:   "ssh 'www@203.88.18.17'"
+	and check to make sure that only the key(s) you wanted were added.
+	
+	Add Deploy key for Git (Github/Gitlab)
+	
+	$ cat ~/.ssh/id_rsa.pub 
+	ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDfMbpXWGmnM2lCnfypjL3TzkKetzpMq1ijt0b2rb/
+	RVV0Ajhndvz6no1OJ5FZRhXmTcuBKk0YQQCO65vySTGZzl2+Ui1pgBA++9ZCJZFv1A0DM65RXPjVNFb
+	DP9omx+huuxB+1spJF3IxsIQWJ53lnetKHlJ80UNeAo3VF8MgYrS8LJikc53aa40wKlhcuPjI0oUXpb
+	LTR6iXgOKgF5+aCxcIGWIr7+5i0pFBwCb9ObCmmK602kVnVkGoyziIxRwx37DhtTT4sx1orrQP+4RAQ
+	ya/ZXbfh3P+JGyA0rfMuQ8UV8zOHWqfwknDmpZlQ+ZJ9x8OChu+rhY1L46H www@exampe.com
+
+	
 Help
 ----
 	$ deployment backup production appmanager.example.com
@@ -52,6 +108,7 @@ Configure
 ---------
 	$ mkdir ~/{development,testing,production}
 	$ mkdir ~/{exclude,log}
+	$ mkdir ~/{stable,unstable,nightly}
 	
 	$ vim ~/testing/example.com.ini 
 	[www]
@@ -64,6 +121,15 @@ Configure
 	remote=www@192.168.2.15
 	destination=example.com/www.example.com
 
+	[inf]
+	repository=git@192.168.6.1:example.com/inf.example.com
+	delete=Y
+	mode=ssh
+	backup=~/backup
+	exclude=inf.example.com.lst
+	remote=www@220.82.21.3,www@220.82.21.13
+	destination=example.com/inf.example.com	
+	
 	[bbs]
 	repository=https://github.com/example.com/bbs.example.com.git
 	remote=www@192.168.2.15

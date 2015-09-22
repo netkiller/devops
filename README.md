@@ -5,6 +5,7 @@ OS Software Configure Managment
 
 Install
 -------
+	$ cd /usr/local/src/
 	$ git clone https://github.com/oscm/devops.git
 	$ cd devops
 	$ python3 setup.py sdist
@@ -15,6 +16,11 @@ Install
 	$ sudo python3 setup.py install --prefix=/srv/devops
 	
 	$ sudo cp share/profile.d/devops.sh /etc/profile.d/
+	
+	$ cat >> /etc/profile.d/devops.sh <<'EOF'
+export PATH=/srv/devops/bin:$PATH
+EOF
+	
 	
 Deployment
 ----------
