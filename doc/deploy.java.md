@@ -39,6 +39,24 @@ Create an exclude list
 
 	$ touch exclude/www.cf88.com.lst
 
+Create remove shell
+-----
+
+### Before shell.
+	
+	Before running 'libexec/www.example.com.before' during the deployment.
+
+	$ cat libexec/www.example.com.before 
+	/srv/apache-tomcat/bin/shutdown.sh
+	sleep 5
+	pkill -f apache-tomcat
+
+### After shell
+
+	After running 'libexec/www.example.com.after' during the deployment.
+
+	$ cat libexec/www.example.com.after 
+	/srv/apache-tomcat/bin/startup.sh
 
 Use locally available keys to authorise logins on a remote machine
 -----
