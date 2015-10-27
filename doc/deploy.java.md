@@ -45,6 +45,7 @@ Create remove shell
 ### Before shell.
 	
 	Before running 'libexec/www.example.com.before' during the deployment.
+	Such as build, package, shutdown tomcat...
 
 	$ cat libexec/www.example.com.before 
 	/srv/apache-tomcat/bin/shutdown.sh
@@ -61,7 +62,7 @@ Create remove shell
 Use locally available keys to authorise logins on a remote machine
 -----
 
-	$ ssh-copy-id www@223.25.242.72
+	$ ssh-copy-id www@223.25.22.72
 	/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
 	/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
 	www@223.25.22.72's password: 
