@@ -14,6 +14,10 @@ Deploy a java project
 	New UNIX password: 
 	Retype new UNIX password: 
 	passwd: all authentication tokens updated successfully.
+	
+	Create project directory.
+	# su - www
+	# mkdir /www/example.com
 
 
 Create a configuration file for the project.
