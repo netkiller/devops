@@ -256,11 +256,18 @@ class Deployment():
 					rsync.exclude(exclude)
 				else:
 					raise FileNotFoundError('Cannot open exclude file '+ exclude)
-			rsync.source(source+'/')
+			
+			if('dist' in conf):
+				rsync.source(source+ '/'+ conf['dist'] +'/')
+			else:
+				rsync.source(source+'/')
+			
+			
 
 			for rhost in conf['remote'].split(',') :
 				print(">>> deploy to host %s" % (rhost))
 				self.logging.debug('----- '+ rhost + ' -----');
+				
 				if conf['mode'] == 'ssh':
 						rsync.destination(rhost.strip()+':'+conf['destination'])
 				else:

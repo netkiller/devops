@@ -31,6 +31,7 @@ Create a configuration file for the project.
 	exclude=www.example.com.lst
 	remote=www@223.25.22.72
 	destination=example.com/www.example.com
+	dist=WebRoot
 	remote_before=Y
 	remote_after=Y
 
