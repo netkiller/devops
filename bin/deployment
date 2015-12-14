@@ -167,7 +167,7 @@ class Deployment():
 				source = conf['source']
 
 			source = os.path.expanduser(source)
-
+			
 			if self.options.backup:
 				if conf['mode'] == 'ssh':
 					source = conf['remote']+':'+conf['destination']
@@ -182,7 +182,7 @@ class Deployment():
 				self.logging.debug(backup.string());
 				self.logging.info('backup '+conf['remote']+'::'+conf['destination']+' -> '+self.options.backup);
 				return()
-			
+
 			if self.options.clean:
 				import shutil
 				shutil.rmtree(source)
@@ -198,13 +198,14 @@ class Deployment():
 					git.clean('-df').reset().pull().execute()
 					self.logging.info('pull '+ conf['repository']);
 			else:
+				#os.makedirs(source)
 				git.clone(conf['repository']).execute()
 				if 'branch' in conf:
 					git.checkout(conf['branch']).execute()
 					self.logging.info('checkout branch '+ conf['branch']);
 				else:
 					self.logging.info('clone '+ conf['repository']);
-				#git.debug()
+				git.debug()
 
 			self.buildconfig(stage, domain, source)
 			
@@ -248,6 +249,14 @@ class Deployment():
 					backup_dir_prefix = '~'
 				conf['backup'] = backup_dir_prefix + self.project['backup']+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
 				rsync.backup(conf['backup'])
+			
+			if('include' in conf):
+					include = os.path.expanduser(self.project['cfgdir'] + '/include/' + conf['include'])
+					if os.path.exists(include):
+							rsync.include(include)
+							#rsync.exclude(('"*"'))
+					else:
+							raise FileNotFoundError('Cannot open exclude file '+ include)
 			
 
 			if('exclude' in conf):
