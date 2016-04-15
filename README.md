@@ -41,6 +41,9 @@ Backup
 [Data backup tools](https://github.com/oscm/devops/blob/master/doc/backup.md).	
 [Database backup](https://github.com/oscm/devops/blob/master/doc/database.md).	
 
+OS Configuration file versioning
+-----
+[osconf](https://github.com/oscm/devops/blob/master/doc/osconf.md).	
 
 
 
