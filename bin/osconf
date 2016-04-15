@@ -153,11 +153,12 @@ class OsConf():
 			parser.add_option('-d','--daemon', dest='daemon', default=False, action='store_true', help='run as daemon')
 			#parser.add_option('-l', '--logfile', dest='logfile', default='', metavar='/tmp/test.log', type='str', help='log file')
 			parser.add_option('', '--verbose', dest='verbose', default=False, action='store_true', help='increase verbosity')
+			parser.add_option('-s', '--silent', dest='silent', default=False, action='store_true', help="Silent or quiet mode. Don't show progress meter or error messages.")
 
 			group = OptionGroup(parser, "Configuration Management", '')
 			group.add_option('-g', '--get', dest='get', default=False, action='store_true', help='get config from remote')
 			group.add_option('-p', '--put', dest='put', default=False, action='store_true', help='put config to remote')			
-			group.add_option('', '--list', dest='list', default=False, action='store_true', help='show module message')
+			group.add_option('-l', '--list', dest='list', default=False, action='store_true', help='show module message')
 			group.add_option('-e', '', dest='edit', default=False, metavar='nano', action='store_true', help='default editor is vim')
 			group.add_option('', '--edit', dest='edit', default='vi', metavar='nano', choices=['vi','vim','nano'], type='choice', help='choose from vi, vim, nano')
 			parser.add_option_group(group)
@@ -179,13 +180,18 @@ class OsConf():
 			if self.verbose :
 				self.option = '-azvP'
 			else:
-				self.option = '-az'
+				if options.silent :
+					self.option = '-az'
+				else:
+					self.option = '-azv'
 			
 			if options.list :
-				self.list()
+				if len(args) == 1 :
+					print(args[0]+":")
+					self.list(args[0])
+				else:
+					self.list()
 				sys.exit(1)
-			#else:
-			#print(options)
 			if options.clone :
 				self.clone(options.clone)
 				sys.exit(1)
