@@ -8,10 +8,10 @@ System Configuration Management
 	  --version             show program's version number and exit
 	  -h, --help            show this help message and exit
 	  -d, --daemon          run as daemon
-	  -g, --get             get config from remote
-	  -p, --put             put config to remote
 
 	  Configuration Management:
+		-g, --get             get config from remote
+		-p, --put             put config to remote	  
 		--list              show nodes message
 		-e                  default editor is vim
 		--edit=nano         choose from vi, vim, nano
@@ -30,32 +30,6 @@ System Configuration Management
 
 	  Homepage: http://netkiller.github.io	Author: Neo <netkiller@msn.com>
 
-Init repo
------
-	$ osconf --init=/path/to/system
-
-Clone repo
------
-	$ osconf --clone=/path/to/system
-	$ osconf --clone=https://github.com/oscm/shell.git
-	
-Get config from remote
------
-	# get directory
-	$ osconf -g root@192.168.6.10 /etc/nginx/
-	
-	# get a file
-	$ osconf -g root@192.168.6.10 /etc/passwd
-	
-Put config to remote
------
-	$ osconf -p root@192.168.6.10 /etc/nginx/nginx.conf
-
-Edit config
------
-	$ osconf -e root@192.168.6.10 /etc/nginx/nginx/conf.d/default.conf
-
-	
 Configure
 -----
 
@@ -72,8 +46,57 @@ Configure
 	file.iptable=/etc/sysconfig/iptables
 	[news.example.com]
 	host=www@news.example.com
+
+Configuration Management
+-----
 	
+### Init repo
+
+	$ osconf --init=/path/to/system
+
+### Clone repo
+
+	$ osconf --clone=/path/to/system
+	$ osconf --clone=https://github.com/oscm/shell.git
+	$ osconf --clone=git@git.netkiller.cn:example.com/os.example.com.git
 	
+### Get config from remote
+	# get directory
+	$ osconf -g root@192.168.6.10 /etc/nginx/
+	
+	# get a file
+	$ osconf -g root@192.168.6.10 /etc/passwd
+	
+### Put config to remote
+
+	$ osconf -p root@192.168.6.10 /etc/nginx/nginx.conf
+
+### Edit config
+
+	$ osconf -e root@192.168.6.10 /etc/nginx/nginx/conf.d/default.conf
+
+Repositories Management	
+-----
+
+### Add
+	$ osconf --add=*
+
+### Commmit 
+	# osconf --commit=www.exampe.com
+	
+### Push
+	# osconf --push
+
+### Show log
+	# osconf --log
+	commit 60b45947f65195d3e8c9b99f53b24792ef361e21
+	Author: netkiller <netkiller@msn.com>
+	Date:   Fri Apr 15 11:40:55 2016 +0800
+
+		www.exmaple.com
+	-
+
+
 Example
 -----
 
