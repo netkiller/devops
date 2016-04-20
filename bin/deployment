@@ -37,6 +37,7 @@ class Deployment():
 		group.add_option("-r", "--revert", dest="revert", default=False,help="revert to revision")
 		group.add_option('','--clean', action="store_true", help='')
 		group.add_option("-s", "--silent", action="store_true", help="Silent mode. Don't output anything")
+		group.add_option("-t", "--trial", action="store_true", default=False, help="perform a trial run with no changes made")
 		group.add_option('','--backup', dest="backup", help='backup remote to local', default=None)
 		self.parser.add_option_group(group)
 
@@ -52,8 +53,8 @@ class Deployment():
 		self.parser.add_option_group(group)
 
 		group = OptionGroup(self.parser, "merge", "merge {development | testing | production}")
-		group.add_option('-t','--to', dest='to', metavar='master', help='such as master')
-		group.add_option('-f','--from', dest='froms', metavar='your', help='from branch')
+		group.add_option('','--to', dest='to', metavar='master', help='such as master')
+		group.add_option('','--from', dest='froms', metavar='your', help='from branch')
 		self.parser.add_option_group(group)
 
 		#group = OptionGroup(self.parser, "build", "build {development | testing | production}")
@@ -198,7 +199,7 @@ class Deployment():
 					git.clean('-df').reset().pull().execute()
 					self.logging.info('pull '+ conf['repository']);
 			else:
-				#os.makedirs(source)
+				os.makedirs(source)
 				git.clone(conf['repository']).execute()
 				if 'branch' in conf:
 					git.checkout(conf['branch']).execute()
@@ -217,10 +218,16 @@ class Deployment():
 			if not 'mode' in conf:
 				conf['mode'] = None
 			
-			if('option' in conf):
-				rsync.option('-azv --exclude=.git --exclude=.svn --exclude=.gitignore ' + conf['option'])
+			option = '--exclude=.git --exclude=.svn --exclude=.gitignore'
+			if self.options.trial:
+				option = '-azvn ' + option + ' '
 			else:
-				rsync.option('-azv --exclude=.git --exclude=.svn --exclude=.gitignore ')
+				option = '-azv ' + option + ' '
+
+			if('option' in conf):
+				rsync.option(option + conf['option'])
+			else:
+				rsync.option(option)
 
 			if('delete' in conf):
 				if conf['delete'].lower() in ("yes", "true", "y", "enable") :
@@ -249,15 +256,15 @@ class Deployment():
 					backup_dir_prefix = '~'
 				conf['backup'] = backup_dir_prefix + self.project['backup']+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
 				rsync.backup(conf['backup'])
-			
+
 			if('include' in conf):
-					include = os.path.expanduser(self.project['cfgdir'] + '/include/' + conf['include'])
-					if os.path.exists(include):
-							rsync.include(include)
-							#rsync.exclude(('"*"'))
-					else:
-							raise FileNotFoundError('Cannot open exclude file '+ include)
-			
+				include = os.path.expanduser(self.project['cfgdir'] + '/include/' + conf['include'])
+				if os.path.exists(include):
+					rsync.include(include)
+					#rsync.exclude(('"*"'))
+				else:
+					raise FileNotFoundError('Cannot open exclude file '+ include)
+
 
 			if('exclude' in conf):
 				exclude = os.path.expanduser(self.project['cfgdir'] + '/exclude/' + conf['exclude'])
