@@ -140,7 +140,7 @@ class Deployment():
 					self.logging.debug('build config file: '+cfgfile);
 					if os.path.isfile(cfgfile) and os.access(cfgfile, os.R_OK):
 						conf = self.configure(inifile, filename)
-						with open(cfgfile+'.in','r') as f:
+						with open(cfgfile+'.in','r', encoding='utf-8', errors='ignore') as f:
 							lines = []
 							for line in f.readlines():
 								for key, val in conf.items():
