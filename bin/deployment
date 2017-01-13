@@ -132,7 +132,7 @@ class Deployment():
 
 	def buildconfig(self, stage, domain, source):
 		try:
-			inifile = os.path.expanduser(self.project['cfgdir']+'/config/'+stage+'/'+domain+'.ini')
+			inifile = os.path.expanduser(self.project['cfgdir']+'/'+stage+'/config/'+domain+'.ini')
 			if os.path.exists(inifile):
 				sections = self.configure(inifile)
 				for filename in sections:
@@ -211,7 +211,10 @@ class Deployment():
 			self.buildconfig(stage, domain, source)
 			
 			if ('build' in conf):
-				os.system(os.path.expanduser(self.project['cfgdir']+'/build/'+domain+'.sh'))
+				build = os.path.expanduser(self.project['cfgdir']+'/'+stage+'/build/'+domain+'.sh')
+				screen = os.system(build)
+				self.logging.debug(build)
+				self.logging.debug(screen)
 
 			rsync = Rsync()
 
@@ -289,13 +292,17 @@ class Deployment():
 				else:
 					rsync.destination(rhost.strip()+'::'+conf['destination'])
 				
-				if conf['mode'] == 'ssh':
-					if('remote_before' in conf) and os.path.exists(os.path.expanduser(self.project['cfgdir'] +'/libexec/'+domain+'.before')):
-						cmd = 'ssh -T '+rhost.strip()+' < '+self.project['cfgdir'] +'/libexec/'+domain+'.before'
-						os.system(cmd)
+				if conf['mode'] == 'ssh' and ('remote_before' in conf) :
+					before = os.path.expanduser(self.project['cfgdir'] +'/libexec/'+domain+'.before')
+					if os.path.exists(before) :
+						cmd = 'ssh -T '+rhost.strip()+' < '+ before
+						screen = os.system(cmd)
 						self.logging.debug('BEFORE ' + cmd);
+						self.logging.debug(screen)
+					else:
+						self.logging.error("The file isn't exist: "+before)
 				
-				overwrite = self.project['cfgdir']+'/config/'+stage+'/'+domain
+				overwrite = self.project['cfgdir']+'/'+stage+'/resources/'+domain
 				if os.path.exists(os.path.expanduser(overwrite)):
 					cmd = 'cp -a ' + overwrite+'/* '+source
 					os.system(cmd)
@@ -304,11 +311,15 @@ class Deployment():
 				rsync.execute()
 				self.logging.debug(rsync.debug());
 				
-				if conf['mode'] == 'ssh':
-					if('remote_after' in conf) and os.path.exists(os.path.expanduser(self.project['cfgdir'] + '/libexec/'+domain+'.after')):
-						cmd = 'ssh -T '+rhost.strip()+' < '+self.project['cfgdir'] + '/libexec/'+domain+'.after'
-						os.system(cmd)
-						self.logging.debug('AFTER ' + cmd);
+				if conf['mode'] == 'ssh' and ('remote_after' in conf):
+					after = os.path.expanduser(self.project['cfgdir'] + '/'+stage+'/libexec/'+domain+'.after')
+					if os.path.exists(after):
+						cmd = 'ssh -T '+rhost.strip()+' < '+ after
+						screen = os.system(cmd)
+						self.logging.debug('AFTER ' + cmd)
+						self.logging.debug(screen)
+					else:
+						self.logging.error("The file isn't exist: "+after)
 
 		except NameError as err:
 			print(err)
