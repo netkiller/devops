@@ -46,6 +46,13 @@ OS Configuration file versioning
 [osconf](https://github.com/oscm/devops/blob/master/doc/osconf.md).	
 
 
+# Donations
 
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/oscm/devops/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+We accept PayPal through:
+
+https://www.paypal.me/netkiller
+
+Wechat (微信) / Alipay (支付宝) 打赏:
+
+http://www.netkiller.cn/home/donations.html
 
