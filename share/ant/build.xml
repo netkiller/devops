@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Homepage: http://www.netkiller.cn
+Author: neo <netkiller@msn.com>
+Date: 2017-05-16
+-->
+<project name="www.netkiller.cn" default="" basedir=".">
+	<target name="deploy" depends="">
+		<exec executable="deployment" dir="/www">
+		<!--
+		     		<exec executable="ls" dir="/www" />
+				<arg value="production" />
+				<arg value="testing" />
+		-->
+				<arg value="development" />
+				<arg value="www.netkiller.cn" />
+			</exec>
+	</target>
+</project>
