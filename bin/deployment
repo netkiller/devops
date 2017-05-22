@@ -281,7 +281,13 @@ class Deployment():
 			else:
 				rsync.source(source+'/')
 			
-			
+			if('minifier' in conf):
+				if(conf['minifier'] == all):
+					cmd = 'find '+source+' -type f -regex ".*\.\(css\|js\)" -exec yuicompressor {} -o {} \;';
+				else:
+					cmd = 'find '+source+' -type f -name "*.'+conf['minifier']+'" -exec yuicompressor --type '+conf['minifier']+' {} -o {} \;'
+				screen = os.system(cmd)
+				self.logging.debug(screen)
 
 			for rhost in conf['remote'].split(',') :
 				print(">>> deploy to host %s" % (rhost))
