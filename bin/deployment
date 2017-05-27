@@ -288,7 +288,18 @@ class Deployment():
 					cmd = 'find '+source+' -type f -name "*.'+conf['minifier']+'" -exec yuicompressor --type '+conf['minifier']+' {} -o {} \;'
 				screen = os.system(cmd)
 				self.logging.debug(screen)
-
+			if('gulp' in conf):
+				gulpfile = ""
+				if conf['gulpfile'] :
+					gulpfile = '--gulpfile {}'.format(conf['gulpfile']);
+				if(conf['gulp'] == 'all'):
+						cmd = 'gulp {} --stage {} --src {}'.format(gulpfile, stage, source) 
+				else:
+						cmd = 'gulp {} {} --stage {} --src {}'.format(gulpfile, conf['gulp'], stage, source)
+				print( cmd )
+				print( os.system('pwd'));
+				screen = os.system(cmd)
+				self.logging.debug(screen)
 			for rhost in conf['remote'].split(',') :
 				print(">>> deploy to host %s" % (rhost))
 				self.logging.debug('----- '+ rhost + ' -----');

@@ -154,21 +154,34 @@ Configure
 	minifier=all|css|js
 	
 	[m]
-	repository=git@localhost:cf88.com/m.cf88.com.git
+	repository=git@localhost:netkiller.cn/m.netkiller.cn.git
 	branch=development
 	delete=Y
 	mode=ssh
 	backup=~/backup
-	remote=www@www.chuangfu24.net
-	destination=cf88.com/m.cf88.com
-	include=m.cf88.com.lst
-	exclude=m.cf88.com.lst
+	remote=www@www.netkiller.cn
+	destination=netkiller.cn/m.netkiller.cn
+	include=m.netkiller.cn.lst
+	exclude=m.netkiller.cn.lst
 	minifier=css
 	
 	* You need to install yuicompressor. FYI:
 	curl -s https://raw.githubusercontent.com/oscm/shell/master/lang/java/devel/YUICompressor.sh | bash
 
-
+### gulp
+	
+	[m]
+	repository=git@localhost:netkiller.cn/m.netkiller.cn.git
+	branch=development
+	delete=Y
+	mode=ssh
+	backup=~/backup
+	remote=www@www.netkiller.cn
+	destination=netkiller.cn/m.netkiller.cn
+	include=m.netkiller.cn.lst
+	exclude=m.netkiller.cn.lst
+	gulp=all
+	
 Parameter replaces
 -----
 	create config file under the stage folder.
