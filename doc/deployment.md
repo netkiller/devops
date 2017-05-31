@@ -149,9 +149,9 @@ Configure
 	remote=administrator@158.99.11.168
 	destination=/cygdrive/d/windows.example.com
 
-### minifier
+### yuicompressor
 
-	minifier=all|css|js
+	yuicompressor=all|css|js
 	
 	[m]
 	repository=git@localhost:netkiller.cn/m.netkiller.cn.git
@@ -163,7 +163,7 @@ Configure
 	destination=netkiller.cn/m.netkiller.cn
 	include=m.netkiller.cn.lst
 	exclude=m.netkiller.cn.lst
-	minifier=css
+	yuicompressor=css
 	
 	* You need to install yuicompressor. FYI:
 	curl -s https://raw.githubusercontent.com/oscm/shell/master/lang/java/devel/YUICompressor.sh | bash
@@ -181,6 +181,10 @@ Configure
 	include=m.netkiller.cn.lst
 	exclude=m.netkiller.cn.lst
 	gulp=all
+	gulp.path=/www/gulp
+	gulp.gulpfile=gulpfile.js
+	
+	* cd <gulp.path> && gulp <gulp.gulpfile> 
 	
 Parameter replaces
 -----
