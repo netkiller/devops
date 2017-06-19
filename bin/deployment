@@ -183,7 +183,12 @@ class Deployment():
 				cmd = 'find '+source+' -type f -name "*.'+conf['yuicompressor']+'" -exec yuicompressor --type '+conf['yuicompressor']+' {} -o {} \;'
 			screen = os.system(cmd)
 			self.logging.debug(screen)
-			
+	def maven(self, conf, source):
+		if ('maven' in conf):
+			cmd = 'mvn {}'.format(conf['maven'])
+			screen = os.system(cmd)
+			self.logging.debug(screen)
+			conf['dist']='target/*.?ar'
 	def deploy(self, stage, domain):
 		self.logging.info('deployment '+ self.stage+' '+self.domain)
 		try:
@@ -245,9 +250,9 @@ class Deployment():
 				self.logging.debug(build)
 				self.logging.debug(screen)
 
-
 			self.yuicompressor(conf,source)
 			self.gulp(conf,source)
+			self.maven(conf,source)
 			
 			rsync = Rsync()
 
@@ -284,13 +289,13 @@ class Deployment():
 
 			if('backup' in conf):
 				if conf['backup'] :
-					conf['backup'] = conf['backup'] +'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
+					conf['backup'] = conf['backup'] +'/'+stage+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
 					rsync.backup(conf['backup'])
 			else:
 				backup_dir_prefix = ''
 				if conf['mode'] == 'ssh':
 					backup_dir_prefix = '~'
-				conf['backup'] = backup_dir_prefix + self.project['backup']+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
+				conf['backup'] = backup_dir_prefix + self.project['backup']+'/'+stage+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
 				rsync.backup(conf['backup'])
 
 			if('include' in conf):
@@ -309,7 +314,7 @@ class Deployment():
 					raise FileNotFoundError('Cannot open exclude file '+ exclude)
 			
 			if('dist' in conf):
-				rsync.source(source+ '/'+ conf['dist'] +'/')
+				rsync.source(source+ '/'+ conf['dist'])
 			else:
 				rsync.source(source+'/')
 
