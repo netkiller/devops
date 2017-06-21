@@ -1,4 +1,4 @@
-Deploy a java project
+Deploy a Node.js project
 =====
   
 	First of all, create a user for runtime environment.
