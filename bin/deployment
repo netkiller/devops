@@ -3,13 +3,11 @@
 ##############################################
 # Home	: http://netkiller.github.io
 # Author: Neo <netkiller@msn.com>
-# Upgrade: 2017-05-31
+# Upgrade: 2017-06-23
 ##############################################
-import os,io,sys
+import os, io, sys, threading, time, getpass
 import logging, logging.handlers, configparser
-import threading
 from optparse import OptionParser, OptionGroup
-import time
 from datetime import datetime
 
 basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,50 +25,17 @@ CONFIG_DIR= basedir + '/etc'
 ##############################################
 class Deployment():
 	debug = False
-	stage = ('development','testing','production','stable','unstable','alpha','beta')
-	def __init__(self):
+	def __init__(self,stage,domain):
+		self.stage = stage
+		self.domain = domain
 		self.config = {}
 
-		usage = "usage: %prog [options] {branch|stage} project"
-		self.parser = OptionParser(usage, version="%prog 1.0.2", description='Software Configuration Management')
-
-		group = OptionGroup(self.parser, "stage", "{development | testing | production | stable | unstable | alpha | beta} <host>.<domain>")
-		group.add_option("-r", "--revert", dest="revert", default=False,help="revert to revision")
-		group.add_option('','--clean', action="store_true", help='')
-		group.add_option("-s", "--silent", action="store_true", help="Silent mode. Don't output anything")
-		group.add_option("-t", "--trial", action="store_true", default=False, help="perform a trial run with no changes made")
-		group.add_option('','--backup', dest="backup", help='backup remote to local', default=None)
-		group.add_option('', '--debug', action="store_true", default=False, help="debug mode")
-		self.parser.add_option_group(group)
-
-		#group = OptionGroup(self.parser, 'backup', 'backup <host>.<domain>')
-		#self.parser.add_option_group(group)
-
-		group = OptionGroup(self.parser, "branch", "branch management")
-		group.add_option("-c", "--checkout", dest="checkout", metavar="master|trunk", default='', help="checkout branch")
-		group.add_option('-n', "--new", dest="new", metavar="branch", default=None, help="Create new branch")
-		group.add_option("-d", "--delete", dest="delete", metavar="branch", help="delete branch")
-		group.add_option('','--release', dest="release", help='release version exampe:'+ time.strftime('%Y-%m-%d',time.localtime(time.time())) , default=None)
-		self.parser.add_option_group(group)
-
-		group = OptionGroup(self.parser, "merge", "merge {development | testing | production}")
-		group.add_option('','--to', dest='to', metavar='master', help='such as master')
-		group.add_option('','--from', dest='froms', metavar='your', help='from branch')
-		self.parser.add_option_group(group)
-
-		#group = OptionGroup(self.parser, "build", "build {development | testing | production}")
-		#group.add_option('','--build', action="store_true", help='build', default=False)
-		#group.add_option('','--package', action="store_true", help='package', default=False)
-		#group.add_option('','--install', help='install', default='make')		
-		#self.parser.add_option_group(group)
-
-		group = OptionGroup(self.parser, "unittest", "unittest {development | testing | production}")
-		#group.add_option('','--testsuite', help='logs file.', default='backup.log')
-		#group.add_option('','--testcase', help='logs file.', default='backup.log')
-		self.parser.add_option_group(group)
-
-		self.config	= self.configure(CONFIG_DIR+'/deployment.cfg','scm')
+		self.config		= self.configure(CONFIG_DIR+'/deployment.cfg','scm')
 		self.project	= self.configure(CONFIG_DIR+'/deployment.cfg','project')
+		
+		if self.config['administrator'] != getpass.getuser():
+			raise Exception("Current user "+os.getlogin()+" : Permission denied")
+			sys.exit(127)
 		
 		filepath = os.path.expanduser(self.config['logdir'])
 		if not os.path.exists(filepath):
@@ -90,17 +55,29 @@ class Deployment():
 				for sect in config.sections():
 					conf[sect] = dict(config.items(sect))
 
-				#for (key,value) in cpr.items(sect):
-				#	 self.config[key] = value
-			#print('Cannot read file: '+inifile)
 		except configparser.NoSectionError as err:
 			print("Error: %s %s" %(err, inifile))
 			sys.exit(1)
 		except Exception as err:
-			print("Error: %s %s" %(err, inifile))
+			print("Error: Cannot read ini file %s %s" %(err, inifile))
 			sys.exit(1)
+		if(self.debug):
+			print('read ini file: '+inifile)
+			print("%s %s" % (self.__class__.__name__, self.configure.__name__))
+			print(conf)
 		return(conf)
+	def conf(self):
+		conf = {}
+		inifile = None
 
+		self.logging.info('reload config '+ self.stage+' '+self.domain)
+		host 		= self.domain[:self.domain.find('.')]
+		inifile 	= os.path.expanduser(self.project['cfgdir']+'/'+self.stage+'/'+self.domain[self.domain.find('.')+1:]+'.ini')
+		conf 		= self.configure(inifile, host)
+		
+		if ('source' not in conf):
+			conf['source'] = self.project['source'] +'/'+ self.stage +'/'+ self.domain
+		return(conf)
 	def logfile(self,file):
 		logger = None
 		try:
@@ -131,9 +108,9 @@ class Deployment():
 			sys.exit(2)
 		return(logger)
 
-	def buildconfig(self, stage, domain, source):
+	def buildconfig(self, source):
 		try:
-			inifile = os.path.expanduser(self.project['cfgdir']+'/'+stage+'/config/'+domain+'.ini')
+			inifile = os.path.expanduser(self.project['cfgdir']+'/'+self.stage+'/config/'+self.domain+'.ini')
 			if os.path.exists(inifile):
 				sections = self.configure(inifile)
 				for filename in sections:
@@ -176,7 +153,7 @@ class Deployment():
 				self.logging.debug(screen)
 
 	def yuicompressor(self,conf, source):
-		if('minifier' in conf):
+		if('yuicompressor' in conf):
 			if(conf['yuicompressor'] == all):
 				cmd = 'find '+source+' -type f -regex ".*\.\(css\|js\)" -exec yuicompressor {} -o {} \;';
 			else:
@@ -189,44 +166,45 @@ class Deployment():
 			screen = os.system(cmd)
 			self.logging.debug(screen)
 			conf['dist']='target/*.?ar'
-	def deploy(self, stage, domain):
-		self.logging.info('deployment '+ self.stage+' '+self.domain)
+	def backup(self, options):
+		conf = self.conf()
+
+		if conf['mode'] == 'ssh':
+			source = conf['remote']+':'+conf['destination']
+		else:
+			source = conf['remote']+'::'+conf['destination']
+	
+		backup = Rsync()
+		backup.option('-auzv')
+		backup.source(source)
+		backup.destination(options.backup)
+		backup.execute()
+		if(self.debug):
+			self.logging.debug(backup.string());
+		self.logging.info('backup '+conf['remote']+'::'+conf['destination']+' -> '+options.backup);
+	def build(self):
+		build = os.path.expanduser(self.project['cfgdir']+'/'+self.stage+'/build/'+self.domain+'.sh')
+		screen = os.system(build)
+		if debug :
+			self.logging.debug(build)
+		self.logging.debug(screen)	
+	def deploy(self, options):
 		try:
-			inifile = os.path.expanduser(self.project['cfgdir']+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini')
-			host = domain[:domain.find('.')]
-			conf = self.configure(inifile, host)
+			conf = self.conf()
 
-			if ('source' not in conf):
-				source = self.project['source'] +'/'+ stage +'/'+ domain
-			else:
-				source = conf['source']
+			source = os.path.expanduser(conf['source'])
 
-			source = os.path.expanduser(source)
-			
-			if self.options.backup:
-				if conf['mode'] == 'ssh':
-					source = conf['remote']+':'+conf['destination']
-				else:
-					source = conf['remote']+'::'+conf['destination']
-			
-				backup = Rsync()
-				backup.option('-auzv')
-				backup.source(source)
-				backup.destination(self.options.backup)
-				backup.execute()
-				self.logging.debug(backup.string());
-				self.logging.info('backup '+conf['remote']+'::'+conf['destination']+' -> '+self.options.backup);
-				return()
-
-			if self.options.clean:
+			if options.clean:
 				import shutil
 				shutil.rmtree(source)
 				self.logging.warning('clean '+ source);
+			if options.backup:
+				self.backup(options)
 
 			git = Git(source, self.logging)
 			if os.path.isdir(source):
-				if self.options.revert :
-					revision = self.options.revert
+				if options.revert :
+					revision = options.revert
 					git.checkout(revision).branch().execute()
 					self.logging.info('revision '+ revision);
 				else:
@@ -240,12 +218,20 @@ class Deployment():
 					self.logging.info('checkout branch '+ conf['branch']);
 				else:
 					self.logging.info('clone '+ conf['repository']);
+
+			if(self.debug):
 				git.debug()
 
-			self.buildconfig(stage, domain, source)
+			if ('merge' in conf):
+				self.merge(conf['branch'], conf['merge'])
 			
 			if ('build' in conf):
-				build = os.path.expanduser(self.project['cfgdir']+'/'+stage+'/build/'+domain+'.sh')
+				self.build()
+				
+			self.buildconfig(source)
+			
+			if ('build' in conf):
+				build = os.path.expanduser(self.project['cfgdir']+'/'+self.stage+'/build/'+self.domain+'.sh')
 				screen = os.system(build)
 				self.logging.debug(build)
 				self.logging.debug(screen)
@@ -260,7 +246,7 @@ class Deployment():
 				conf['mode'] = None
 			
 			option = '--exclude=.git --exclude=.svn --exclude=.gitignore'
-			if self.options.trial:
+			if options.trial:
 				option = '-azvn ' + option + ' '
 			else:
 				option = '-azv ' + option + ' '
@@ -278,10 +264,10 @@ class Deployment():
 				if conf['logfile'] :
 					rsync.logfile(conf['logfile'])
 			else:
-				logdir = os.path.expanduser(self.project['logdir']+'/'+stage)
+				logdir = os.path.expanduser(self.project['logdir']+'/'+self.stage)
 				if not os.path.exists(logdir):
 					os.makedirs(logdir)
-				conf['logfile'] = logdir+'/'+domain+'.'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')+'.log'
+				conf['logfile'] = logdir+'/'+self.domain+'.'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')+'.log'
 				rsync.logfile(conf['logfile'])
 
 			if('password' in conf):
@@ -289,13 +275,13 @@ class Deployment():
 
 			if('backup' in conf):
 				if conf['backup'] :
-					conf['backup'] = conf['backup'] +'/'+stage+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
+					conf['backup'] = conf['backup'] +'/'+self.stage+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
 					rsync.backup(conf['backup'])
 			else:
 				backup_dir_prefix = ''
 				if conf['mode'] == 'ssh':
 					backup_dir_prefix = '~'
-				conf['backup'] = backup_dir_prefix + self.project['backup']+'/'+stage+'/'+domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
+				conf['backup'] = backup_dir_prefix + self.project['backup']+'/'+self.stage+'/'+self.domain+'/'+datetime.today().strftime('%Y-%m-%d.%H:%M:%S')
 				rsync.backup(conf['backup'])
 
 			if('include' in conf):
@@ -328,7 +314,7 @@ class Deployment():
 					rsync.destination(rhost.strip()+'::'+conf['destination'])
 				
 				if conf['mode'] == 'ssh' and ('remote_before' in conf) :
-					before = os.path.expanduser(self.project['cfgdir'] +'/libexec/'+domain+'.before')
+					before = os.path.expanduser(self.project['cfgdir'] +'/libexec/'+self.domain+'.before')
 					if os.path.exists(before) :
 						cmd = 'ssh -T '+rhost.strip()+' < '+ before
 						screen = os.system(cmd)
@@ -337,17 +323,19 @@ class Deployment():
 					else:
 						self.logging.error("The file isn't exist: "+before)
 				
-				overwrite = self.project['cfgdir']+'/'+stage+'/resources/'+domain
+				overwrite = self.project['cfgdir']+'/'+self.stage+'/resources/'+self.domain
 				if os.path.exists(os.path.expanduser(overwrite)):
 					cmd = 'cp -a ' + overwrite+'/* '+source
 					os.system(cmd)
 					self.logging.debug('Overwrite config ' + cmd);
 				
 				rsync.execute()
-				self.logging.debug(rsync.debug());
+				
+				if(self.debug):
+					self.logging.debug(rsync.debug());
 				
 				if conf['mode'] == 'ssh' and ('remote_after' in conf):
-					after = os.path.expanduser(self.project['cfgdir'] + '/'+stage+'/libexec/'+domain+'.after')
+					after = os.path.expanduser(self.project['cfgdir'] + '/'+self.stage+'/libexec/'+self.domain+'.after')
 					if os.path.exists(after):
 						cmd = 'ssh -T '+rhost.strip()+' < '+ after
 						screen = os.system(cmd)
@@ -365,38 +353,28 @@ class Deployment():
 		except AttributeError as err:
 			print(err)
 		#	self.logging.error(err)	
-	def branch(self,args):
-		stage = args[1]
-		domain =args[2]
+	def branch(self, options):
 		try:
-			inifile = os.path.expanduser(self.project['cfgdir']+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini')
-			host = domain[:domain.find('.')]
-			conf = self.configure(inifile, host)
-
-			if ('source' not in conf):
-				source = self.project['source'] +'/'+ stage +'/'+ domain
-			else:
-				source = conf['source']
-
-			source = os.path.expanduser(source)
+			conf = self.conf()
+			source = os.path.expanduser(conf['source'])
 			#if os.path.isdir(source):
 
 			git = Git(source, self.logging)
-			if self.options.checkout:
+			if options.checkout:
 				git.pull()
-				git.branch(self.options.checkout)
-				self.logging.info('checkout branch '+ stage+' '+domain+' -> '+self.options.checkout)
-			elif self.options.delete:
-				git.branch(self.options.delete, 'delete')
-				self.logging.info('delete branch '+ stage+' '+domain+' -> '+self.options.delete)
-			elif self.options.new:
-				git.branch(self.options.new, 'new')
-				self.logging.info('create branch '+ stage+' '+domain+' -> '+self.options.new)
-			elif self.options.release:
-				git.tag(self.options.release)
+				git.branch(options.checkout)
+				self.logging.info('checkout branch '+ self.stage+' '+self.domain+' -> '+options.checkout)
+			elif options.delete:
+				git.branch(options.delete, 'delete')
+				self.logging.info('delete branch '+ self.stage+' '+self.domain+' -> '+options.delete)
+			elif options.new:
+				git.branch(options.new, 'new')
+				self.logging.info('create branch '+ self.stage+' '+self.domain+' -> '+options.new)
+			elif options.release:
+				git.tag(options.release)
 			else:
 				git.branch()
-				self.logging.info('branch '+ stage+' '+domain)
+				self.logging.info('branch '+ self.stage+' '+self.domain)
 			#self.logging.debug(git.debug());
 			git.execute()
 
@@ -406,62 +384,29 @@ class Deployment():
 		except FileNotFoundError as err:
 			self.logging.error(err)
 			print(err)
-	def merge(self,args, t=None, f=None):
+
+	def merge(self, t=None, f=None):
 		try:
-			stage = args[1]
-			domain =args[2]
+			conf = self.conf()				
+			git = Git(conf['source'], self.logging)
 
-			host = domain[:domain.find('.')]
-			conf = self.configure(os.path.expanduser(self.project['cfgdir']+'/'+stage+'/'+domain[domain.find('.')+1:]+'.ini') , host)
+			if os.path.exists(conf['source']):
+				git.clean('-df').reset().pull().execute()
 
-			workspace = os.path.expanduser('~/.workspace')
-
-			project = workspace +'/'+ domain
-			git = Git(project, self.logging)
-
-			if not os.path.exists(workspace):
-				os.makedirs(workspace)
-
-			if not os.path.exists(project):
-				git.clone(conf['repository']).execute()
-			else:
-				git.reset().pull().execute()
-
-			if t and f :
-				git.checkout(f).execute()
-				git.pull().execute()
+			if t :
 				git.checkout(t).execute()
 				git.pull().execute()
+			else:
+				git.checkout(self.stage).execute()
+				git.pull().execute()
+				
+			if f :
+				git.checkout(f).execute()
+				git.pull().execute()
+
 				git.merge(f).execute()
 				git.push().execute()
 				self.logging.info('merge branch to '+ t +' from '+f)
-			#else:
-				#
-				#if stage == 'testing' :
-				#	git.checkout('development').execute()
-				#	git.pull().execute()
-                #
-				#	git.checkout('testing').execute()
-				#	git.pull().execute()
-                #
-				#	git.merge('development').execute()
-				#	self.logging.info('merge branch to testing from development')
-				#if stage == 'production' :
-				#	git.checkout('testing').execute()
-				#	git.pull().execute()
-				#	git.checkout('production').execute()
-				#	git.pull().execute()
-				#	git.merge('testing').execute()
-				#	self.logging.info('merge branch to production from testing')
-				#if stage == 'development' :
-				#	git.checkout(f).execute()
-				#	git.pull().execute()
-				#	git.checkout('development').execute()
-				#	git.pull().execute()
-				#	git.merge(f).execute()
-				#	self.logging.info('merge branch to development from ' + f)
-		except configparser.NoSectionError as err:
-			print("Error: %s %s" %(err, ''))
 		except Exception as err:
 			print("Error: %s %s" %(err, ''))
 			sys.exit(1)
@@ -480,48 +425,110 @@ class Deployment():
 		except FileNotFoundError as err:
 			self.logging.error(err)
 			print(err)
+
+class Command():
+	debug = False
+	stage = ('development','testing','production','stable','unstable','alpha','beta')
+	def __init__(self):
+		usage = "usage: %prog [options] {branch|stage} project"
+		self.parser = OptionParser(usage, version="%prog 1.0.2", description='Software Configuration Management')
+
+		group = OptionGroup(self.parser, "stage", "{"+''.join(self.stage)+"} <host>.<domain>")
+		group.add_option("-r", "--revert", dest="revert", default=False,help="revert to revision")
+		group.add_option('','--clean', action="store_true", help='')
+		group.add_option("-s", "--silent", action="store_true", help="Silent mode. Don't output anything")
+		group.add_option("-t", "--trial", action="store_true", default=False, help="perform a trial run with no changes made")
+		group.add_option('','--backup', dest="backup", help='backup remote to local', default=None)
+		group.add_option('', '--debug', action="store_true", default=False, help="debug mode")
+		self.parser.add_option_group(group)
+
+		#group = OptionGroup(self.parser, 'backup', 'backup <host>.<domain>')
+		#self.parser.add_option_group(group)
+
+		group = OptionGroup(self.parser, "branch", "branch management")
+		group.add_option("-c", "--checkout", dest="checkout", metavar="master|trunk", default='', help="checkout branch")
+		group.add_option('-n', "--new", dest="new", metavar="branch", default=None, help="Create new branch")
+		group.add_option("-d", "--delete", dest="delete", metavar="branch", help="delete branch")
+		group.add_option('','--release', dest="release", help='release version exampe:'+ time.strftime('%Y-%m-%d',time.localtime(time.time())) , default=None)
+		self.parser.add_option_group(group)
+
+		group = OptionGroup(self.parser, "merge", "merge {"+''.join(self.stage)+"}")
+		group.add_option('','--to', dest='to', metavar='master', help='such as master')
+		group.add_option('','--from', dest='froms', metavar='your', help='from branch')
+		self.parser.add_option_group(group)
+
+		#group = OptionGroup(self.parser, "build", "build {development | testing | production}")
+		#group.add_option('','--build', action="store_true", help='build', default=False)
+		#group.add_option('','--package', action="store_true", help='package', default=False)
+		#group.add_option('','--install', help='install', default='make')		
+		#self.parser.add_option_group(group)
+
+		group = OptionGroup(self.parser, "unittest", "unittest {"+''.join(self.stage)+"}")
+		#group.add_option('','--testsuite', help='logs file.', default='backup.log')
+		#group.add_option('','--testcase', help='logs file.', default='backup.log')
+		self.parser.add_option_group(group)	
 	def usage(self):
 		self.parser.print_help()
 		print("\n  Example: \n\tdeployment testing www.example.com\n\tdeployment production www.example.com --clean\n\tdeployment testing bbs.example.com --backup=/tmp/backup")
 		print("\n  Homepage: http://netkiller.github.com\tAuthor: Neo <netkiller@msn.com>")
+	#def debug(debug):
+	#	self.debug = debug
 	def main(self):
-		(self.options, args) = self.parser.parse_args()
-		if options.debug :
-			self.debug = True
+		try:
+			(options, args) = self.parser.parse_args()
+			if options.debug :
+				self.debug = True
 
-		if self.debug:
-			print("===================================")
-			print(self.options, args)
-			#os.getuid()
-			#os.getlogin()
-			print(self.config)
-			print("===================================")
+			if self.debug :
+				print("===================================")
+				print(options, args)
+				#os.getuid()
+				#os.getlogin()
+				#print(self.config)
+				print("===================================")
 
-		if not args:
-			self.usage()
-		elif args[0] == 'branch':
-			self.branch(args)
-		elif args[0] == 'merge':
-			if args[1] in self.stage:
-				self.merge(args, self.options.to, self.options.froms)
-		elif args[0] in self.stage:
-			#if self.scm[(args[0])] != getpass.getuser():
-			#	print("Current user "+os.getlogin()+" : Permission denied")
-			#	sys.exit(127)
-			if args.__len__() == 2:
-				self.stage = args[0]
-				self.domain =args[1]
-				self.deploy(self.stage, self.domain)
+			if not args:
+				self.usage()
+			elif args[0] == 'branch':
+				if(len(args) == 3):
+					stage = args[1]
+					domain =args[2]
+					deployment = Deployment(stage, domain)
+					deployment.debug = self.debug
+					deployment.branch(options)
+				else:
+					self.usage()
+			elif args[0] == 'merge':
+				if args.__len__() == 2 and args[0] in self.stage:
+					stage = args[0]
+					domain =args[1]
+					deployment = Deployment(self.stage, self.domain)
+					deployment.debug = self.debug
+					deployment.merge(options.to, options.froms)
+				else:
+					self.usage()
+			elif args[0] in self.stage:
+				if args.__len__() == 2:
+					self.stage = args[0]
+					self.domain =args[1]
+					deployment = Deployment(self.stage, self.domain)
+					deployment.debug = self.debug
+					deployment.deploy(options)
+				else:
+					self.stage = args[0]
+					deployment = Deployment(self.stage, None)
+					deployment.debug = self.debug
+					deployment.list(self.stage)
 			else:
-				self.stage = args[0]
-				self.list(self.stage)
-		else:
-			self.usage()
-		if self.debug:
-			self.logging.debug('---------------------------------------------')
+				self.usage()
+		except Exception as err:
+			print("Error: %s %s" %(err, self.__class__.__name__))
+			sys.exit(1)
+			
 if __name__ == '__main__':
 	try:
-		deployment = Deployment()
-		deployment.main()
+		command = Command()
+		command.debug = True
+		command.main()
 	except KeyboardInterrupt:
 		print ("Crtl+C Pressed. Shutting down.")

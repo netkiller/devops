@@ -139,7 +139,8 @@ Configure
 	repository=https://github.com/example.com/images.example.com.git
 	remote=www@192.168.2.15
 	destination=example.com/images.example.com
-	branch=freebsd
+	branch=testing
+	merge=development
 	
 	[windows]
 	repository=git@192.168.2.1:example.com/windows.example.com
