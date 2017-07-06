@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Homepage: http://www.netkiller.cn
+Author: neo <netkiller@msn.com>
+Date: 2017-05-27
+Ant: 1.9.x https://ant.apache.org/manual/ifunless.html
+-->
+<project name="www.example.com" default="compile" basedir="." xmlns:if="ant:if">
+
+	<property file="build.properties" />
+	<!--
+	<property name="git.repository" value="git@58.96.11.18:example.com/www.example.com.git" />
+	<property name="git.branch" value="master" />
+	<property name="git.merge" value="development" />
+	<property name="git.revert" value="" />
+	<property name="remote.host" value="www@www.netkiller.cn" />
+	<property name="remote.destination" value="/www/example.com/www.example.com" />
+	-->
+	<property name="project.dir" value="${git.branch}/repository" />
+	<property name="project.src" value="${project.dir}/src" />
+	<property name="project.webcontent" value="WebRoot" />
+	<property name="project.build" value="${git.branch}/build" />
+	<property name="project.resources" value="${git.branch}/config" />
+	<property name="project.exclude" value="/dev/null" />
+	<property name="project.log" value="${git.branch}/log" />
+	<property name="project.package" value="package" />
+	<property name="project.version" value="0.0.1" />
+
+	<property name="backup.dir" value="backup" />
+	<property name="receive.timepoint" value="2015-12-04.17:46:35" />
+	<!--
+	<property name="catalina.home" value="/srv/apache-tomcat-8.5.4" />
+	-->
+	<property name="build.sysclasspath" value="last" />
+	<property environment="env" />
+
+	<path id="classpath">
+		<fileset dir="${env.JAVA_HOME}/lib">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${env.CATALINA_HOME}/lib">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${project.build}/WEB-INF/lib" includes="*.jar" />
+	</path>
+
+	<macrodef name="git">
+		<attribute name="command" />
+		<attribute name="dir" default="" />
+		<element name="args" optional="true" />
+		<sequential>
+			<!-- echo message="git @{command}" / -->
+			<exec executable="git" dir="@{dir}">
+				<arg value="@{command}" />
+				<args />
+			</exec>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="rsync">
+		<attribute name="option" default="-azv" />
+		<attribute name="src" default="" />
+		<attribute name="dest" default="" />
+		<element name="args" optional="true" />
+		<sequential>
+			<!-- echo message="rsync @{option} ${src} ${dest}" / -->
+			<exec executable="rsync">
+				<arg value="@{option}" />
+				<args />
+				<arg value="@{src}" />
+				<arg value="@{dest}" />
+			</exec>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="ssh">
+		<attribute name="host" />
+		<attribute name="command" />
+		<attribute name="keyfile" default="~/.ssh/id_rsa" />
+		<element name="args" optional="true" />
+		<sequential>
+			<exec executable="ssh">
+				<arg value="@{host}" />
+				<!-- arg value="-i @{keyfile}" / -->
+				<args />
+				<arg value="@{command}" />
+			</exec>
+		</sequential>
+	</macrodef>
+	<macrodef name="gulp">
+		<attribute name="stage" default=""/>
+		<attribute name="src" default=""/>
+		<attribute name="dir" default="" />
+		<sequential>
+			<exec vmlauncher="false" executable="gulp" dir="@{dir}" osfamily="unix">
+				<arg line="--stage @{stage} --src @{src}"/>
+			</exec>
+		</sequential>
+	</macrodef>
+
+	<target name="dir.check">
+		<condition property="dir.exists">
+			<available file="${project.dir}" type="dir" />
+		</condition>
+	</target>
+
+	<target name="clone" depends="dir.check" unless="dir.exists">
+		<echo>clone</echo>
+		<git command="clone">
+			<args>
+				<arg value="${git.repository}" />
+				<arg value="${project.dir}" />
+			</args>
+		</git>
+	</target>
+
+	<target name="branch" depends="clone" if="dir.exists">
+
+		<git command="checkout" dir="${project.dir}">
+			<args>
+				<arg value="-f" />
+				<arg value="${git.branch}" />
+			</args>
+		</git>
+	</target>
+	
+	<target name="pull" depends="branch" if="dir.exists">
+		<echo>${project.dir} exists</echo>
+		<git command="clean" dir="${project.dir}">
+			<args>
+				<arg value="-df" />
+			</args>
+		</git>
+
+		<git command="reset" dir="${project.dir}">
+			<args>
+				<arg value="HEAD" />
+				<arg value="--hard" />
+			</args>
+		</git>
+
+		<git command="pull" dir="${project.dir}" />
+	</target>
+	
+	<target name="revert" depends="pull" if="dir.exists">
+
+		<git command="checkout" dir="${project.dir}">
+			<args>
+				<arg value="-f" />
+				<arg value="${git.revert}" />
+			</args>
+		</git>
+	</target>
+	<target name="fetch" depends="dir.check" if="dir.exists">
+		<git command="clean" dir="${project.dir}">
+			<args>
+				<arg value="-df" />
+			</args>
+		</git>
+
+		<git command="reset" dir="${project.dir}">
+			<args>
+				<arg value="HEAD" />
+				<arg value="--hard" />
+			</args>
+		</git>
+
+		<git command="pull" dir="${project.dir}">
+			<args>
+				<arg value="--all" />
+			</args>
+		</git>
+
+		<git command="checkout" dir="${project.dir}">
+			<args>
+				<arg value="-f" />
+				<arg value="${git.merge}" />
+			</args>
+		</git>
+
+		<git command="pull" dir="${project.dir}">
+			<args>
+				<arg value="--all" />
+			</args>
+		</git>
+
+		<git command="checkout" dir="${project.dir}">
+			<args>
+				<arg value="-f" />
+				<arg value="${git.branch}" />
+			</args>
+		</git>
+
+		<!--
+		<git command="fetch" dir="${project.dir}">
+			<args>
+				<arg value="-v" />
+				<arg value="origin" />
+			</args>
+		</git>		
+		-->
+	</target>
+
+	<target name="merge" depends="fetch" if="dir.exists">
+		<git command="merge" dir="${project.dir}">
+			<args>
+				<arg value="remotes/origin/${git.merge}" />
+			</args>
+		</git>
+
+	</target>
+	<target name="push" depends="merge" if="dir.exists">
+		<git command="push" dir="${project.dir}">
+			<args>
+				<arg value="--progress" />
+				<arg value="origin" />
+				<arg value="${git.branch}:${git.branch}" />
+			</args>
+		</git>
+
+	</target>
+
+	<target name="init" depends="pull">
+
+		<mkdir dir="${project.build}" />
+		<mkdir dir="${project.log}" />
+		<!--
+		<copy todir="${project.build}">
+			<fileset dir="${project.dir}/WebContent" includes="**/*" />
+		</copy>
+		-->
+		<rsync option="-av" src="${project.dir}/${project.webcontent}/" dest="${project.build}/">
+			<args>
+				<arg value="--delete" />
+				<arg value="--exclude=.git" />
+				<arg value="--exclude=.svn" />
+				<arg value="--exclude=.gitignore" />
+				<arg value="--exclude=WEB-INF/classes" />
+			</args>
+		</rsync>
+
+		<rsync option="-av" src="${project.src}/" dest="${project.build}/WEB-INF/classes">
+			<args>
+				<arg value="--delete" />
+				<arg value="--include=*.xml" />
+				<arg value="--include=*.properties" />
+				<arg value="--exclude=*.class" />
+			</args>
+		</rsync>
+		<!--
+		<copy todir="${project.build}/WEB-INF/classes" overwrite="true">
+			<fileset dir="${project.src}">
+				<include name="**/*.xml" />
+				<include name="**/*.properties" />
+			</fileset>
+		</copy>
+		-->
+	</target>
+	
+	<target name="gulp" depends="init">
+		<gulp stage="${git.branch}" src="${project.build}/" dir="." if:true="${gulp}"/>
+	</target>
+	
+	<target name="config" depends="gulp">
+		<copy todir="${project.build}" overwrite="true">
+			<fileset dir="${project.resources}" includes="**/*" />
+		</copy>
+	</target>
+
+	<target name="compile" depends="config">
+		<echo message="JAVA_HOME is set to = ${env.JAVA_HOME}" />
+		<echo message="CATALINA_HOME is set to = ${env.CATALINA_HOME}" />
+		<javac srcdir="${project.src}" destdir="${project.build}/WEB-INF/classes" listfiles="true" debug="true">
+			<classpath refid="classpath" />
+			<include name="**/*.java" />
+			<exclude name="**/*.xml" />
+			<exclude name="**/*.properties" />
+		</javac>
+	</target>
+
+	<target name="trial" depends="compile">
+		<tstamp>
+			<format property="timepoint" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
+		</tstamp>
+		<rsync option="-azv" src="${project.build}/" dest="${remote.host}:${remote.destination}">
+			<args>
+				<arg value="--dry-run" />
+				<arg value="--delete" />
+				<arg value="--backup" />
+				<arg value="--backup-dir=${backup.dir}/${git.branch}/${ant.project.name}.${timepoint}" />
+				<arg value="--log-file=${project.log}/${git.branch}/${ant.project.name}.${timepoint}.trial.log" />
+				<arg value="--exclude-from=${project.exclude}" />
+			</args>
+		</rsync>
+	</target>
+
+	<target name="deploy" depends="compile">
+		<tstamp>
+			<format property="timepoint" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
+		</tstamp>
+		<rsync option="-azv" src="${project.build}/" dest="${remote.host}:${remote.destination}">
+			<args>
+				<arg value="--delete" />
+				<arg value="--backup" />
+				<arg value="--backup-dir=${backup.dir}/${git.branch}/${ant.project.name}.${timepoint}" />
+				<arg value="--log-file=${project.log}/${git.branch}/${ant.project.name}.${timepoint}.log" />
+				<arg value="--exclude-from=${project.exclude}" />
+			</args>
+		</rsync>
+		
+		<mail mailhost="${mail.host}" mailport="25" from="${mail.from}" tolist="${mail.tolist}" subject="[Software deployment] ${ant.project.name} - ${git.branch} - ${timepoint}" messagefile="log/${git.branch}/${ant.project.name}.${timepoint}.log" messagemimetype="text/plain" />
+		
+	</target>
+
+	<target name="jar" depends="compile">
+		<jar jarfile="${project.package}/${ant.project.name}-${project.version}.jar" basedir="${project.build}" />
+	</target>
+	<target name="war" depends="compile">
+		<war warfile="${project.package}/${ant.project.name}-${project.version}.war" webxml="${project.build}/WEB-INF/web.xml">
+			<fileset dir="${project.build}" />
+		</war>
+	</target>
+
+	<target name="backup" depends="">
+		<tstamp>
+			<format property="TIMEPOINT" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
+		</tstamp>
+		<echo>the backup directory is ${TIMEPOINT}.</echo>
+		<mkdir dir="${backup.dir}/${TIMEPOINT}" />
+		<rsync option="-auzv" src="${remote.host}:${remote.destination}" dest="${backup.dir}/${TIMEPOINT}">
+		</rsync>
+	</target>
+	<target name="tgz" depends="">
+		<tstamp>
+			<format property="TIMEPOINT" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
+		</tstamp>
+		<echo>the backup directory is ${TIMEPOINT}.</echo>
+		<ssh host="${remote.host}" command="tar zcvf ~/${backup.dir}/${ant.project.name}.${TIMEPOINT}.tgz ${destination}" />
+	</target>
+	<target name="snapshot" depends="">
+		<tstamp>
+			<format property="TIMEPOINT" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
+		</tstamp>
+		<echo>the backup directory is ${TIMEPOINT}.</echo>
+		<ssh host="${remote.host}" command="btrfs subvolume snapshot /www /www/${ant.project.name}.${TIMEPOINT}" />
+	</target>
+	<target name="history" depends="">
+		<ssh host="${remote.host}" command="ls -1 ${backup.dir}" />
+	</target>
+	<target name="receive" depends="clean">
+		<echo>the receive directory is ${receive.timepoint}.</echo>
+		<rsync option="-auzv" src="${backup.dir}/${receive.timepoint}" dest="${remote.host}:${remove.destination}" />
+	</target>
+
+	<target name="stop" depends="">
+		<!-- ssh host="${remote.host}" command="${catalina.home}/bin/catalina.sh stop -force" keyfile="~/.ssh/id_rsa" / -->
+		<ssh host="${remote.host}" command="${catalina.home}/bin/shutdown.sh" />
+	</target>
+	<target name="security" depends="">
+        <ssh host="${remote.host}" command="rm -rf ${catalina.home}/conf/Catalina//*" />
+        <ssh host="${remote.host}" command="rm -rf ${catalina.home}/webapps/*" />
+        <ssh host="${remote.host}" command="rm -rf ${catalina.home}/work/Catalina/*" />
+    </target>
+
+	<target name="start" depends="security">
+		<ssh host="${remote.host}" command="${catalina.home}/bin/startup.sh" keyfile="~/.ssh/id_rsa" />
+	</target>
+	
+	<target name="restart">
+		<ant target="stop" />
+		<ant target="kill" />
+		<ant target="start" />
+	</target>
+	<target name="status" depends="">
+		<ssh host="${remote.host}" command="ps ax | grep ${catalina.home} | grep -v grep" />
+	</target>
+	<target name="kill" depends="">
+		<ssh host="${remote.host}" command="pkill -9 -f ${catalina.home}" />
+		<ant target="status" />
+	</target>
+	<target name="catalina">
+		<ssh host="${remote.host}" command="tail -f ${catalina.home}/logs/catalina.out" />
+	</target>
+	<target name="access.log">
+		<tstamp>
+			<format property="datetime" pattern="yyyy-MM-dd" locale="cn,CN" />
+		</tstamp>
+		<ssh host="${remote.host}" command="tail -f ${catalina.home}/logs/*.${datetime}.*" />
+	</target>
+	<target name="error.log">
+		<ssh host="${remote.host}" command="tail -f /var/log/nginx/${ant.project.name}.error.log" />
+	</target>
+	
+	<target name="run" depends="">
+		<java classname="test.ant.HelloWorld" classpath="${hello}" />
+	</target>
+	<target name="clean">
+		<delete dir="${project.build}" />
+		<delete file="${project.package}" />
+	</target>
+	<target name="reset" depends="clean">
+		<delete dir="${project.dir}" />
+	</target>
+</project>

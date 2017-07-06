@@ -1,0 +1,20 @@
+####################################################
+# Homepage: http://netkiller.github.io
+# Author: netkiller<netkiller@msn.com>
+# Script: https://github.com/oscm/shell
+# Date: 2016-08-12
+####################################################
+[Unit]
+Description=Spring Boot Application
+After=network.target
+
+[Service]
+User=www
+Group=www
+Type=simple
+WorkingDirectory=/www/netkiller.cn/api.netkiller.cn
+Environment="package=api.netkiller.cn-0.0.1-SNAPSHOT.jar"
+ExecStart=/srv/java/bin/java -server -Xms2048m -Xmx4096m -Djava.security.egd=file:/dev/./urandom -jar ${package}
+
+[Install]
+WantedBy=multi-user.target

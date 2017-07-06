@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Homepage: http://www.netkiller.cn
+Author: neo <netkiller@msn.com>
+Date: 2017-03-23
+-->
+<project name="api.netkiller.cn" default="compile" basedir=".">
+
+	<property file="build.properties" />
+	<!--
+	<property name="git.repository" value="git@58.96.191.168:netkiller.cn/api.netkiller.cn.git" />
+	<property name="git.branch" value="master" />
+	<property name="git.branch" value="development" />
+	<property name="git.merge" value="development" />
+
+	<property name="remote.host" value="www@www.netkiller.cn" />
+	<property name="remote.destination" value="/www/netkiller.cn/api.netkiller.cn" />
+	-->
+	<property name="project.repository" value="${git.branch}/repository" />
+	<property name="project.dir" value="${project.repository}" />
+	<property name="project.src" value="${project.dir}/src" />
+	<property name="project.build" value="${git.branch}/bin" />
+	<property name="project.resources" value="${git.branch}/resources" />
+	<property name="project.exclude" value="/dev/null" />
+	<property name="project.log" value="${git.branch}/log" />
+	<property name="project.version" value="0.0.1" />
+	<property name="project.package" value="${ant.project.name}-${project.version}-${git.branch}.war" />
+
+	<property name="backup.dir" value="backup" />
+	<property name="receive.timepoint" value="2015-12-04.17:46:35" />
+	<property name="spring.logfile" value="/tmp/spring.log" />
+
+	<property name="maven.home" value="/srv/apache-maven" />
+	<property name="remote.java.opts" value="-server -Xms2048m -Xmx8192m -Djava.security.egd=file:/dev/./urandom -Dio.netty.leakDetection.level=advanced" />
+
+	<property name="build.sysclasspath" value="last" />
+	<property environment="env" />
+
+	<path id="classpath">
+		<fileset dir="${env.JAVA_HOME}/lib">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${project.dir}/lib">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${project.build}" includes="*.jar" />
+	</path>
+
+	<macrodef name="git">
+		<attribute name="command" />
+		<attribute name="dir" default="" />
+		<element name="args" optional="true" />
+		<sequential>
+			<!-- echo message="git @{command}" / -->
+			<exec executable="git" dir="@{dir}">
+				<arg value="@{command}" />
+				<args />
+			</exec>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="rsync">
+		<attribute name="option" default="auzv" />
+		<attribute name="src" default="" />
+		<attribute name="dest" default="" />
+		<element name="args" optional="true" />
+		<sequential>
+			<!-- echo message="rsync @{option} ${src} ${dest}" / -->
+			<exec executable="rsync">
+				<arg value="@{option}" />
+				<args />
+				<arg value="@{src}" />
+				<arg value="@{dest}" />
+			</exec>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="ssh">
+		<attribute name="host" />
+		<attribute name="command" />
+		<attribute name="keyfile" default="~/.ssh/id_rsa" />
+		<attribute name="option" default="-f" />
+		<element name="args" optional="true" />
+		<sequential>
+			<exec executable="ssh">
+				<arg value="@{option}" />
+				<arg value="@{host}" />
+				<!-- arg value="-i @{keyfile}" / -->
+				<args />
+				<arg value="@{command}" />
+			</exec>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="mvn">
+		<attribute name="options" default="" />
+		<attribute name="goal" default="" />
+		<attribute name="phase" default=" " />
+		<attribute name="dir" default="" />
+		<element name="args" optional="true" />
+		<sequential>
+			<exec executable="mvn" dir="@{dir}">
+				<arg line="@{options}" />
+				<arg value="@{goal}" />
+				<arg line="@{phase}" />
+				<args />
+			</exec>
+		</sequential>
+	</macrodef>
+
+	<target name="dir.check">
+		<condition property="dir.exists">
+			<available file="${project.dir}" type="dir" />
+		</condition>
+	</target>
+
+	<target name="clone" depends="dir.check" unless="dir.exists">
+		<echo>clone</echo>
+		<git command="clone">
+			<args>
+				<arg value="${git.repository}" />
+				<arg value="${project.dir}" />
+			</args>
+		</git>
+	</target>
+
+	<target name="branch" depends="clone" if="dir.exists">
+
+		<git command="checkout" dir="${project.dir}">
+			<args>
+				<arg value="-f" />
+				<arg value="${git.branch}" />
+			</args>
+		</git>
+	</target>
+
+	<target name="pull" depends="branch" if="dir.exists">
+		<echo>${project.dir} exists</echo>
+		<git command="clean" dir="${project.dir}">
+			<args>
+				<arg value="-df" />
+			</args>
+		</git>
+
+		<git command="reset" dir="${project.dir}">
+			<args>
+				<arg value="HEAD" />
+				<arg value="--hard" />
+			</args>
+		</git>
+
+		<git command="pull" dir="${project.dir}" />
+	</target>
+
+	<target name="revert" depends="pull" if="dir.exists">
+
+		<git command="checkout" dir="${project.dir}">
+			<args>
+				<arg value="-f" />
+				<arg value="${git.revert}" />
+			</args>
+		</git>
+	</target>
+
+	<target name="fetch" depends="dir.check" if="dir.exists">
+		<git command="clean" dir="${project.dir}">
+			<args>
+				<arg value="-df" />
+			</args>
+		</git>
+
+		<git command="reset" dir="${project.dir}">
+			<args>
+				<arg value="HEAD" />
+				<arg value="--hard" />
+			</args>
+		</git>
+
+		<git command="pull" dir="${project.dir}">
+			<args>
+				<arg value="--all" />
+			</args>
+		</git>
+
+		<git command="checkout" dir="${project.dir}">
+			<args>
+				<arg value="-f" />
+				<arg value="${git.merge}" />
+			</args>
+		</git>
+
+		<git command="pull" dir="${project.dir}">
+			<args>
+				<arg value="--all" />
+			</args>
+		</git>
+
+		<git command="checkout" dir="${project.dir}">
+			<args>
+				<arg value="-f" />
+				<arg value="${git.branch}" />
+			</args>
+		</git>
+
+		<!--
+		<git command="fetch" dir="${project.dir}">
+			<args>
+				<arg value="-v" />
+				<arg value="origin" />
+			</args>
+		</git>		
+		-->
+	</target>
+
+	<target name="merge" depends="fetch" if="dir.exists">
+		<git command="merge" dir="${project.dir}">
+			<args>
+				<arg value="remotes/origin/${git.merge}" />
+			</args>
+		</git>
+
+	</target>
+	<target name="push" depends="merge" if="dir.exists">
+		<git command="push" dir="${project.dir}">
+			<args>
+				<arg value="--progress" />
+				<arg value="origin" />
+				<arg value="${git.branch}:${git.branch}" />
+			</args>
+		</git>
+
+	</target>
+
+	<target name="init" depends="">
+		<mkdir dir="${project.log}" />
+		<delete dir="${project.dir}/src/test" />
+		<!--
+		<mkdir dir="${project.build}" />
+		<copy todir="${project.dir}/src" overwrite="true">
+			<fileset dir="${project.resources}">
+				<include name="**/*.xml" />
+				<include name="**/*.properties" />
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+		-->
+		<copy todir="${project.dir}/src" overwrite="true">
+			<fileset dir="${project.resources}" includes="**/*" />
+		</copy>
+
+	</target>
+
+
+	<target name="compile" depends="init">
+		<mvn goal="compile" dir="${project.dir}" />
+	</target>
+
+	<target name="package" depends="init">
+		<mvn goal="package" dir="${project.dir}" />
+	</target>
+	<target name="install" depends="init">
+		<mvn goal="install:install-file" dir="${project.dir}">
+			<args>
+				<arg value="-Dfile=lib/ojdbc6.jar" />
+				<arg value="-DgroupId=com.oracle" />
+				<arg value="-DartifactId=ojdbc6" />
+				<arg value="-Dversion=11.2.0.3" />
+				<arg value="-Dpackaging=jar" />
+			</args>
+		</mvn>
+	</target>
+	<target name="trial" depends="package">
+		<tstamp>
+			<format property="timepoint" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
+		</tstamp>
+		<rsync option="-azv" src="${project.dir}/target/${project.package}" dest="${remote.host}:${remote.destination}/${project.package}">
+			<args>
+				<arg value="--dry-run" />
+				<arg value="--delete" />
+				<arg value="--backup" />
+				<arg value="--backup-dir=~/${backup.dir}/${timepoint}" />
+				<arg value="--log-file=${project.log}/${ant.project.name}.${timepoint}.trial.log" />
+				<arg value="--exclude-from=${project.exclude}" />
+			</args>
+		</rsync>
+	</target>
+
+	<target name="deploy" depends="package">
+		<tstamp>
+			<format property="timepoint" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
+		</tstamp>
+		<rsync option="-azv" src="${project.dir}/target/${project.package}" dest="${remote.host}:${remote.destination}/">
+			<args>
+				<arg value="--delete" />
+				<arg value="--backup" />
+				<arg value="--backup-dir=~/${backup.dir}/${ant.project.name}/${timepoint}" />
+				<arg value="--log-file=${project.log}/${ant.project.name}.${timepoint}.log" />
+				<arg value="--exclude-from=${project.exclude}" />
+			</args>
+		</rsync>
+	</target>
+
+
+	<target name="backup" depends="">
+		<tstamp>
+			<format property="TIMEPOINT" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
+		</tstamp>
+		<echo>the backup directory is ${TIMEPOINT}.</echo>
+		<mkdir dir="${backup.dir}/${TIMEPOINT}" />
+		<rsync option="-auzv" src="${remote.host}:${remote.destination}/${project.package}" dest="${backup.dir}/${TIMEPOINT}">
+		</rsync>
+	</target>
+
+	<target name="receive" depends="">
+		<echo>the receive directory is ${receive.timepoint}.</echo>
+		<rsync option="-auzv" src="${backup.dir}/${receive.timepoint}/${project.package}" dest="${remote.host}:${remote.destination}/" />
+	</target>
+
+	<target name="stop" depends="">
+		<ssh host="${remote.host}" command="pkill -9 -f ${project.package}" />
+	</target>
+
+	<target name="start" depends="stop">
+		<ssh host="${remote.host}" command="${remote.java.home}/bin/java ${remote.java.opts} -jar ${remote.destination}/${project.package}" keyfile="~/.ssh/id_rsa" />
+	</target>
+	<target name="debug" depends="stop">
+		<ssh host="${remote.host}" command="${remote.java.home}/bin/java ${remote.java.opts} -jar ${remote.destination}/${project.package} --debug" keyfile="~/.ssh/id_rsa" />
+	</target>
+	<target name="trace" depends="stop">
+		<ssh host="${remote.host}" command="${remote.java.home}/bin/java ${remote.java.opts} -jar ${remote.destination}/${project.package} --trace" keyfile="~/.ssh/id_rsa" />
+	</target>
+
+	<target name="restart">
+		<ant target="stop" />
+		<ant target="kill" />
+		<ant target="start" />
+	</target>
+	<target name="status" depends="">
+		<ssh host="${remote.host}" command="ps ax | grep ${project.package} | grep -v grep" />
+	</target>
+	<target name="kill" depends="">
+		<ssh host="${remote.host}" command="pkill -9 -f ${project.package}" />
+		<ant target="status" />
+	</target>
+	<target name="log">
+		<ssh host="${remote.host}" command="tail -f ${spring.logfile}" />
+	</target>
+	<target name="run" depends="">
+		<java jar="${project.dir}/target/${project.package}" fork="true" />
+	</target>
+
+	<target name="systemctl:stop" depends="">
+		<ssh host="${remote.host}" command="systemctl stop spring" />
+	</target>
+	<target name="systemctl:start" depends="">
+		<ssh host="${remote.host}" command="systemctl start spring" keyfile="~/.ssh/id_rsa" />
+	</target>
+	<target name="systemctl:restart" depends="">
+		<ssh host="${remote.host}" command="systemctl restart spring" />
+	</target>
+	<target name="systemctl:status" depends="">
+		<ssh host="${remote.host}" command="systemctl status spring" />
+	</target>
+
+	<target name="clean">
+		<delete dir="${project.build}" />
+		<delete file="${project.dir}/target/${project.package}" />
+		<mvn goal="clean" dir="${project.dir}" />
+	</target>
+	<target name="reset" depends="clean">
+		<delete dir="${project.dir}" />
+		<delete dir="${backup.dir}/${ant.project.name}" includes="${ant.project.name}*.jar" />
+	</target>
+</project>
+

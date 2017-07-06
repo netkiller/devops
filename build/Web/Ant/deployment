@@ -1,0 +1,19 @@
+#!/bin/sh
+stage=$1
+shift
+#echo $#
+if [ -f ${stage}.properties ]; then
+	ant -propertyfile ${stage}.properties $@
+else
+	echo "The file ${stage}.properties isn't exist!"
+fi
+
+#!/bin/sh
+stage=$1
+shift
+#echo $#
+if [ -f ${stage}.properties ]; then
+	ant -propertyfile ${stage}.properties $@
+else
+	echo "The file ${stage}.properties isn't exist!"
+fi

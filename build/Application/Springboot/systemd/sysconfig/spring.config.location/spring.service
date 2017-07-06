@@ -1,0 +1,21 @@
+####################################################
+# Homepage: http://netkiller.github.io
+# Author: netkiller<netkiller@msn.com>
+# Script: https://github.com/oscm/shell
+# Date: 2016-08-12
+####################################################
+[Unit]
+Description=Spring Boot Application
+After=network.target
+
+[Service]
+User=www
+Group=www
+Type=simple
+WorkingDirectory=/www/netkiller.cn/api.netkiller.cn
+EnvironmentFile=/etc/sysconfig/springboot
+ExecStart=/srv/java/bin/java $JAVA_OPTS -jar $PACKAGE $CONFIG
+
+[Install]
+WantedBy=multi-user.target
+

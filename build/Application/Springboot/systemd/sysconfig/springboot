@@ -1,0 +1,4 @@
+# Spring boot Application
+
+JAVA_OPTS="-server -Xms2048m -Xmx8192m -Djava.security.egd=file:/dev/./urandom"
+PACKAGE=api.netkiller.cn-0.0.1-SNAPSHOT.jar

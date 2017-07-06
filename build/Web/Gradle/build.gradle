@@ -1,0 +1,107 @@
+ext {
+	gitUrl='git@58.96.191.168:cf88.com/admin.cf88.com.git'
+	gitDir='src'
+	gitBranch='master'
+	gitMerge='testing'
+}
+task config(){
+	println "$gitUrl"
+	println "$gitDir"
+	println "$gitBranch"
+	println "$gitMerge"
+//	println $gitUrl
+//	println $gitUrl
+}
+task clone(type:Exec) {
+	workingDir '.' 
+	commandLine 'git','clone',"$gitUrl", "$gitDir"
+
+	//store the output instead of printing to the console:
+	standardOutput = new ByteArrayOutputStream()
+
+	//extension method stopTomcat.output() can be used to obtain the output:
+	ext.output = {
+		return standardOutput.toString()
+	}
+	doLast {
+		println "${ext.output()}"
+	}
+}
+
+task pull(type:Exec) {
+
+  workingDir "$gitDir"
+  commandLine 'git','pull'
+
+  standardOutput = new ByteArrayOutputStream()
+
+  ext.output = {
+    return standardOutput.toString()
+  }
+        doLast {
+                println "${ext.output()}"
+        }
+
+}
+
+task branch(type:Exec){
+	workingDir '.' 
+	commandLine 'git','checkout','-f', "$gitBranch"
+	standardOutput = new ByteArrayOutputStream()
+	ext.output = {
+		return standardOutput.toString()
+	}
+	doLast {
+		println "${ext.output()}"
+	}
+
+}
+
+task init << {
+	def folder = new File( "$gitDir" )
+
+	if( ! folder.exists() ) {
+		println "$gitDir isn't exists."
+		tasks.clone.execute()
+	}else{
+		println "$gitDir is exists."
+		tasks.pull.execute()
+		tasks.branch.execute()
+	}
+
+
+    println 'compiling source'
+}
+//
+//task compileTest(dependsOn: compile) << {
+//    println 'compiling unit tests'
+//}
+//
+//task test(dependsOn: [compile, compileTest]) << {
+//    println 'running unit tests'
+//}
+//
+//task dist(dependsOn: [compile, test]) << {
+//    println 'building the distribution'
+//}
+//
+//
+//task stop(type:Exec) {
+//  workingDir '/bin'
+//  commandLine '/bin/ls', '/etc'
+//
+//  //store the output instead of printing to the console:
+//  standardOutput = new ByteArrayOutputStream()
+//
+//  //extension method stopTomcat.output() can be used to obtain the output:
+//  ext.output = {
+//    return standardOutput.toString()
+//  }
+//doLast {
+//    println "Foo's output: ${ext.output()}"
+//  }
+//}
+
+task deploy() << {
+     println "hello, $Name<$Email>"
+}
