@@ -31,7 +31,7 @@ function log(){
 
 function start(){
 	if [ -f "$PIDFILE" ]; then
-		echo $PIDFILE
+		echo "The program is already running $PIDFILE"
 		exit 2
 	fi
 
@@ -40,6 +40,7 @@ function start(){
 }
 function stop(){
 	[ -f $PIDFILE ] && kill `cat $PIDFILE` && rm -rf $PIDFILE
+    pkill -f $BASEDIR/$PACKAGE
 	log info stop
 }
 function status(){
