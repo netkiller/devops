@@ -1,0 +1,170 @@
+#!/usr/bin/env python3
+#-*- coding: utf-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+##############################################
+try:
+	import logging, configparser
+	import threading
+	from optparse import OptionParser, OptionGroup
+	import os,io,sys
+	from datetime import datetime
+except ImportError as err:
+	print("Error: %s" %(err))
+
+basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+##############################################
+
+class Oscm():
+
+	repos = {
+		'rsync': 'rsync -auzvP',
+		'sftp' : 'sftp',
+		'scp' : 'scp -r',
+		'cp' : 'cp -r'
+	}
+
+	def __init__(self):
+		self.config = {}
+
+		usage = "usage: %prog [options] arg1 arg2 <task>"
+		self.parser = OptionParser(usage)
+		# self.parser.add_option("-f", "--file", dest="filename", help="write report to FILE", metavar="FILE")
+		# self.parser.add_option("-q", "--quiet", action="store_false", dest="verbose", default=True, help="don't print status messages to stdout")
+		self.parser.add_option('','--config', dest="config", help='Read configuration options from file.', default=basedir + '/etc/oscm.ini')
+		# self.parser.add_option('','--task', dest="task", help='task config file.', default='task.cfg')
+		
+		self.parser.add_option('-v','--version',action='store_true', help='print version number')
+		self.parser.add_option('','--logfile', help='logs file.', default='backup.log')
+		self.parser.add_option("", "--debug", action="store_true", help="Print debug information" )
+
+		group = OptionGroup(self.parser, "arg1", "arg1: list | install | remove | upgrade")
+		self.parser.add_option_group(group)
+		group = OptionGroup(self.parser, 'arg2', 'arg2: list | run')
+		self.parser.add_option_group(group)
+
+		group = OptionGroup(self.parser, "Debug Options")
+		# #group.add_option("-s", "--sql", action="store_true", help="Print all SQL statements executed")
+		# #group.add_option("-e", action="store_true", help="Print every action done")
+		# #group.add_option("-g", action="store_true", help="")
+		self.parser.add_option_group(group)
+
+		pass
+
+	def configure(self,cfgfile, section = None):
+		cfgfile = None
+		try:
+			cpr = configparser.SafeConfigParser()
+			cpr.read(cfgfile)
+
+			if self.options.debug:
+				for sect in cpr.sections():
+					for (key,value) in cpr.items(sect):
+						print(key +":"+ value)
+			
+		except configparser.NoSectionError as err:
+			self.logging.error(err)
+			print(err)
+		except TypeError as err:
+			print(err)
+
+		if section :
+			return cpr.section(section)
+		return cpr.sections()
+
+	def task(self, args):
+		try:
+			t = Task(self.logging)
+			if len(args) <= 1:
+				self.usage()
+			elif args[1] == 'list':
+				t.list()
+			elif args[1] == 'run':
+				if len(args) == 3:
+					t.run(args[2])
+				else:
+					t.list()
+			#elif args[1] == 'show':
+			#	 if len(args) == 3:
+			#		 t.show(args[2])
+			#	 else:
+			#		 t.list()
+			else:
+				self.usage()
+		except IOError as err:
+			print(err)
+		except configparser.NoSectionError as err:
+			t.list()
+			print(err)
+			self.logging.error(err)
+	def execute(self,cfg):
+		cmd = self.command(cfg)
+		self.logging.debug(cmd)
+		os.system(cmd)
+	def list(self):
+		cpr = configparser.SafeConfigParser()
+		cpr.read(self.options.config)
+		for sect in cpr.sections():
+			print(sect)
+	def usage(self):
+		print("Operation System Configure Management")
+		self.parser.print_help()
+		print("\nHomepage: http://netkiller.github.com\tAuthor: Neo <netkiller@msn.com>")
+	def main(self):
+		(self.options, args) = self.parser.parse_args()
+
+		if self.options.config:
+			cfgfile = self.options.config
+		else:
+			cfgfile = basedir + '/etc/oscm.ini'
+
+		self.configure(cfgfile)
+
+		try:
+			logfile = self.config['environment']['logfile']
+		except KeyError as err:
+			logfile = '/tmp/backup.log'
+		
+		try:
+			logging.basicConfig(level=logging.NOTSET,
+					format='%(asctime)s %(levelname)-8s %(message)s',
+					datefmt='%Y-%m-%d %H:%M:%S',
+					filename=logfile,
+					filemode='a')
+			self.logging = logging.getLogger()
+		except AttributeError as err:
+			print("Error: %s %s" %(err, self.config['environment']['logfile']))
+			sys.exit(2)
+
+	
+		
+		if not args:
+			self.usage()
+		elif args[0] == 'list':
+			self.list()
+			print("aaaaaa")
+		elif args[0] == 'instal':
+			#if len(args) == 3:
+			#else:
+			print("aaaaaa")
+		elif args[0] == 'remove':
+			# if len(args) == 3:
+				
+			# else:
+			print("aaaaaa")
+	
+		else:
+			self.usage()
+
+		if self.options.debug:
+			print("===================================")
+			print(self.options, args)
+			print("===================================")
+			
+if __name__ == '__main__':
+	try:
+		oscm = Oscm()
+		oscm.main()
+	except KeyboardInterrupt:
+		print ("Crtl+C Pressed. Shutting down.")
