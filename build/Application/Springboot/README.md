@@ -1,13 +1,15 @@
 Spring boot
 =====
 
-spring boot 1.5.1
+spring boot 1.5.6
 
 ## Install build.xml
 
-	wget https://raw.githubusercontent.com/oscm/build/master/Application/Spring/build.xml
-	wget https://raw.githubusercontent.com/oscm/build/master/Application/Spring/build.properties
-	wget https://raw.githubusercontent.com/oscm/build/master/Application/Spring/deployment
+    mkdir deployment
+    cd deployment
+	wget https://raw.githubusercontent.com/oscm/devops/master/build/Application/Springboot/build.xml
+	wget https://raw.githubusercontent.com/oscm/devops/master/build/Application/Springboot/build.properties
+	wget https://raw.githubusercontent.com/oscm/devops/master/build/Application/Springboot/deployment
 	
 	chmod +x deployment
 	

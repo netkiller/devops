@@ -308,7 +308,7 @@ Ant: 1.9.x https://ant.apache.org/manual/ifunless.html
 			</args>
 		</rsync>
 		
-		<mail mailhost="${mail.host}" mailport="25" from="${mail.from}" tolist="${mail.tolist}" subject="[Software deployment] ${ant.project.name} - ${git.branch} - ${timepoint}" messagefile="log/${git.branch}/${ant.project.name}.${timepoint}.log" messagemimetype="text/plain" />
+		<mail if:true="${sendmail}" mailhost="${mail.host}" mailport="25" from="${mail.from}" tolist="${mail.tolist}" subject="[Software deployment] ${ant.project.name} - ${git.branch} - ${timepoint}" messagefile="log/${git.branch}/${ant.project.name}.${timepoint}.log" messagemimetype="text/plain" />
 		
 	</target>
 
