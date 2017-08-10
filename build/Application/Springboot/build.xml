@@ -4,9 +4,10 @@ Homepage: http://www.netkiller.cn
 Author: neo <netkiller@msn.com>
 Date: 2017-08-03
 -->
-<project default="usage" basedir="." xmlns:if="ant:if">
+<project name="deploy.netkiller.cn" default="usage" basedir="." xmlns:if="ant:if">
 
 	<property file="build.properties" />
+    <property file="${basedir}/common.properties" />
 	<!--
 	<property name="git.repository" value="git@58.96.191.168:netkiller.cn/api.netkiller.cn.git" />
 	<property name="git.branch" value="master" />
@@ -20,11 +21,11 @@ Date: 2017-08-03
 	<property name="project.dir" value="${project.repository}" />
 	<property name="project.src" value="${project.dir}/src" />
 	<property name="project.build" value="${basedir}/${git.branch}/bin" />
-	<property name="project.resources" value="${basedir}/${git.branch}/resources" />
+	<property name="project.resources" value="${basedir}/resources/${git.branch}" />
 	<property name="project.exclude" value="/dev/null" />
 	<property name="project.log" value="${basedir}/log/${git.branch}" />
 	<property name="project.version" value="0.0.1" />
-	<property name="project.package" value="${ant.project.name}-${project.version}-${git.branch}.war" />
+	<property name="project.package" value="${project.name}-${project.version}-${git.branch}.war" />
 
 	<property name="backup.dir" value="backup/${git.branch}" />
 	<property name="receive.timepoint" value="2015-12-04.17:46:35" />
@@ -234,7 +235,7 @@ Date: 2017-08-03
 	<target name="init" depends="">
 		<mkdir dir="${project.log}" />
         <mkdir dir="${backup.dir}" />
-		<delete dir="${project.dir}/src/test" />
+		<delete dir="${project.src}/test" />
 		<!--
 		<mkdir dir="${project.build}" />
 		<copy todir="${project.dir}/src" overwrite="true">
@@ -245,7 +246,7 @@ Date: 2017-08-03
 			</fileset>
 		</copy>
 		-->
-		<copy todir="${project.dir}/src" overwrite="true" failonerror="false">
+		<copy todir="${project.src}" overwrite="true" failonerror="false">
 			<fileset dir="${project.resources}" includes="**/*" />
 		</copy>
 
@@ -289,7 +290,7 @@ Date: 2017-08-03
 				<arg value="--delete" />
 				<arg value="--backup" />
 				<arg value="--backup-dir=${backup.dir}/${timepoint}" />
-				<arg value="--log-file=${project.log}/${ant.project.name}.${timepoint}.trial.log" />
+				<arg value="--log-file=${project.log}/${project.name}.${timepoint}.trial.log" />
 				<arg value="--exclude-from=${project.exclude}" />
 			</args>
 		</rsync>
@@ -304,19 +305,19 @@ Date: 2017-08-03
 				<arg value="--delete" />
 				<arg value="--backup" />
 				<arg value="--backup-dir=${backup.dir}/${timepoint}" />
-				<arg value="--log-file=${project.log}/${ant.project.name}.${timepoint}.log" />
+				<arg value="--log-file=${project.log}/${project.name}.${timepoint}.log" />
 				<arg value="--exclude-from=${project.exclude}" />
 			</args>
 		</rsync>
 		
-		<mail if:true="${sendmail}" mailhost="${mail.host}" mailport="25" from="${mail.from}" tolist="${mail.tolist}" subject="[Software deployment] ${ant.project.name} - ${git.branch} - ${timepoint}" messagefile="log/${git.branch}/${ant.project.name}.${timepoint}.log" messagemimetype="text/plain" />
+		<mail if:true="${sendmail}" mailhost="${mail.host}" mailport="25" from="${mail.from}" tolist="${mail.tolist}" subject="[Software deployment] ${project.name} - ${git.branch} - ${timepoint}" messagefile="log/${git.branch}/${project.name}.${timepoint}.log" messagemimetype="text/plain" />
 	</target>
     <target name="snapshot" depends="">
         <tstamp>
             <format property="TIMEPOINT" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
         </tstamp>
         <echo>the backup directory is ${TIMEPOINT}.</echo>
-        <ssh host="${remote.host}" command="btrfs subvolume snapshot /www /www/${ant.project.name}.${TIMEPOINT}" />
+        <ssh host="${remote.host}" command="btrfs subvolume snapshot /www /www/${project.name}.${TIMEPOINT}" />
     </target>
 	<target name="backup" depends="">
 		<tstamp>
@@ -362,9 +363,6 @@ Date: 2017-08-03
 	<target name="log">
 		<ssh host="${remote.host}" command="tail -f ${spring.logfile}" />
 	</target>
-	<target name="background" depends="">
-		<java jar="${project.dir}/target/${project.package}" fork="true" />
-	</target>
 
 	<target name="systemctl:stop" depends="">
 		<ssh host="${remote.host}" command="systemctl stop spring" />
@@ -381,7 +379,10 @@ Date: 2017-08-03
     <target name="run" depends="">
         <mvn goal="spring-boot:run" dir="${project.dir}" />
     </target>
-    <target name="foreground" depends="run">
+    <target name="run:foreground" depends="run">
+    </target>
+    <target name="run:background" depends="">
+        <java jar="${project.dir}/target/${project.package}" fork="true" />
     </target>
 	<target name="clean">
 		<delete dir="${project.build}" />
@@ -390,7 +391,7 @@ Date: 2017-08-03
 	</target>
 	<target name="reset" depends="clean">
 		<delete dir="${project.dir}" />
-		<delete dir="${backup.dir}/${ant.project.name}" includes="${ant.project.name}*.jar" />
+		<delete dir="${backup.dir}/${project.name}" includes="${project.name}*.jar" />
 	</target>
     <target name="usage" depends="">
         <echo>Java deploy tools by netkiller</echo>
