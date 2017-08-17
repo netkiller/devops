@@ -281,6 +281,7 @@ Date: 2017-08-03
         <mvn goal="test" dir="${project.dir}" />
     </target>
 	<target name="trial" depends="package">
+        <echo>deploy ${remote.host}:${remote.destination}</echo>
 		<tstamp>
 			<format property="timepoint" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
 		</tstamp>
@@ -297,6 +298,7 @@ Date: 2017-08-03
 	</target>
 
 	<target name="deploy" depends="package">
+        <echo>deploy ${remote.host}:${remote.destination}</echo>
 		<tstamp>
 			<format property="timepoint" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
 		</tstamp>

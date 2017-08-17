@@ -9,17 +9,17 @@ Date: 2015-12-07
 	<property file="build.properties" />
 	<!--
 	<property name="git.repository" value="git@58.96.191.168:netkiller.cn/api.netkiller.cn.git" />
-	     	     	<property name="git.branch" value="master" />
-	-->
+    <property name="git.branch" value="master" />
+
 	<property name="git.branch" value="development" />
 	<property name="git.merge" value="development" />
 
-	<property name="remote" value="www@www.netkiller.cn" />
-	<property name="destination" value="/www/netkiller.cn/api.netkiller.cn" />
+	<property name="remote.host" value="www@www.netkiller.cn" />
+	<property name="remote.destination" value="/www/netkiller.cn/api.netkiller.cn" />
 
 	<property name="project.version" value="0.0.1" />
 	<property name="project.package" value="${ant.project.name}-${project.version}-SNAPSHOT.war" />
-
+	-->
 
 	<property name="project.repository" value="repository" />
 	<property name="project.dir" value="${project.repository}" />
@@ -281,7 +281,7 @@ Date: 2015-12-07
 		<tstamp>
 			<format property="timepoint" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
 		</tstamp>
-		<rsync option="-azv" src="${project.build}/" dest="${remote}:${destination}">
+		<rsync option="-azv" src="${project.build}/" dest="${remote.host}:${remote.destination}">
 			<args>
 				<arg value="--dry-run" />
 				<arg value="--delete" />
@@ -297,7 +297,7 @@ Date: 2015-12-07
 		<tstamp>
 			<format property="timepoint" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
 		</tstamp>
-		<rsync option="-azv" src="${project.build}/" dest="${remote}:${destination}">
+		<rsync option="-azv" src="${project.build}/" dest="${remote.host}:${remote.destination}">
 			<args>
 				<arg value="--delete" />
 				<arg value="--backup" />
@@ -308,7 +308,7 @@ Date: 2015-12-07
 		</rsync>
 	</target>
 
-	<target name="package" depends="compile">
+	<target name="jar" depends="compile">
 		<jar jarfile="${project.package}" basedir="${project.build}" />
 	</target>
 
@@ -318,7 +318,7 @@ Date: 2015-12-07
 		</tstamp>
 		<echo>the backup directory is ${TIMEPOINT}.</echo>
 		<mkdir dir="${backup.dir}/${TIMEPOINT}" />
-		<rsync option="-auzv" src="${remote}:${destination}/${ant.project.name}" dest="${backup.dir}/${ant.project.name}/${TIMEPOINT}">
+		<rsync option="-auzv" src="${remote.host}:${remote.destination}/${ant.project.name}" dest="${backup.dir}/${ant.project.name}/${TIMEPOINT}">
 		</rsync>
 	</target>
 
@@ -327,7 +327,7 @@ Date: 2015-12-07
                         <format property="TIMEPOINT" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
                 </tstamp>
                 <echo>the backup directory is ${TIMEPOINT}.</echo>
-		 <ssh host="${remote}" command="tar zcvf ~/${backup.dir}/${ant.project.name}.${TIMEPOINT}.tgz ${destination}" />
+		 <ssh host="${remote.host}" command="tar zcvf ~/${backup.dir}/${ant.project.name}.${TIMEPOINT}.tgz ${remote.destination}" />
         </target>
 
         <target name="snapshot" depends="">
@@ -335,26 +335,26 @@ Date: 2015-12-07
                         <format property="TIMEPOINT" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
                 </tstamp>
                 <echo>the backup directory is ${TIMEPOINT}.</echo>
-                 <ssh host="${remote}" command="btrfs subvolume snapshot /www /www/${ant.project.name}.${TIMEPOINT}" />
+                 <ssh host="${remote.host}" command="btrfs subvolume snapshot /www /www/${ant.project.name}.${TIMEPOINT}" />
         </target>
 
 	<target name="receive" depends="">
 		<echo>the receive directory is ${receive.timepoint}.</echo>
-		<rsync option="-auzv" src="${backup.dir}/${receive.timepoint}/${project.package}" dest="${remote}:${destination}/" />
+		<rsync option="-auzv" src="${backup.dir}/${receive.timepoint}/${project.package}" dest="${remote.host}:${remote.destination}/" />
 	</target>
 
 	<target name="stop" depends="">
-		<!-- ssh host="${remote}" command="${catalina.home}/bin/catalina.sh stop -force" keyfile="~/.ssh/id_rsa" / -->
-		<ssh host="${remote}" command="${catalina.home}/bin/shutdown.sh" />
+		<!-- ssh host="${remote.host}" command="${catalina.home}/bin/catalina.sh stop -force" keyfile="~/.ssh/id_rsa" / -->
+		<ssh host="${remote.host}" command="${catalina.home}/bin/shutdown.sh" />
 	</target>
 	<target name="security" depends="">
-		<ssh host="${remote}" command="rm -rf ${catalina.home}/conf/Catalina//*" />
-		<ssh host="${remote}" command="rm -rf ${catalina.home}/webapps/*" />
-		<ssh host="${remote}" command="rm -rf ${catalina.home}/work/Catalina/*" />
+		<ssh host="${remote.host}" command="rm -rf ${catalina.home}/conf/Catalina//*" />
+		<ssh host="${remote.host}" command="rm -rf ${catalina.home}/webapps/*" />
+		<ssh host="${remote.host}" command="rm -rf ${catalina.home}/work/Catalina/*" />
 	</target>
 
 	<target name="start" depends="security">
-		<ssh host="${remote}" command="${catalina.home}/bin/startup.sh" keyfile="~/.ssh/id_rsa" />
+		<ssh host="${remote.host}" command="${catalina.home}/bin/startup.sh" keyfile="~/.ssh/id_rsa" />
 	</target>
 	<target name="restart">
 		<ant target="stop" />
@@ -362,30 +362,30 @@ Date: 2015-12-07
 		<ant target="start" />
 	</target>
 	<target name="status" depends="">
-		<ssh host="${remote}" command="ps ax | grep ${catalina.home} | grep -v grep" />
+		<ssh host="${remote.host}" command="ps ax | grep ${catalina.home} | grep -v grep" />
 	</target>
 	<target name="kill" depends="">
-		<ssh host="${remote}" command="pkill -9 -f ${catalina.home}" />
+		<ssh host="${remote.host}" command="pkill -9 -f ${catalina.home}" />
 		<ant target="status" />
 	</target>
 	<target name="catalina">
-		<ssh host="${remote}" command="tail -f ${catalina.home}/logs/catalina.out" />
+		<ssh host="${remote.host}" command="tail -f ${catalina.home}/logs/catalina.out" />
 	</target>
 	<target name="run" depends="">
 		<java jar="${project.dir}/target/${project.package}" fork="true" />
 	</target>
 
 	<target name="systemctl:stop" depends="">
-		<ssh host="${remote}" command="systemctl stop spring" />
+		<ssh host="${remote.host}" command="systemctl stop spring" />
 	</target>
 	<target name="systemctl:start" depends="">
-		<ssh host="${remote}" command="systemctl start spring" keyfile="~/.ssh/id_rsa" />
+		<ssh host="${remote.host}" command="systemctl start spring" keyfile="~/.ssh/id_rsa" />
 	</target>
 	<target name="systemctl:restart" depends="">
-		<ssh host="${remote}" command="systemctl restart spring" />
+		<ssh host="${remote.host}" command="systemctl restart spring" />
 	</target>
 	<target name="systemctl:status" depends="">
-		<ssh host="${remote}" command="systemctl status spring" />
+		<ssh host="${remote.host}" command="systemctl status spring" />
 	</target>
 
 	<target name="clean">

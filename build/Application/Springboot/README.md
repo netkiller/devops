@@ -7,15 +7,15 @@ spring boot 1.5.6
 
     mkdir deployment
     cd deployment
-	wget https://raw.githubusercontent.com/oscm/devops/master/build/Application/Springboot/build.xml
-	wget https://raw.githubusercontent.com/oscm/devops/master/build/Application/Springboot/build.properties
-	wget https://raw.githubusercontent.com/oscm/devops/master/build/Application/Springboot/deployment
-	
-	chmod +x deployment
+	wget https://raw.githubusercontent.com/oscm/devops/master/build/Application/Springboot/build.xml -O /usr/local/etc/build.xml
+	wget https://raw.githubusercontent.com/oscm/devops/master/build/Application/Springboot/build.properties -O /usr/local/etc/build.properties
+	wget https://raw.githubusercontent.com/oscm/devops/master/build/Application/Springboot/deployment -O /usr/local/bin/deployment
+
+	chmod +x /usr/local/bin/deployment
 	
 ## Common config
-
-	cat build.properties
+    cd 
+	cat common.properties
 	git.repository=git@58.96.11.168:netkiller.cn/api.netkiller.cn.git
 	remote.java.home=/srv/java
 	remote.host=www@www.netkiller.cn
