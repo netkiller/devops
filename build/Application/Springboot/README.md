@@ -20,6 +20,7 @@ spring boot 1.5.6
 	remote.java.home=/srv/java
 	remote.host=www@www.netkiller.cn
 	remote.destination=/www/netkiller.cn/www.netkiller.cn
+    logging.file=/tmp/spring.log
 
 ## Stage config
 

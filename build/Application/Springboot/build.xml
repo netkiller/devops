@@ -16,6 +16,7 @@ Date: 2017-08-03
 
 	<property name="remote.host" value="www@www.netkiller.cn" />
 	<property name="remote.destination" value="/www/netkiller.cn/api.netkiller.cn" />
+    <property name="logging.file" value="/tmp/spring.log" />
 	-->
 	<property name="project.repository" value="${basedir}/${git.branch}/repository" />
 	<property name="project.dir" value="${project.repository}" />
@@ -29,7 +30,6 @@ Date: 2017-08-03
 
 	<property name="backup.dir" value="backup/${git.branch}" />
 	<property name="receive.timepoint" value="2015-12-04.17:46:35" />
-	<property name="spring.logfile" value="/tmp/spring.log" />
 
 	<property name="maven.home" value="/srv/apache-maven" />
 	<property name="remote.java.opts" value="-server -Xms2048m -Xmx8192m -Djava.security.egd=file:/dev/./urandom -Dio.netty.leakDetection.level=advanced" />
@@ -363,7 +363,7 @@ Date: 2017-08-03
 		<ant target="status" />
 	</target>
 	<target name="log">
-		<ssh host="${remote.host}" command="tail -f ${spring.logfile}" />
+		<ssh host="${remote.host}" command="tail -f ${logging.file}" />
 	</target>
 
 	<target name="systemctl:stop" depends="">
