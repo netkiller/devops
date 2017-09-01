@@ -1,0 +1,35 @@
+#!/bin/sh
+########################################
+# Website: http://www.netkiller.cn
+# Author: neo <netkiller@msn.com>
+# Date: 2017-08-03
+########################################
+
+if [ "$(uname)" == "Darwin" ]; then
+ANT=/usr/local/Cellar/ant\@1.9/1.9.9/bin/ant
+else
+ANT=/srv/apache-ant/bin/ant
+fi
+
+BUILDXML=/usr/local/etc/deployment/tomcat/build.xml
+########################################
+domain=$1
+stage=$2
+########################################
+
+if [ ! -d ${domain} ]; then
+echo "The domain ${domain} isn't exist!"
+exit 1
+fi
+
+if [ -z ${stage} ]; then
+echo "No stage..." && exit 1
+fi
+
+shift 2
+#echo $#
+if [ -f ${domain}/${stage}.properties ]; then
+${ANT} -Dproject.name=${domain} -Dbasedir=$(pwd)/${domain} -f ${BUILDXML} -propertyfile ${domain}/${stage}.properties $@
+else
+echo "The file ${stage}.properties isn't exist!"
+fi

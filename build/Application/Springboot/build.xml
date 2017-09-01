@@ -80,7 +80,7 @@ Date: 2017-08-03
 		<attribute name="host" />
 		<attribute name="command" />
 		<attribute name="keyfile" default="~/.ssh/id_rsa" />
-		<attribute name="option" default="-f" />
+		<attribute name="option" default="-2" />
 		<element name="args" optional="true" />
 		<sequential>
 			<exec executable="ssh">
@@ -341,7 +341,7 @@ Date: 2017-08-03
 	</target>
 
 	<target name="start" depends="stop">
-		<ssh host="${remote.host}" command="${remote.java.home}/bin/java ${remote.java.opts} -jar ${remote.destination}/${project.package}" keyfile="~/.ssh/id_rsa" />
+		<ssh host="${remote.host}" command="${remote.java.home}/bin/java ${remote.java.opts} -jar ${remote.destination}/${project.package}" keyfile="~/.ssh/id_rsa" option="-f" />
 	</target>
 	<target name="debug" depends="stop">
 		<ssh host="${remote.host}" command="${remote.java.home}/bin/java ${remote.java.opts} -jar ${remote.destination}/${project.package} --debug" option="-n" />
@@ -378,10 +378,11 @@ Date: 2017-08-03
 	<target name="systemctl:status" depends="">
 		<ssh host="${remote.host}" command="systemctl status spring" />
 	</target>
-    <target name="run" depends="">
-        <mvn goal="spring-boot:run" dir="${project.dir}" />
+    <target name="run" depends="stop">
+        <ssh host="${remote.host}" command="${remote.java.home}/bin/java ${remote.java.opts} -jar ${remote.destination}/${project.package}" keyfile="~/.ssh/id_rsa" />
     </target>
-    <target name="run:foreground" depends="run">
+    <target name="run:foreground" depends="">
+        <mvn goal="spring-boot:run" dir="${project.dir}" />
     </target>
     <target name="run:background" depends="">
         <java jar="${project.dir}/target/${project.package}" fork="true" />

@@ -4,10 +4,9 @@ Homepage: http://www.netkiller.cn
 Author: neo <netkiller@msn.com>
 Date: 2015-12-07
 -->
-<project name="api.netkiller.cn" default="usage" basedir="." xmlns:if="ant:if">
+<project name="api.netkiller.cn" default="compile" basedir=".">
 
 	<property file="build.properties" />
-    <property file="${basedir}/common.properties" />
 	<!--
 	<property name="git.repository" value="git@58.96.191.168:netkiller.cn/api.netkiller.cn.git" />
     <property name="git.branch" value="master" />
@@ -22,16 +21,17 @@ Date: 2015-12-07
 	<property name="project.package" value="${ant.project.name}-${project.version}-SNAPSHOT.war" />
 	-->
 
-	<property name="project.repository" value="${basedir}/${git.branch}/repository" />
+	<property name="project.repository" value="repository" />
 	<property name="project.dir" value="${project.repository}" />
 	<property name="project.src" value="${project.dir}/src" />
-	<property name="project.build" value="${basedir}/${git.branch}/${project.dir}/target/${ant.project.name}-${project.version}-SNAPSHOT" />
-	<property name="project.resources" value="${basedir}/resources/${git.branch}" />
+	<property name="project.build" value="${project.dir}/target/${ant.project.name}-${project.version}-SNAPSHOT" />
+	<property name="project.resources" value="resources" />
 	<property name="project.exclude" value="/dev/null" />
 	<property name="project.log" value="log" />
 
 	<property name="backup.dir" value="backup" />
 	<property name="receive.timepoint" value="2015-12-04.17:46:35" />
+
 
 	<property name="catalina.home" value="/srv/apache-tomcat" />
 	<property name="maven.home" value="/srv/apache-maven" />
@@ -213,7 +213,7 @@ Date: 2015-12-07
 		-->
 	</target>
 
-	<target name="merge" depends="fetch" if="dir.exists" if:set="${git.merge}">
+	<target name="merge" depends="fetch" if="dir.exists">
 		<git command="merge" dir="${project.dir}">
 			<args>
 				<arg value="remotes/origin/${git.merge}" />
@@ -221,7 +221,7 @@ Date: 2015-12-07
 		</git>
 
 	</target>
-	<target name="push" depends="merge" if="dir.exists" if:set="${git.merge}">
+	<target name="push" depends="merge" if="dir.exists">
 		<git command="push" dir="${project.dir}">
 			<args>
 				<arg value="--progress" />
@@ -398,11 +398,5 @@ Date: 2015-12-07
 	<target name="reset" depends="">
 		<delete dir="${project.dir}" />
 	</target>
-    <target name="usage" depends="">
-        <echo>Java deploy tools by netkiller</echo>
-        <echo>Usage: deployment {domain} {stage} {target}</echo>
-        <echo>Email: netkiller@msn.com</echo>
-        <echo>Website: http://netkiller.github.io</echo>
-    </target>
 </project>
 
