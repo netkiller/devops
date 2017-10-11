@@ -21,12 +21,14 @@ Date: 2017-08-03
 	<property name="project.repository" value="${basedir}/${git.branch}/repository" />
 	<property name="project.dir" value="${project.repository}" />
 	<property name="project.src" value="${project.dir}/src" />
-	<property name="project.build" value="${basedir}/${git.branch}/bin" />
+    <property name="project.version" value="0.0.1" />
+    <property name="project.package" value="${project.name}-${project.version}-${git.branch}.war" />
+    <property name="project.module" value="" />
+    <property name="project.target" value="target" />
+    <property name="project.build" value="${project.dir}/${project.module}/${project.target}/${project.package}" />
 	<property name="project.resources" value="${basedir}/resources/${git.branch}" />
 	<property name="project.exclude" value="/dev/null" />
 	<property name="project.log" value="${basedir}/log/${git.branch}" />
-	<property name="project.version" value="0.0.1" />
-	<property name="project.package" value="${project.name}-${project.version}-${git.branch}.war" />
 
 	<property name="backup.dir" value="backup/${git.branch}" />
 	<property name="receive.timepoint" value="2015-12-04.17:46:35" />
@@ -285,7 +287,7 @@ Date: 2017-08-03
 		<tstamp>
 			<format property="timepoint" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
 		</tstamp>
-		<rsync option="-azv" src="${project.dir}/target/${project.package}" dest="${remote.host}:${remote.destination}/${project.package}">
+		<rsync option="-azv" src="${project.build}" dest="${remote.host}:${remote.destination}/${project.package}">
 			<args>
 				<arg value="--dry-run" />
 				<arg value="--delete" />
@@ -302,7 +304,7 @@ Date: 2017-08-03
 		<tstamp>
 			<format property="timepoint" pattern="yyyy-MM-dd.HH:mm:ss" locale="cn,CN" />
 		</tstamp>
-		<rsync option="-azv" src="${project.dir}/target/${project.package}" dest="${remote.host}:${remote.destination}/">
+		<rsync option="-azv" src="${project.build}" dest="${remote.host}:${remote.destination}/">
 			<args>
 				<arg value="--delete" />
 				<arg value="--backup" />
@@ -385,11 +387,11 @@ Date: 2017-08-03
         <mvn goal="spring-boot:run" dir="${project.dir}" />
     </target>
     <target name="run:background" depends="">
-        <java jar="${project.dir}/target/${project.package}" fork="true" />
+        <java jar="${project.build}" fork="true" />
     </target>
 	<target name="clean">
 		<delete dir="${project.build}" />
-		<delete file="${project.dir}/target/${project.package}" />
+		<delete file="${project.build}" />
 		<mvn goal="clean" dir="${project.dir}" />
 	</target>
 	<target name="reset" depends="clean">
