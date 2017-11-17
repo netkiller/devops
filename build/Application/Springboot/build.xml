@@ -395,9 +395,8 @@ Date: 2017-08-03
 		<delete file="${project.build}" />
 		<mvn goal="clean" dir="${project.dir}" />
 	</target>
-	<target name="reset" depends="clean">
-		<delete dir="${project.dir}" />
-		<delete dir="${backup.dir}/${project.name}" includes="${project.name}*.jar" />
+	<target name="reset" depends="">
+		<delete dir="${project.repository}" />
 	</target>
     <target name="usage" depends="">
         <echo>Java deploy tools by netkiller</echo>
