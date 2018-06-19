@@ -13,7 +13,7 @@ from datetime import datetime
 basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 try:
-	sys.path.append(basedir + '/lib/python3.4/site-packages')
+	sys.path.append(basedir + '/lib/python3.6/site-packages')
 	from rsync import *
 	from git import *
 	#import getpass
