@@ -20,6 +20,11 @@ Install
 	$ cd devops
 	$ python3 setup.py sdist
 	$ python3 setup.py install --prefix=/srv/devops
+	
+	or
+	
+	python36 setup.py sdist
+  	python36 setup.py install --prefix=/srv/devops
 
 ### PATH Variable
 
