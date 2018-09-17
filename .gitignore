@@ -37,3 +37,5 @@ nosetests.xml
 /shell/*.bak
 MANIFEST
 MANIFEST.in
+
+build/Application/.DS_Store
