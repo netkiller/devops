@@ -1,45 +1,28 @@
-import os,sys
-from distutils.core import setup
-#from setuptools import setup
-sys.path.insert(0, os.path.abspath('lib'))
+import setuptools
 from library import __version__, __author__
-#print (__version__)
-readme = open('README.md').read()
-changes = open('CHANGES.txt').read()
-#version_file = 'oscm.py'
-#version = re.findall("__version__ = '(.*)'", open(version_file).read())[0]
-#try:
-#	 version = __import__('utile').git_version(version)
-#except ImportError:
-#	 pass
 
-setup(
-	name='devops',
-	version=__version__,
-	description="DevOps of useful deployment and automation",
-	long_description=readme + '\n\n' + changes,
-	keywords='devops',
-	author=__author__,
-	author_email='netkiller@msn.com',
-	url='http://netkiller.github.io',
-	license='BSD',
-	#py_modules=[
-	#	'library.rsync',
-	#	'library.whiptail'
-	#],
-	classifiers=[
-		'Development Status :: 5 - Production/Stable',
-		'Environment :: Console',
-		'Intended Audience :: Developers',
-		'License :: OSI Approved :: BSD License',
-		'Operating System :: OS Independent',
-		'Programming Language :: Python',
-		'Programming Language :: Python :: 3.4',
-	],
-	package_dir={ '': 'library' },
-	packages=[
-		''
-	],
+with open("README.md", "r") as fh:
+  long_description = fh.read()
+
+setuptools.setup(
+  name="netkiller-devops",
+  version="0.0.1",
+  author="Neo Chen",
+  author_email="netkiller@msn.com",
+  description="DevOps of useful deployment and automation",
+  long_description=long_description,
+  long_description_content_type="text/markdown",
+  url="https://github.com/oscm/devops",
+  packages=setuptools.find_packages(),
+  classifiers=[
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Console',      
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+  ],
+
+#   package_dir={ '': 'library' },
 	scripts=[
 		'bin/deployment',
 		'bin/backup',
@@ -62,4 +45,3 @@ setup(
 		
 	]
 )
-
