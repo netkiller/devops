@@ -72,7 +72,7 @@ class Runtime(threading.Thread):
 class Task():
 	def __init__(self, logging):
 		self.logging = logging
-		self.config = configparser.SafeConfigParser()
+		self.config = configparser.ConfigParser()
 		cfg=basedir + '/etc/task.cfg'
 		self.config.read(cfg)
 	def list(self):
@@ -102,7 +102,7 @@ class Task():
 class Schedule():
 	def __init__(self, logging):
 		self.logging = logging
-		self.config = configparser.SafeConfigParser()
+		self.config = configparser.ConfigParser()
 		cfg=basedir + '/etc/schedule.cfg'
 		self.config.read(cfg)
 	def list(self):
@@ -191,7 +191,7 @@ class Backup():
 		else:
 			cfg = basedir + '/etc/backup.cfg'
 		
-		cpr = configparser.SafeConfigParser()
+		cpr = configparser.ConfigParser()
 		cpr.read(options.config)
 		for sect in cpr.sections():
 			self.config[sect] = dict(cpr.items(sect))

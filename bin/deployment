@@ -3,22 +3,21 @@
 ##############################################
 # Home	: http://netkiller.github.io
 # Author: Neo <netkiller@msn.com>
-# Upgrade: 2017-06-23
+# Upgrade: 2020-04-29
 ##############################################
-import os, io, sys, threading, time, getpass
-import logging, logging.handlers, configparser
-from optparse import OptionParser, OptionGroup
-from datetime import datetime
+try:
+	import os, io, sys, threading, time, getpass
+	import logging, logging.handlers, configparser
+	from optparse import OptionParser, OptionGroup
+	from datetime import datetime
+	# sys.path.append(basedir + '/lib/python3.6/site-packages')
+	from netkiller.rsync import *
+	from netkiller.git import *
+
+except ImportError as err:
+	print("%s" %(err))
 
 basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-try:
-	sys.path.append(basedir + '/lib/python3.6/site-packages')
-	from rsync import *
-	from git import *
-	#import getpass
-except ImportError as err:
-	print("Error: %s" %(err))
 
 CONFIG_DIR= basedir + '/etc'
 #PROJECT_DIR = os.path.expanduser('~/project')
