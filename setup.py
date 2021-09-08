@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
 	name="netkiller-devops",
-	version="0.1.0",
+	version="0.1.2",
 	author="Neo Chen",
 	author_email="netkiller@msn.com",
 	description="DevOps of useful deployment and automation",
@@ -23,7 +23,7 @@ setup(
 		"License :: OSI Approved :: MIT License",
 		"Operating System :: OS Independent",
 	],
-
+	install_requires = ['pyyaml'],
   	# package_dir={ '': 'library' },
 	packages=find_packages(),
 

@@ -1,6 +1,8 @@
 #-*- coding: utf-8 -*-
 import os, sys
 import yaml,json
+import logging, logging.handlers
+from optparse import OptionParser, OptionGroup
 
 class Networks():
 	networks = {}
@@ -89,10 +91,13 @@ class Services():
 		
 class Composes():
 	compose = {}
+	daemon = False
 	def __init__(self, name): 
 		self.compose = {}
 		self.name = name
 		self.filename = self.name+'.yaml'
+		self.logging = logging.getLogger()
+
 	def version(self, version):
 		self.compose['version'] = str(version)
 		return(self)
@@ -107,83 +112,135 @@ class Composes():
 	def volumes(self, obj):
 		self.compose['volumes'] = obj.volumes
 		return(self)
-	def __to_string(self):
-		pass
 	def debug(self):
 		jsonformat = json.dumps(self.compose, sort_keys=True, indent=4, separators=(',', ':'))
 		return(jsonformat)
-		# return(self.compose)
 	def dump(self):
-		# print(yaml.dump(self.compose))
 		return(yaml.dump(self.compose))
-	def save(self):
-		file = open(self.filename,"w")
+	def save(self, filename=None):
+		if filename :
+			file = open(filename,"w")
+		else:
+			file = open(self.filename,"w")
 		yaml.safe_dump(self.compose,stream=file,default_flow_style=False)
-	def save_as(self, filename):
-		file = open(filename,"w")
-		yaml.safe_dump(self.compose,stream=file,default_flow_style=False)
-	def up(self, service="", daemon = False):
+		return(self)
+	def daemon(self,daemon = True):
+		self.daemon = daemon
+		return(self)
+	def up(self, service=""):
 		self.save()
 		d = ''
-		if daemon :
+		if self.daemon :
 			d = '-d'
 		command = "docker-compose -f {compose} up {daemon} {service}".format(compose=self.filename, daemon=d, service=service)
-		print(command)
+		self.logging.debug(command)
 		os.system(command)
-	def rm(self,service):
+		return(self)
+	def rm(self,service=''):
 		command = "docker-compose -f {compose} rm {service}".format(compose=self.filename, service=service)
+		self.logging.debug(command)
 		os.system(command)	
-	def restart(self,service):
+		return(self)
+	def restart(self,service=''):
 		command = "docker-compose -f {compose} restart {service}".format(compose=self.filename, service=service)
-		os.system(self.__to_string())
-	def start(self,service):
-		command = "docker-compose -f {compose} start {service}".format(compose=self.filename, service=service)
-		os.system(command)	
-	def stop(self,service):
-		command = "docker-compose -f {compose} stop {service}".format(compose=self.filename, service=service)
-		os.system(command)	
-	def stop(self,service):
-		command = "docker-compose -f {compose} stop {service}".format(compose=self.filename, service=service)
-		os.system(command)	
-	def ps(self,service):
-		command = "docker-compose -f {compose} ps {service}".format(compose=self.filename, service=service)
+		self.logging.debug(command)
 		os.system(command)
-	def logs(self,service, follow = False):
+		return(self)
+	def start(self,service=''):
+		command = "docker-compose -f {compose} start {service}".format(compose=self.filename, service=service)
+		self.logging.debug(command)
+		os.system(command)	
+		return(self)
+	def stop(self,service=''):
+		command = "docker-compose -f {compose} stop {service}".format(compose=self.filename, service=service)
+		self.logging.debug(command)
+		os.system(command)	
+		return(self)
+	def stop(self,service=''):
+		command = "docker-compose -f {compose} stop {service}".format(compose=self.filename, service=service)
+		self.logging.debug(command)
+		os.system(command)	
+		return(self)
+	def ps(self,service=''):
+		command = "docker-compose -f {compose} ps {service}".format(compose=self.filename, service=service)
+		self.logging.debug(command)
+		os.system(command)
+		return(self)
+	def logs(self,service='', follow = False):
+		tail = ''
 		if follow :
 			tail = '-f --tail=50'
-		command = "docker-compose -f {compose} logs {tail} {service}".format(compose=self.filename, tail=tail,service=service)
+		command = "docker-compose -f {compose} logs {follow} {service}".format(compose=self.filename, follow=tail,service=service)
+		self.logging.debug(command)
 		os.system(command)		
-
+		return(self)
+	def logfile(self, filename):
+		logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',
+			filename=filename,filemode='a')
+		return(self)
+	def workdir(self,path):
+		os.makedirs( path,exist_ok=True);
+		self.filename = path + '/' + self.filename
+		self.logging.info('working dir is ' + self.filename)
+		return(self)
 class Docker():
 
 	def __init__(self): 
-		# pass
 		self.composes= {}
+		self.daemon = False
+		usage = "usage: %prog [options] up|rm|start|stop|restart <service>"
+		self.parser = OptionParser(usage)
+		# self.parser.add_option("-f", "--file", dest="filename", help="write report to FILE", metavar="FILE")
+		self.parser.add_option("", "--debug", action="store_true", dest="debug", help="debug mode")
+		self.parser.add_option('-d','--daemon', dest='daemon', action='store_true', help='run as daemon')
+		self.parser.add_option('-l','--logfile', dest='logfile', help='logs file.', default='debug.log')
+		self.parser.add_option('-f','--follow', dest='follow', action='store_true', help='following logging')
+
+		(options, args) = self.parser.parse_args()
+		if options.daemon :
+			self.daemon = True
+		self.logfile = options.logfile
+		if options.logfile :
+			
+			logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',
+			filename=options.logfile,filemode='a')
+
+		self.logging = logging.getLogger()
+
 	def environment(self, env):
+		env.logfile(self.logfile)
+		# env.workdir('/tmp')
 		self.composes[env.name] = env
 		return(self)
-	def up(self):
+	def up(self,service=''):
 		for env,obj in self.composes.items():
-			obj.up()
-	def rm(self):
+			if self.daemon :
+				obj.daemon().up(service)
+			else:
+				obj.up(service)
+	def rm(self,service=''):
 		for env,obj in self.composes.items():
-			obj.rm()
+			obj.rm(service)
 		return(self)
-	def start(self):
+	def start(self,service=''):
 		for env,obj in self.composes.items():
-			obj.start()
+			obj.start(service)
 		return(self)
-	def stop(self):
+	def stop(self,service=''):
 		for env,obj in self.composes.items():
-			obj.stop()
+			obj.stop(service)
 		return(self)
-	def restart(self):
+	def restart(self,service=''):
 		for env,obj in self.composes.items():
-			obj.restart()
+			obj.restart(service)
 		return(self)
-	def ps(self):
+	def ps(self,service=''):
 		for env,obj in self.composes.items():
-			obj.ps()
+			obj.ps(service)
+		return(self)
+	def logs(self,service='', follow=False):
+		for env,obj in self.composes.items():
+			obj.logs(service, follow)
 		return(self)
 	def dump(self):
 		for env,value in self.composes.items():
@@ -193,4 +250,43 @@ class Docker():
 			file = open(filename,"w")
 			yaml.safe_dump(value,stream=file,default_flow_style=False)
 
+	def usage(self):
+		self.parser.print_help()
+		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
+		exit()
+	def main(self):
+		(options, args) = self.parser.parse_args()
+		if options.debug:
+			print("===================================")
+			print(options, args)
+			print("===================================")
+		if not args:
+			self.usage()
 
+		if len(args) == 2 :
+			self.service = args[1]
+		else:
+			self.service = ''
+
+		if args[0] == 'up' :
+			self.up(self.service)
+			self.logging.info('up ' + self.service)
+		elif args[0] == 'rm':
+			self.rm(self.service)
+			self.logging.info('rm ' + self.service)
+		elif args[0] == 'start':
+			self.start(self.service)
+			self.logging.info('start ' + self.service)
+		elif args[0] == 'stop':
+			self.stop(self.service)
+			self.logging.info('stop ' + self.service)
+		elif args[0] == 'restart':
+			self.restart(self.service)
+			self.logging.info('restart' + self.service)
+		elif args[0] == 'ps':
+			self.ps(self.service)
+		elif args[0] == 'logs':
+			self.logs(self.service, options.follow)
+			# self.logging.info('restart' + self.service)
+		else:
+			self.usage()
