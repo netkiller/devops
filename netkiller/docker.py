@@ -78,6 +78,9 @@ class Services():
 	def networks(self, array):
 		self.service[self.name]['networks'] = array
 		return(self)
+	def sysctls(self,array):
+		self.service[self.name]['sysctls'] = array
+		return(self)
 	def entrypoint(self, cmd):
 		self.service[self.name]['entrypoint'] = cmd
 		return(self)
