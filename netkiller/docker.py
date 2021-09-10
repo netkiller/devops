@@ -198,6 +198,8 @@ class Docker():
 		self.parser.add_option('-d','--daemon', dest='daemon', action='store_true', help='run as daemon')
 		self.parser.add_option('-l','--logfile', dest='logfile', help='logs file.', default='debug.log')
 		self.parser.add_option('-f','--follow', dest='follow', action='store_true', help='following logging')
+		self.parser.add_option('-c','--compose', dest='compose', action='store_true', help='show docker compose')
+		self.parser.add_option('-e','--export', dest='export', action='store_true', help='export docker compose')
 
 		(options, args) = self.parser.parse_args()
 		if options.daemon :
@@ -250,8 +252,7 @@ class Docker():
 			print(value.dump())
 	def save_all(self):
 		for filename,value in self.composes.items():
-			file = open(filename,"w")
-			yaml.safe_dump(value,stream=file,default_flow_style=False)
+			value.save(filename+'.yaml')
 
 	def usage(self):
 		self.parser.print_help()
@@ -263,6 +264,14 @@ class Docker():
 			print("===================================")
 			print(options, args)
 			print("===================================")
+		
+		if options.export :
+			self.save_all()
+			exit()
+		if options.compose :
+			self.dump()
+			exit()
+
 		if not args:
 			self.usage()
 
