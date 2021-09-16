@@ -44,6 +44,7 @@ class Services():
 		self.service = {}
 		self.name = name
 		self.service[self.name]={}
+		self.service[self.name]['depends_on']=[]
 	def image(self, name):
 		self.service[self.name]['image']= name
 		return(self)
@@ -88,14 +89,17 @@ class Services():
 	def command(self, array=[]):
 		self.service[self.name]['command'] = array
 		return(self)
-	def depends_on(self, array=[]):
-		if isinstance(array, Services):
-			return(self)
-		self.service[self.name]['depends_on'] = array
+	def depends_on(self, obj):
+		if isinstance(obj, Services):
+			self.service[self.name]['depends_on'].append(obj.name)
+		elif type(obj) == str:
+			self.service[self.name]['depends_on'].append(obj)
+		else:	
+			self.service[self.name]['depends_on'] = obj
 		return(self)
 	def depends_on_object(self,obj):
 		if isinstance(obj, Services):
-			self.service[self.name]['depends_on'] = obj.name
+			self.service[self.name]['depends_on'].append(obj.name)
 		elif type(obj) == list:
 			depends = []
 			if isinstance(obj[0], Services):
@@ -115,17 +119,15 @@ class Composes():
 		self.name = name
 		self.filename = self.name+'.yaml'
 		self.logging = logging.getLogger()
-		self.compose['services'] = []
+		self.compose['services'] = {}
 		# self.compose['networks'] = []
 	def version(self, version):
 		self.compose['version'] = str(version)
 		return(self)
 	def services(self,obj):
-		self.compose['services'].append(obj.service) 
-		# print(obj.service)
+		self.compose['services'].update(obj.service)
 		return(self)
 	def networks(self, obj):
-		# print(obj.networks)
 		self.compose['networks'] = obj.networks
 		return(self)
 	def volumes(self, obj):

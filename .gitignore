@@ -40,3 +40,4 @@ MANIFEST.in
 
 .DS_Store
 debug.log
+development.yaml
