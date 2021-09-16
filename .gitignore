@@ -39,3 +39,4 @@ MANIFEST
 MANIFEST.in
 
 .DS_Store
+debug.log

@@ -5,8 +5,8 @@ import logging, logging.handlers
 from optparse import OptionParser, OptionGroup
 
 class Networks():
-	networks = {}
 	def __init__(self, name=None): 
+		self.networks = {}
 		if name :
 			self.name = name
 		else:
@@ -41,52 +41,68 @@ class Volumes():
 class Services():	
 	service = {}
 	def __init__(self, name=None): 
-		self.name = name
-		self.service[name] = {}
+		self.service = {}
+		if name :
+			self.service['container_name'] =name
+			self.name = name
 	def image(self, name):
-		self.service[self.name]['image']= name
+		self.service['image']= name
 		return(self)
 	def container_name(self,name=None):
 		if not name :
 			name = self.name
-		self.service[self.name]['container_name'] =name
+		self.service['container_name'] =name
 		return(self)
 	def restart(self,value='always'):
-		self.service[self.name]['restart'] =value
+		self.service['restart'] =value
 		return(self)	
 	def hostname(self,value='localhost.localdomain'):
-		self.service[self.name]['hostname'] =value
+		self.service['hostname'] =value
 		return(self)
 	def extra_hosts(self,array=[]):
-		self.service[self.name]['extra_hosts'] = array
+		self.service['extra_hosts'] = array
 		return(self)
 	def environment(self, array=[]):
-		self.service[self.name]['environment'] = array
+		self.service['environment'] = array
 		return(self)
 	def env_file(self, array=[]):
-		self.service[self.name]['env_file'] = array
+		self.service['env_file'] = array
 		return(self)
 	def ports(self, array):
-		self.service[self.name]['ports'] = array
+		self.service['ports'] = array
 		return(self)
 	def working_dir(self, dir='/'):
-		self.service[self.name]['working_dir'] = dir
+		self.service['working_dir'] = dir
 		return(self)
 	def volumes(self, array):
-		self.service[self.name]['volumes'] = array
+		self.service['volumes'] = array
 		return(self)
 	def networks(self, array):
-		self.service[self.name]['networks'] = array
+		self.service['networks'] = array
 		return(self)
 	def sysctls(self,array):
-		self.service[self.name]['sysctls'] = array
+		self.service['sysctls'] = array
 		return(self)
 	def entrypoint(self, cmd):
-		self.service[self.name]['entrypoint'] = cmd
+		self.service['entrypoint'] = cmd
 		return(self)
 	def command(self, array=[]):
-		self.service[self.name]['command'] = array
+		self.service['command'] = array
 		return(self)
+	def depends_on(self, array=[]):
+		if isinstance(array, Services):
+			return(self)
+		self.service['depends_on'] = array
+		return(self)
+	def depends_on_object(self,obj):
+		if isinstance(obj, Services):
+			self.service['depends_on'] = obj.name
+		elif type(obj) == list:
+			depends = []
+			if isinstance(obj[0], Services):
+				for o in obj:
+					depends.append(o.name)
+				self.service['depends_on'] = depends
 	def dump(self):
 		return(yaml.dump(self.service))
 	def debug(self):
@@ -177,6 +193,16 @@ class Composes():
 		self.logging.debug(command)
 		os.system(command)		
 		return(self)
+	def exec(self,service, cmd):
+		command = "docker-compose -f {compose} exec {service} {cmd}".format(compose=self.filename, service=service, cmd=cmd)
+		self.logging.debug(command)
+		os.system(command)
+		return(self)
+	def kill(self,service):
+		command = "docker-compose -f {compose} kill {service}".format(compose=self.filename, service=service)
+		self.logging.debug(command)
+		os.system(command)
+		return(self)	
 	def logfile(self, filename):
 		logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',
 			filename=filename,filemode='a')
@@ -253,7 +279,11 @@ class Docker():
 	def save_all(self):
 		for filename,value in self.composes.items():
 			value.save(filename+'.yaml')
-
+	def exec(self,service, array):
+		for env,obj in self.composes.items():
+			cmd = ' '.join(array)
+			obj.exec(service, cmd)
+		return(self)
 	def usage(self):
 		self.parser.print_help()
 		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
@@ -299,6 +329,8 @@ class Docker():
 			self.ps(self.service)
 		elif args[0] == 'logs':
 			self.logs(self.service, options.follow)
+		elif args[0] == 'exec':
+			self.exec(self.service, args[2:])
 			# self.logging.info('restart' + self.service)
 		else:
 			self.usage()
