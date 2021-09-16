@@ -224,7 +224,8 @@ class Docker():
 		# self.parser.add_option("-f", "--file", dest="filename", help="write report to FILE", metavar="FILE")
 		self.parser.add_option("", "--debug", action="store_true", dest="debug", help="debug mode")
 		self.parser.add_option('-d','--daemon', dest='daemon', action='store_true', help='run as daemon')
-		self.parser.add_option('-l','--logfile', dest='logfile', help='logs file.', default='debug.log')
+		self.parser.add_option('','--logfile', dest='logfile', help='logs file.', default='debug.log')
+		self.parser.add_option('-l','--list', dest='list', action='store_true', help='following logging')
 		self.parser.add_option('-f','--follow', dest='follow', action='store_true', help='following logging')
 		self.parser.add_option('-c','--compose', dest='compose', action='store_true', help='show docker compose')
 		self.parser.add_option('-e','--export', dest='export', action='store_true', help='export docker compose')
@@ -275,6 +276,11 @@ class Docker():
 		for env,obj in self.composes.items():
 			obj.logs(service, follow)
 		return(self)
+	def list(self):
+		for env,obj in self.composes.items():
+			for service in obj.compose['services'] :
+				print(service)	
+		return(self)
 	def dump(self):
 		for env,value in self.composes.items():
 			print(value.dump())
@@ -296,6 +302,10 @@ class Docker():
 			print("===================================")
 			print(options, args)
 			print("===================================")
+			self.logging.debug("="*50)
+			self.logging.debug(options)
+			self.logging.debug(args)
+			self.logging.debug("="*50)
 		
 		if options.export :
 			self.save_all()
@@ -303,15 +313,19 @@ class Docker():
 		if options.compose :
 			self.dump()
 			exit()
-
+		if options.list :
+			self.list()
+			exit()
 		if not args:
 			self.usage()
 
-		if len(args) == 2 :
-			self.service = args[1]
+		if len(args) > 1 :
+			self.service = ' '.join(args[1:])
 		else:
-			self.service = ''
+			self.usage()
 
+		self.logging.debug('service ' + self.service)
+	
 		if args[0] == 'up' :
 			self.up(self.service)
 			self.logging.info('up ' + self.service)
