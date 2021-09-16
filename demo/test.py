@@ -6,7 +6,7 @@ sys.path.insert(0,module)
 
 from netkiller.docker import *
 
-if __name__ == '__main__':
+
 
 	volume = Volumes('redis')
 
@@ -78,10 +78,3 @@ if __name__ == '__main__':
 	# docker.dump()
 	# docker.up()
 
-
-	# try:
-		# docker = Docker()
-		# docker.environment(compose)
-		# docker.main()
-	# except KeyboardInterrupt:
-	# 	print ("Crtl+C Pressed. Shutting down.")

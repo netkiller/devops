@@ -39,70 +39,69 @@ class Volumes():
 		return(self)
 		
 class Services():	
-	service = {}
-	def __init__(self, name=None): 
+	# service = {}
+	def __init__(self, name): 
 		self.service = {}
-		if name :
-			self.service['container_name'] =name
-			self.name = name
+		self.name = name
+		self.service[self.name]={}
 	def image(self, name):
-		self.service['image']= name
+		self.service[self.name]['image']= name
 		return(self)
 	def container_name(self,name=None):
 		if not name :
 			name = self.name
-		self.service['container_name'] =name
+		self.service[self.name]['container_name'] =name
 		return(self)
 	def restart(self,value='always'):
-		self.service['restart'] =value
+		self.service[self.name]['restart'] =value
 		return(self)	
 	def hostname(self,value='localhost.localdomain'):
-		self.service['hostname'] =value
+		self.service[self.name]['hostname'] =value
 		return(self)
 	def extra_hosts(self,array=[]):
-		self.service['extra_hosts'] = array
+		self.service[self.name]['extra_hosts'] = array
 		return(self)
 	def environment(self, array=[]):
-		self.service['environment'] = array
+		self.service[self.name]['environment'] = array
 		return(self)
 	def env_file(self, array=[]):
-		self.service['env_file'] = array
+		self.service[self.name]['env_file'] = array
 		return(self)
 	def ports(self, array):
-		self.service['ports'] = array
+		self.service[self.name]['ports'] = array
 		return(self)
 	def working_dir(self, dir='/'):
-		self.service['working_dir'] = dir
+		self.service[self.name]['working_dir'] = dir
 		return(self)
 	def volumes(self, array):
-		self.service['volumes'] = array
+		self.service[self.name]['volumes'] = array
 		return(self)
 	def networks(self, array):
-		self.service['networks'] = array
+		self.service[self.name]['networks'] = array
 		return(self)
 	def sysctls(self,array):
-		self.service['sysctls'] = array
+		self.service[self.name]['sysctls'] = array
 		return(self)
 	def entrypoint(self, cmd):
-		self.service['entrypoint'] = cmd
+		self.service[self.name]['entrypoint'] = cmd
 		return(self)
 	def command(self, array=[]):
-		self.service['command'] = array
+		self.service[self.name]['command'] = array
 		return(self)
 	def depends_on(self, array=[]):
 		if isinstance(array, Services):
 			return(self)
-		self.service['depends_on'] = array
+		self.service[self.name]['depends_on'] = array
 		return(self)
 	def depends_on_object(self,obj):
 		if isinstance(obj, Services):
-			self.service['depends_on'] = obj.name
+			self.service[self.name]['depends_on'] = obj.name
 		elif type(obj) == list:
 			depends = []
 			if isinstance(obj[0], Services):
 				for o in obj:
 					depends.append(o.name)
-				self.service['depends_on'] = depends
+				self.service[self.name]['depends_on'] = depends
 	def dump(self):
 		return(yaml.dump(self.service))
 	def debug(self):
@@ -116,12 +115,13 @@ class Composes():
 		self.name = name
 		self.filename = self.name+'.yaml'
 		self.logging = logging.getLogger()
-
+		self.compose['services'] = []
+		# self.compose['networks'] = []
 	def version(self, version):
 		self.compose['version'] = str(version)
 		return(self)
 	def services(self,obj):
-		self.compose['services'] = obj.service
+		self.compose['services'].append(obj.service) 
 		# print(obj.service)
 		return(self)
 	def networks(self, obj):
