@@ -187,6 +187,16 @@ class Composes():
 		self.logging.debug(command)
 		os.system(command)
 		return(self)
+	def top(self,service=''):
+		command = "docker-compose -f {compose} top {service}".format(compose=self.filename, service=service)
+		self.logging.debug(command)
+		os.system(command)
+		return(self)
+	def images(self,service=''):
+		command = "docker-compose -f {compose} images {service}".format(compose=self.filename, service=service)
+		self.logging.debug(command)
+		os.system(command)
+		return(self)		
 	def logs(self,service='', follow = False):
 		tail = ''
 		if follow :
@@ -204,7 +214,7 @@ class Composes():
 		command = "docker-compose -f {compose} kill {service}".format(compose=self.filename, service=service)
 		self.logging.debug(command)
 		os.system(command)
-		return(self)	
+		return(self)
 	def logfile(self, filename):
 		logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',
 			filename=filename,filemode='a')
@@ -219,7 +229,7 @@ class Docker():
 	def __init__(self): 
 		self.composes= {}
 		self.daemon = False
-		usage = "usage: %prog [options] up|rm|start|stop|restart <service>"
+		usage = "usage: %prog [options] up|rm|start|stop|restart|logs|top|images|exec <service>"
 		self.parser = OptionParser(usage)
 		# self.parser.add_option("-f", "--file", dest="filename", help="write report to FILE", metavar="FILE")
 		self.parser.add_option("", "--debug", action="store_true", dest="debug", help="debug mode")
@@ -272,6 +282,14 @@ class Docker():
 		for env,obj in self.composes.items():
 			obj.ps(service)
 		return(self)
+	def top(self,service=''):
+		for env,obj in self.composes.items():
+			obj.top(service)
+		return(self)
+	def images(self,service=''):
+		for env,obj in self.composes.items():
+			obj.images(service)
+		return(self)
 	def logs(self,service='', follow=False):
 		for env,obj in self.composes.items():
 			obj.logs(service, follow)
@@ -322,7 +340,7 @@ class Docker():
 		if len(args) > 1 :
 			self.service = ' '.join(args[1:])
 		else:
-			self.usage()
+			self.service = ''
 
 		self.logging.debug('service ' + self.service)
 	
@@ -343,6 +361,10 @@ class Docker():
 			self.logging.info('restart' + self.service)
 		elif args[0] == 'ps':
 			self.ps(self.service)
+		elif args[0] == 'top':
+			self.top(self.service)
+		elif args[0] == 'images':
+			self.images(self.service)
 		elif args[0] == 'logs':
 			self.logs(self.service, options.follow)
 		elif args[0] == 'exec':
