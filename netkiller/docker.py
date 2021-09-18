@@ -44,6 +44,7 @@ class Services():
 		self.service = {}
 		self.name = name
 		self.service[self.name]={}
+		self.service[self.name]['ports']=[]
 		self.service[self.name]['depends_on']=[]
 	def image(self, name):
 		self.service[self.name]['image']= name
@@ -68,8 +69,11 @@ class Services():
 	def env_file(self, array=[]):
 		self.service[self.name]['env_file'] = array
 		return(self)
-	def ports(self, array):
-		self.service[self.name]['ports'] = array
+	def ports(self, obj):
+		if type(obj) == str:
+			self.service[self.name]['ports'].append(obj)
+		else:
+			self.service[self.name]['ports'] = obj
 		return(self)
 	def working_dir(self, dir='/'):
 		self.service[self.name]['working_dir'] = dir
