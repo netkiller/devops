@@ -8,11 +8,25 @@ class Rsync():
 	def option(self, opt):
 		self.opt.append(opt)
 		return(self)
+	def verbose(self):
+		self.opt.append('--verbose')
+		return(self)
+	def quiet(self):
+		self.opt.append('--quiet')
+		return(self)
 	def delete(self):
 		self.opt.append('--delete')
 		return(self)
+	def update(self):
+		self.opt.append('--update')
+		return(self)
 	def backup(self, dir):
 		self.opt.append('--backup --backup-dir='+dir)
+		return(self)
+	def compress(self, num = None):
+		self.opt.append("--compress")
+		if num :
+			self.opt.append("--compress-level={num}".format(num=num))
 		return(self)
 	def logfile(self, log):
 		self.opt.append('--log-file='+log)

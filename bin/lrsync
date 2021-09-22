@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+#-*- coding: utf-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+##############################################
+import os,sys
+module=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0,module)
+
+try:
+	from optparse import OptionParser, OptionGroup
+	from netkiller.rsync import *
+except ImportError as err:
+	print("Error: %s" %(err))
+##############################################
+
+class Lrsync():
+
+	def __init__(self):
+		self.config = {}
+
+		usage = "usage: %prog [options] <local> <remote>"
+		self.parser = OptionParser(usage)
+		# self.parser.add_option("-f", "--file", dest="filename", help="write report to FILE", metavar="FILE")
+		self.parser.add_option("-i", "--increment", action="store_true", dest="increment", default=False, help="increment deployment")
+		self.parser.add_option('-c','--compress', dest="compress", action="store_true", default=False,help='compress file data during the transfer')
+		self.parser.add_option('-d','--delete', dest='delete', action='store_true', default=False,help='delete extraneous files from destination dirs')
+		self.parser.add_option('-b','--backup', dest="backup", help='make backups into hierarchy based in DIR', metavar="/opt/backup", default=module)
+		self.parser.add_option('-l','--logfile', dest="logfile", help="log what we're doing to the specified FILE", metavar="/var/log/lrsync.log", default='backup.log')
+		self.parser.add_option('-v','--verbose',action='store_true', default=False,help='increase verbosity')
+		self.parser.add_option('-q','--quiet',action='store_true', default=False,help='suppress non-error messages')
+		self.parser.add_option("", "--debug", dest="debug", action="store_true", help="Print debug information" )
+
+		(self.options, self.args) = self.parser.parse_args()
+		if self.options.debug:
+			print("===================================")
+			print(self.options, self.args)
+			print("===================================")	
+
+	def execute(self,local, remote):
+		rsync = Rsync()
+		rsync.option('-a')
+		if self.options.verbose :
+			rsync.verbose()
+		if self.options.quiet :
+			rsync.quiet()	
+		if self.options.increment :
+			rsync.update()
+		if self.options.compress :
+			rsync.compress()
+		if self.options.delete :
+			rsync.delete()
+		if self.options.backup :
+			rsync.backup(self.options.backup)
+		if self.options.logfile :
+			rsync.logfile(self.options.logfile)
+		rsync.source(local).destination(remote)
+		if self.options.debug :
+			print(rsync.debug())
+		rsync.execute()
+	def usage(self):
+		print("Push local file to remote")
+		self.parser.print_help()
+		print("\nHomepage: http://netkiller.github.com\tAuthor: Neo <netkiller@msn.com>")
+	def main(self):
+		if not self.args:
+			self.usage()
+		elif len(self.args) == 2 :
+			self.execute(self.args[0],self.args[1])
+		else:
+			self.usage()
+			
+if __name__ == '__main__':
+	try:
+		lrsync = Lrsync()
+		lrsync.main()
+	except KeyboardInterrupt:
+		print ("Crtl+C Pressed. Shutting down.")
+
+
+
