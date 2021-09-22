@@ -1,0 +1,1 @@
+cat /dev/urandom | tr -cd [:alnum:] | fold -w32 | head -n 10
