@@ -44,8 +44,6 @@ class Services():
 		self.service = {}
 		self.name = name
 		self.service[self.name]={}
-		self.service[self.name]['ports']=[]
-		self.service[self.name]['depends_on']=[]
 	def image(self, name):
 		self.service[self.name]['image']= name
 		return(self)
@@ -70,10 +68,20 @@ class Services():
 		self.service[self.name]['env_file'] = array
 		return(self)
 	def ports(self, obj):
+		if not 'ports' in self.service[self.name].keys() :
+			self.service[self.name]['ports']=[]
 		if type(obj) == str:
 			self.service[self.name]['ports'].append(obj)
 		else:
 			self.service[self.name]['ports'] = obj
+		return(self)
+	def expose(self, obj):
+		if not 'expose' in self.service[self.name].keys() :
+			self.service[self.name]['expose']=[]
+		if type(obj) == str:
+			self.service[self.name]['expose'].append(obj)
+		else:
+			self.service[self.name]['expose'] = obj
 		return(self)
 	def working_dir(self, dir='/'):
 		self.service[self.name]['working_dir'] = dir
@@ -94,12 +102,22 @@ class Services():
 		self.service[self.name]['command'] = array
 		return(self)
 	def depends_on(self, obj):
+		if not 'depends_on' in self.service[self.name].keys() :
+			self.service[self.name]['depends_on']=[]
 		if isinstance(obj, Services):
 			self.service[self.name]['depends_on'].append(obj.name)
 		elif type(obj) == str:
 			self.service[self.name]['depends_on'].append(obj)
 		else:	
 			self.service[self.name]['depends_on'] = obj
+		return(self)
+	def links(self, obj):
+		if isinstance(obj, Services):
+			self.service[self.name]['links'].append(obj.name)
+		elif type(obj) == str:
+			self.service[self.name]['links'].append(obj)
+		else:	
+			self.service[self.name]['links'] = obj
 		return(self)
 	def depends_on_object(self,obj):
 		if isinstance(obj, Services):
@@ -110,6 +128,11 @@ class Services():
 				for o in obj:
 					depends.append(o.name)
 				self.service[self.name]['depends_on'] = depends
+	def logging(self, driver="fluentd", options=None):
+		self.service[self.name]['logging'] = {'driver': driver}
+		if options :
+			self.service[self.name]['logging'] = {'options': options}
+		return(self)
 	def dump(self):
 		return(yaml.dump(self.service))
 	def debug(self):
