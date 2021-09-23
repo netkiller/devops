@@ -56,7 +56,8 @@ class Rsync():
 		self.cmd['dest'] = dest
 		return(self)
 	def execute(self):
-		os.system(self.__to_string())
+		rev = os.system(self.__to_string())
+		return(rev)
 	def __to_string(self):
 		return('rsync '+' '.join(self.opt)+' '+self.cmd['src']+' '+ self.cmd['dest'])
 	def debug(self):

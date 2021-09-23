@@ -58,23 +58,27 @@ class Lrsync():
 		rsync.source(local).destination(remote)
 		if self.options.debug :
 			print(rsync.debug())
-		rsync.execute()
+		rev = rsync.execute()
+		return(rev)
 	def usage(self):
 		print("Push local file to remote")
 		self.parser.print_help()
 		print("\nHomepage: http://netkiller.github.com\tAuthor: Neo <netkiller@msn.com>")
 	def main(self):
+		rev = 0
 		if not self.args:
 			self.usage()
 		elif len(self.args) == 2 :
-			self.execute(self.args[0],self.args[1])
+			rev = self.execute(self.args[0],self.args[1])
 		else:
 			self.usage()
+		return rev
 			
 if __name__ == '__main__':
 	try:
 		lrsync = Lrsync()
-		lrsync.main()
+		rev = lrsync.main()
+		sys.exit(rev)
 	except KeyboardInterrupt:
 		print ("Crtl+C Pressed. Shutting down.")
 
