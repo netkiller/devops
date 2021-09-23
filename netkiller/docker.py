@@ -61,8 +61,13 @@ class Services():
 	def extra_hosts(self,array=[]):
 		self.service[self.name]['extra_hosts'] = array
 		return(self)
-	def environment(self, array=[]):
-		self.service[self.name]['environment'] = array
+	def environment(self, array):
+		if not 'environment' in self.service[self.name].keys() :
+			self.service[self.name]['environment']=[]
+		if type(array) == str:
+			self.service[self.name]['environment'].append(obj)
+		else:
+			self.service[self.name]['environment'] = array
 		return(self)
 	def env_file(self, array=[]):
 		self.service[self.name]['env_file'] = array
@@ -128,10 +133,10 @@ class Services():
 				for o in obj:
 					depends.append(o.name)
 				self.service[self.name]['depends_on'] = depends
-	def logging(self, driver="fluentd", options=None):
+	def logging(self, driver="json-file", options=None):
 		self.service[self.name]['logging'] = {'driver': driver}
 		if options :
-			self.service[self.name]['logging'] = {'options': options}
+			self.service[self.name]['logging'].update({'options': options})
 		return(self)
 	def dump(self):
 		return(yaml.dump(self.service))
