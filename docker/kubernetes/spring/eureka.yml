@@ -1,0 +1,152 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka
+  namespace: default
+  labels:
+    app: springboot
+spec:
+  selector:
+    app: eureka
+  type: NodePort
+  ports: 
+  - name: http
+    protocol: TCP 
+    port: 8761
+    targetPort: 8761
+    nodePort: 30010
+  clusterIP: 10.10.0.3
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eureka
+  labels:
+    app: eureka
+data:
+  bootstrap.properties: |-
+    spring.cloud.loadbalancer.ribbon.enabled=false
+
+    eureka.instance.appname=${spring.application.name}
+    eureka.instance.hostname=localhost
+    eureka.instance.preferIpAddress=false
+    eureka.instance.leaseExpirationDurationInSeconds=10
+    
+    eureka.server.peer-node-read-timeout-ms=30000
+    eureka.server.enableSelfPreservation=true
+    eureka.server.evictionIntervalTimerInMs=5000
+    eureka.server.leaseRenewalIntervalInSeconds=5
+    eureka.server.leaseExpirationDurationInSeconds=10
+    eureka.server.useReadOnlyResponseCache=false
+
+    # eureka.client.register-with-eureka=true
+    # eureka.client.fetch-registry=false
+    # eureka.client.RegistryFetchIntervalSeconds=10
+    eureka.client.serviceUrl.defaultZone=http://eureka:s3cr3t@eureka-0.eureka:${server.port}/eureka/,http://eureka:s3cr3t@eureka-1.eureka:${server.port}/eureka/
+    # eureka.client.serviceUrl.defaultZone=${EUREKA_SERVER:http://eureka:s3cr3t@127.0.0.1:8761/eureka/}
+
+
+  application.properties: |-
+    spring.application.name=netflix-eureka-server
+    # spring.profiles.active=dev
+    server.port=8761
+    logging.file=/tmp/spring.log
+
+    spring.security.basic.enabled=true
+    spring.security.basic.path=/eureka/**
+    spring.security.user.name=eureka
+    spring.security.user.password=s3cr3t
+
+    management.security.enabled=false
+    management.endpoints.actuator.enabled=true
+
+    # ribbon.eureka.enabled=false
+
+    # logging.level.com.netflix.eureka=OFF
+    # logging.level.com.netflix.discovery=OFF
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: eureka
+spec:
+  serviceName: "eureka"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eureka
+  template:
+    metadata:
+      labels:
+        app: eureka
+    spec:
+      containers: 
+      - name: eureka
+        #image: netkiller/eureka:latest
+        #image: 127.0.0.1:5000/netkiller/eureka:latest
+        image: registry.netkiller.cn:5000/netkiller/eureka:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8761
+          name: http
+        # resources:
+        #   limits:
+        #     cpu: 2000m
+        #     memory: 2Gi
+        #   requests:
+        #     cpu: 1000m
+        #     memory: 1Gi
+        # livenessProbe:
+        #   httpGet:
+        #     path: /actuator/health
+        #     port: 8761
+        #   initialDelaySeconds: 20
+        #   timeoutSeconds: 5
+        #   failureThreshold: 12
+        # readinessProbe:
+        #   httpGet:
+        #     path: /actuator/health
+        #     port: 8761
+        #   initialDelaySeconds: 20
+        #   timeoutSeconds: 5
+        #   failureThreshold: 12
+        env:
+        - name: JAVA_OPTS
+          value: -server -Xms128m -Xmx512m
+        #   valueFrom:
+        #     resourceFieldRef:
+        #       resource: limits.memory
+        #       divisor: 1Mi
+        # - name: JAVA_OPTS
+        #   value: -server -Xms512m -Xmx4096m -Duser.timezone="Asia/Shanghai" -Djava.security.egd=file:/dev/./urandom
+          # value: -XX:+UnlockExperimentalVMOptions
+          #   -XX:+UseCGroupMemoryLimitForHeap
+          #   -XX:MaxRAMFraction=2
+          #   -XX:CICompilerCount=8
+          #   -XX:ActiveProcessorCount=8
+          #   -XX:+UseG1GC
+          #   -XX:+AggressiveOpts
+          #   -XX:+UseFastAccessorMethods
+          #   -XX:+UseStringDeduplication
+          #   -XX:+UseCompressedOops
+          #   -XX:+OptimizeStringConcat
+        - name: SPRING_OPTS
+          value: --spring.cloud.bootstrap.location=/srv/bootstrap.properties --spring.config.location=/srv/application.properties
+        volumeMounts:
+        - name: config
+          mountPath:  /srv/bootstrap.properties
+          subPath: bootstrap.properties        
+        - name: config
+          mountPath:  /srv/application.properties
+          subPath: application.properties
+        # - name: logfile
+        #   mountPath: /tmp          
+      volumes:
+      # - name: logfile
+      #   emptyDir: {} 
+      - name: config
+        configMap:
+          name: eureka
+      imagePullSecrets:
+        - name: docker-hub

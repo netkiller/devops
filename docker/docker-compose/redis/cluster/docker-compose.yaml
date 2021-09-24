@@ -1,0 +1,134 @@
+version: "3.7"
+services:
+  redis-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - node=master
+    image: netkiller/redis:latest
+    container_name: redis-cli
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - /tmp/redis/6379/data:/data
+    #   - redis-master:/data
+      # - ./docker-entrypoint.sh:/docker-entrypoint.sh:ro
+      # - "/etc/timezone:/etc/timezone:ro"
+      # - "/etc/localtime:/etc/localtime:ro"
+    depends_on:
+      - redismaster1
+      - redismaster2
+      - redismaster3
+      - redisslave1
+      - redisslave2
+      - redisslave3
+    # links:
+    #   - redis-slave1
+    #   - redis-slave2
+    networks:
+      - redis
+    privileged: true
+    sysctls:
+      net.core.somaxconn: '511'
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    # entrypoint: /docker-entrypoint.sh
+    # command: redis-cli
+    # 
+  redismaster1:
+    image: 'netkiller/redis'
+    environment:
+      REDIS_PORT: '7000'
+    ports:
+      - '7000:7000'
+      - '17000:17000'
+    sysctls:
+      net.core.somaxconn: '511'
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+  redismaster2:
+    image: 'netkiller/redis'
+    environment:
+      REDIS_PORT: '7001'
+    ports:
+      - '7001:7001'
+      - '17001:17001'
+    sysctls:
+      net.core.somaxconn: '511'
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+  redismaster3:
+    image: 'netkiller/redis'
+    environment:
+      REDIS_PORT: '7002'
+    ports:
+      - '7002:7002'
+      - '17002:17002'
+    sysctls:
+      net.core.somaxconn: '511'
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+  redisslave1:
+    image: 'netkiller/redis'
+    environment:
+      REDIS_PORT: '7003'
+    ports:
+      - '7003:7003'
+      - '17003:17003'
+    sysctls:
+      net.core.somaxconn: '511'
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+  redisslave2:
+    image: 'netkiller/redis'
+    environment:
+      REDIS_PORT: '7004'
+    ports:
+      - '7004:7004'
+      - '17004:17004'
+    sysctls:
+      net.core.somaxconn: '511'
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+  redisslave3:
+    image: 'netkiller/redis'
+    environment:
+      REDIS_PORT: '7005'
+    ports:
+      - '7005:7005'
+      - '17005:17005'
+    sysctls:
+      net.core.somaxconn: '511'
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+networks:
+  redis:
+    driver: bridge
+
+volumes:
+  redis-master:
+  redis-slave1:   
+  redis-slave2:            

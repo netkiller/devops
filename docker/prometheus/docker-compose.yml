@@ -1,0 +1,199 @@
+version: '3.9'
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.77.10.0/24
+          gateway: 172.77.10.1
+volumes:
+  prometheus:
+  alertmanager:
+  grafana:
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    hostname: prometheus
+    restart: always
+    # restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    working_dir: /var/lib/prometheus/
+    volumes:
+      - ${PWD}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ${PWD}/prometheus/rules:/etc/prometheus/rules
+      # - /var/lib/prometheus:/var/lib/prometheus
+      # - /var/lib/prometheus:/prometheus
+      - prometheus:/prometheus
+    command:
+    # args: 
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      # - "--storage.local.memory-chunks=10000"
+      # - '--storage.tsdb.path=/var/lib/prometheus'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      # - '--log.level=info'
+      # - '--web.listen-address=0.0.0.0:9090'
+      # - '--query.max-concurrency=50'
+    ports:
+      - '9090:9090'
+    expose:
+      - "9090"
+    depends_on:
+      - blackbox_exporter
+      - alertmanager
+      - grafana
+      # - node_exporter
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    hostname: alertmanager
+    restart: always
+    environment:
+      - SET_CONTAINER_TIMEZONE=true
+      - CONTAINER_TIMEZONE=Asia/Shanghai
+      - TZ=Asia/Shanghai
+    volumes:
+      - ${PWD}/alertmanager/config.yml:/etc/alertmanager/config.yml
+      - alertmanager:/alertmanager
+      - ${PWD}/alertmanager/Shanghai:/etc/localtime
+    ports:
+      - "9093:9093"
+    depends_on:
+      - alertmanager_webhook
+    command:
+      --config.file=/etc/alertmanager/config.yml
+      --cluster.advertise-address=0.0.0.0:9093
+
+  alertmanager_webhook:
+    image: netkiller/alertmanager
+    container_name: alertmanager_webhook
+    restart: always
+    hostname: alertmanager-webhook
+    extra_hosts:
+      - dysmsapi.aliyuncs.com:106.11.45.35
+    environment:
+      TZ: Asia/Shanghai
+      JAVA_OPTS: -Xms256m -Xmx1024m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m
+    #ports:
+    #  - 8080:8080
+    volumes:
+      - ${PWD}/alertmanager/application.properties:/app/application.properties
+      #- /tmp/alertmanager:/tmp
+    working_dir: /app
+    command:
+      --spring.config.location=/app/application.properties
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    hostname: grafana
+    restart: always
+    volumes:
+      # - /var/log/grafana:/var/log/grafana
+      # - /var/lib/grafana:/var/lib/grafana
+      - grafana:/var/lib/grafana
+    environment:
+      # - GF_SERVER_ROOT_URL=https://YOUR.DOMAIN.TEST
+      # - GF_SERVER_DOMAIN=YOUR.DOMAIN.TEST
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=passw0rd
+    ports:
+      - "3000:3000"
+      # - "25:25"
+    # depends_on:
+      # - prometheus
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    hostname: node-exporter
+    restart: always
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    ports:
+      - '9100:9100'
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - --collector.filesystem.ignored-mount-points
+      - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+    # entrypoint: ["echo", "Service foo disabled"]
+
+  blackbox_exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox_exporter
+    hostname: blackbox-exporter
+    restart: always
+    ports:
+      - "9115:9115"
+    volumes:
+      - ${PWD}/blackbox-exporter/config.yml:/etc/blackbox_exporter/config.yml
+
+  snmp_exporter:
+    image: prom/snmp-exporter:latest
+    container_name: snmp_exporter
+    hostname: snmp-exporter
+    restart: always
+    ports:
+      - "9116:9116"
+    volumes:
+      - ${PWD}/snmp-exporter/snmp.yml:/etc/snmp_exporter/snmp.yml
+    command:
+      --config.file=/etc/snmp_exporter/snmp.yml
+      --log.level=debug
+
+  mysqld_exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysqld_exporter
+    hostname: mysqld-exporter
+    restart: always
+    ports:
+        - "9104:9104"
+    environment:    
+      - DATA_SOURCE_NAME=exporter:passw0rd@(db.netkiller.cn:3306)/sfzito
+    # command:
+    #   --collect.info_schema.processlist
+    #   --collect.info_schema.innodb_metrics
+    #   --collect.info_schema.tablestats
+    #   --collect.info_schema.tables
+    #   --collect.info_schema.userstats
+    #   --collect.engine_innodb_status
+
+  nginx-prometheus-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx-prometheus-exporter
+    hostname: nginx-exporter
+    restart: always
+    command: -nginx.scrape-uri http://server.netkiller.cn/status
+    ports:
+      - "9113:9113"
+
+  redis_exporter:
+    image: oliver006/redis_exporter
+    container_name: redis_exporter
+    hostname: redis-exporter
+    restart: always
+    ports:
+        - "9121:9121"
+    command:
+        - '--redis.addr=redis://:passw0rd@server.netkiller.cn:6379'
+
+  mongodb_exporter:
+    image: noenv/mongo-exporter:latest
+    container_name: mongodb_exporter
+    hostname: mongodb-exporter
+    restart: always
+    ports:
+        - "9216:9216"
+    command:
+        - '--mongodb.uri=mongodb://admin:admin@server.netkiller.cn:27017/admin'

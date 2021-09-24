@@ -1,0 +1,71 @@
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: filebeat-logging
+  namespace: kube-system
+  labels:
+    k8s-app: filebeat-logging
+    kubernetes.io/cluster-service: "true"
+spec:
+  template:
+    metadata:
+      labels:
+        k8s-app: log-es
+        kubernetes.io/cluster-service: "true"
+        version: v1.22
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      serviceAccountName: dashboard-admin
+      containers:
+      - name: filebeat-logging
+        image: docker.elastic.co/filebeat/filebeat:7.9.2
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        env:
+          - name: "FILEBEAT_OUTPUT"
+            value: "elasticsearch"
+          - name: "ELASTICSEARCH_HOST"
+            value: "elasticsearch-logging"
+          - name: "ELASTICSEARCH_PORT"
+            value: "9200"
+          - name: "ELASTICSEARCH_USER"
+            value: "elastic"
+          - name: "ELASTICSEARCH_PASSWORD"
+            value: "changeme"
+        volumeMounts:
+        - name: sock
+          mountPath: /var/run/docker.sock
+        - name: root
+          mountPath: /host
+          readOnly: true
+        - name: varlib
+          mountPath: /var/lib/filebeat
+        - name: varlog
+          mountPath: /var/log/filebeat
+        securityContext:
+          capabilities:
+            add:
+            - SYS_ADMIN
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: sock
+        hostPath:
+          path: /var/run/docker.sock
+      - name: root
+        hostPath:
+          path: /
+      - name: varlib
+        hostPath:
+          path: /var/lib/filebeat
+          type: DirectoryOrCreate
+      - name: varlog
+        hostPath:
+          path: /var/log/filebeat
+          type: DirectoryOrCreate

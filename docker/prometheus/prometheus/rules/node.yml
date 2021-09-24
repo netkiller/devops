@@ -1,0 +1,12 @@
+groups:
+- name: node-up
+  rules:
+  - alert: node-up
+    expr: up{job="node-exporter"} == 0
+    for: 15s
+    labels:
+      severity: 1
+      team: node
+    annotations:
+      summary: "{{ $labels.instance }} 已停止运行!"
+      description: "{{ $labels.instance }} 检测到异常停止！请重点关注！！！"

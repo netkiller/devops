@@ -1,0 +1,102 @@
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    restart: always
+    # command: --default-authentication-plugin=mysql_native_password #这行代码解决无法访问的问题
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: test
+      MYSQL_USER: 'test'
+      MYSQL_PASSWORD: 'test'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "4369:4369"
+      - "5671:5671"
+      - "5672:5672"
+      - "15671:15671"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=123456
+    networks:
+      - backend
+
+  elasticsearch:
+    image: elasticsearch:latest
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200"
+    networks:
+      - backend
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+  config:
+    image: netkiller/config:latest
+    container_name: config
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    volumes:
+      - /tmp/config:/tmp
+    networks:
+      - backend
+
+  eureka:
+    image: netkiller/eureka:latest
+    container_name: eureka
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    volumes:
+      - /tmp/eureka:/tmp
+    networks:
+      - backend
+
+  restful:
+    image: netkiller/restful:latest
+    container_name: restful
+    depends_on:
+      - config
+      - eureka
+      - redis
+      - mysql
+      - rabbitmq
+      - elasticsearch
+    ports:
+      - "8091"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    volumes:
+      - /tmp/eureka:/tmp
+    networks:
+      - backend
+
+  gateway:
+    image: netkiller/gateway:latest
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    volumes:
+      - /tmp/eureka:/tmp
+    networks:
+      - frontend

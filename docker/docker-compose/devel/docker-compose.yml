@@ -1,0 +1,85 @@
+version: "3.7"
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/var/lib/redis
+    restart: always
+    networks:
+      - dev
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    restart: always
+    # command: --default-authentication-plugin=mysql_native_password #这行代码解决无法访问的问题
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: test
+      MYSQL_USER: 'test'
+      MYSQL_PASSWORD: 'test'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - dev
+  # mariadb:
+  #   image: mariadb:latest
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=chen
+  #     - MYSQL_DATABASE=test
+  #     - MYSQL_USER=test
+  #     - MYSQL_PASSWORD=test
+  #   volumes:
+  #     - ./docker/data:/data
+  #     - ./docker/builds/mysql/my.cnf:/etc/mysql/my.cnf
+  #     - ./docker/mysql:/var/lib/mysql 
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "4369:4369"
+      - "5671:5671"
+      - "5672:5672"
+      - "15671:15671"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=123456
+    networks:
+      - dev
+
+  eureka:
+    image: netkiller/eureka:latest
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    volumes:
+      - /tmp/eureka:/tmp
+    networks:
+      - dev
+  config:
+    image: netkiller/config:latest
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    volumes:
+      - /tmp/config:/tmp
+    networks:
+      - dev
+networks:
+  dev:
+    driver: bridge
+
+volumes:
+  redis_data:
+  mysql_data:

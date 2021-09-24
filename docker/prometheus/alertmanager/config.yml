@@ -1,0 +1,22 @@
+global:
+  smtp_smarthost: 'smtp.exmail.qq.com:25'     # smtp地址
+  smtp_from: '13721218@qq.com'                # 谁发邮件
+  smtp_auth_username: '13721218@qq.com'       # 邮箱用户
+  smtp_auth_password: 'passw0rd'              # 邮箱密码
+  smtp_require_tls: false
+
+route:
+  group_by: ["alertname"]            # 分组名
+  group_wait: 10s                   # 当收到告警的时候，等待三十秒看是否还有告警，如果有就一起发出去
+  group_interval: 10s                # 发送警告间隔时间
+  repeat_interval: 1h               # 重复报警的间隔时间
+  receiver: webhook                 # 全局报警组，这个参数是必选的，和下面报警组名要相同
+
+receivers:
+- name: 'mail'                      # 报警组名
+  email_configs:
+  - to: 'netkiller@msn.com'      	# 发送给谁
+- name: 'webhook'
+  webhook_configs:
+    #- url: 'http://192.168.30.19:8080/debug'
+    - url: 'http://alertmanager-webhook:8080/webhook'

@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  namespace: default
+  labels:
+    app: registry
+#    kubernetes.io/cluster-service: "true"
+spec:
+  type: NodePort
+  selector:
+    app: registry
+  ports:
+  - name: registry
+    port: 5000
+    nodePort: 32050
+    protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry
+  namespace: default
+  labels:
+    app: registry
+#    kubernetes.io/cluster-service: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry
+  template:
+    metadata:
+      labels:
+        app: registry
+#        kubernetes.io/cluster-service: "true"
+    spec:
+      containers:
+      - name: registry
+        image: registry:latest
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: REGISTRY_HTTP_ADDR
+          value: :5000
+        - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
+          value: /var/lib/registry
+#        volumeMounts:
+#       - name: image-store
+#          mountPath: /var/lib/registry
+        ports:
+        - containerPort: 5000
+          name: registry
+          protocol: TCP
+#      volumes:
+#      - name: image-store
+#        nfs:
+        # Use real NFS server address here.
+#          server: 192.168.125.5
+        # Use real NFS server export directory.
+#          path: "/nfs"

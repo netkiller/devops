@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-config
+  namespace: default
+data:
+  db.host: 172.16.0.10
+  db.port: '3306'		
+  db.user: neo
+  db.pass: chen
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+spec:
+  containers:
+    - name: test-container
+      image: busybox
+      command: [ "/bin/sh", "-c", "env" ]
+      env:
+        - name: DBHOST
+          valueFrom:
+            configMapKeyRef:
+              name: db-config
+              key: db.host
+        - name: DBPORT
+          valueFrom:
+            configMapKeyRef:
+              name: db-config
+              key: db.port
+  restartPolicy: Never	

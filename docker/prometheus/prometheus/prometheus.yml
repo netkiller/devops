@@ -1,0 +1,156 @@
+# my global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      monitor: 'netkiller-monitor'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets: ["alertmanager:9093"]
+    # - dns_sd_configs:               # 同样配置DNS自动发现
+      # - names: ["_alertmanager.netkiller.cn."]  # 加入SRV解析的自动发现
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - "rules/*.yml"
+  - "rules/blackbox.rules"
+  # - "second.rules"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+    static_configs:
+      # - targets: ['host.docker.internal:9090'] # Only works on Docker Desktop for Mac
+      - targets: ['prometheus:9090']
+
+  - job_name: 'docker'
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+    static_configs:
+      # - targets: ['docker.for.mac.host.internal:9323']
+      - targets: ['172.17.195.187:9323']
+
+  - job_name: 'alertmanager'
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ['alertmanager:9093']
+    # dns_sd_configs:
+    # - names: ['_alertmanager._tcp.k8s.com']
+
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  - job_name: 'nginx_exporter'
+    static_configs:
+     - targets: ['nginx-exporter:9113']
+
+  - job_name: 'springboot'
+    scrape_interval: 5s
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      # - targets: ['127.0.0.1:8080']
+      - targets: ['172.17.195.187:8088']
+
+  - job_name: redis_exporter
+    static_configs:
+    - targets: ['redis-exporter:9121']
+
+  - job_name: mongo_exporter
+    static_configs:
+    - targets: ['mongo-exporter:9216']
+
+  - job_name: mysql_exporter
+    static_configs:
+    - targets: ['mysql-exporter:9104']
+
+  - job_name: blackbox_exporter
+    static_configs:
+    - targets: ['blackbox-exporter:9115']
+
+  - job_name: blackbox_http
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://192.168.30.10
+        - http://192.168.30.11
+        - http://192.168.3.15
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement:  blackbox-exporter:9115
+
+  - job_name: 'blackbox_ping'
+    metrics_path: /probe
+    params:
+      modelus: [icmp]
+    static_configs:
+      - targets:
+        - 8.8.8.8
+        labels: 
+          instance: Google DNS
+      - targets:
+        - 247.192.129.167
+        labels:
+          instance: test
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  - job_name: 'blackbox_tcp_connect'
+    scrape_interval: 30s
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets:
+        - 127.0.0.1:3306
+        - 127.0.0.1:6379
+        - 127.0.0.1:27017
+        - 192.168.30.11:6379
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  - job_name: 'snmp_exporter'
+    # 采集超时：10s
+    scrape_interval: 10s
+    metrics_path: /snmp
+    params:
+      module: [if_mib] 
+    static_configs:
+     - targets:
+       - 172.16.254.254
+       - 172.16.254.253
+       - 172.16.254.252
+       - 172.16.254.251
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: snmp-exporter:9116 # snmp_exporter 服务IP地址        

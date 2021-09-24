@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot
+  namespace: default
+  labels:
+    app: springboot
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8080
+    # nodePort: 30080
+  selector:
+    app: springboot
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot
+        image: registry.netkiller.cn:5000/netkiller/welcome:latest
+        #image: 127.0.0.1:5000/netkiller/welcome:latest
+        imagePullPolicy: IfNotPresent
+        # imagePullPolicy: Always 
+        # imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+          name: http
+      #imagePullSecrets:
+      #  - name: docker-hub

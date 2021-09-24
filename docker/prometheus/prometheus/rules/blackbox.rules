@@ -1,0 +1,27 @@
+# 链接监控
+groups:
+- name: blackbox_http
+  rules:
+  - alert: 网站不能访问
+    expr: probe_success == 0
+    for: 1m
+    labels:
+      status: 严重告警
+      kind: blackbox_http
+      # severity: critical
+    annotations:
+      summary: "{{$labels.instance}} 不能访问"
+      description: "{{$labels.instance}} 不能访问"
+
+- name: ssl_expiry.rules 
+  rules: 
+    - alert: SSLCertExpiringSoon 
+      expr: probe_ssl_earliest_cert_expiry{job="blackbox"} - time() < 86400 * 30 
+      for: 10m
+      labels:
+        status: 注意告警
+        kind: ssl
+      # severity: critical
+      annotations:
+        summary: "{{$labels.instance}} 证书即将过期"
+        description: "SSL 证书即将过期"

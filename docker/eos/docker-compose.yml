@@ -1,0 +1,24 @@
+version: '3.9'
+volumes:
+  eos:
+  alertmanager:
+  grafana:
+
+services:
+  eos:
+    image: eostudio/eos:latest
+    container_name: eos
+    hostname: eos
+    restart: always
+    # restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    working_dir: /tmp
+    volumes:
+      # - /var/lib/prometheus:/var/lib/prometheus
+      # - /var/lib/prometheus:/prometheus
+    command:
+      --data-dir /eosio/data/ 
+      --config-dir /eosio/config/"
+      # -e -p eosio --plugin eosio::wallet_api_plugin --plugin eosio::wallet_plugin --plugin eosio::producer_plugin --plugin eosio::chain_api_plugin  --plugin eosio::http_plugin -d /mnt/dev/data --data-dir /eosio/data/ --config-dir /eosio/config/ --http-server-address=0.0.0.0:8888 --access-control-allow-origin=* --contracts-console
+      # keosd -d /root/eos/eosio-wallet/ --config-dir /root/eos/eosio-wallet/

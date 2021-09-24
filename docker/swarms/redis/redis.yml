@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    environment:
+      - TZ=Asia/Shanghai
+    hostname: redis
+    ports:
+      - 6379:6379
+    networks:
+      - test
+    volumes:
+#      - /var/lib/redis:/var/lib/redis:rw
+#      - /var/log/redis:/var/log/redis
+      - data:/var/lib/redis
+    configs:
+#      - redis_config
+#      - source: docker-entrypoint
+#        target: /usr/local/bin/docker-entrypoint.sh
+#        mode: 0755
+      - source: redis.conf
+        target: /usr/local/etc/redis.conf
+        mode: 0440
+#    command: 
+#      echo 511 > /proc/sys/net/core/somaxconn && echo never > /sys/kernel/mm/transparent_hugepage/enabled
+#      redis-server /usr/local/etc/redis.conf --appendonly yes
+#    entrypoint:
+#      docker-entrypoint.sh /usr/local/etc/redis.conf
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+      update_config:
+        parallelism: 1
+        delay: 5s
+        monitor: 10s
+        max_failure_ratio: 0.1
+        order: start-first
+
+configs:
+  redis.conf:
+    file: ./redis.conf
+#  docker-entrypoint:
+#    file: ./docker-entrypoint.sh
+
+volumes:
+  data:
+
+networks:
+   test:
+     driver: overlay
+#     external: true

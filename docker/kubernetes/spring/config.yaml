@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: config
+  namespace: default
+  labels:
+    app: springboot
+spec:
+  selector:
+    app: config
+  type: ClusterIP
+  ports: 
+  - name: http
+    protocol: TCP 
+    port: 8888
+    targetPort: 8888
+  clusterIP: 10.10.0.2
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+  labels:
+    app: config
+data:
+  application.properties: |-
+    spring.application.name=config
+    spring.profiles.active=native
+    server.port=8888
+
+    logging.file=/tmp/spring.log
+
+    spring.security.user.name=config
+    spring.security.user.password=s3cr3t
+
+    #spring.cloud.config.server.git.uri=/opt/config
+    spring.cloud.config.server.native.search-locations=classpath:/shared
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config
+  template:
+    metadata:
+      labels:
+        app: config
+    spec:
+      containers: 
+      - name: config
+        #image: netkiller/config:latest
+        #image: 127.0.0.1:5000/netkiller/config:latest
+        image: registry.netkiller.cn:5000/netkiller/config:latest
+        # imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8888
+        # resources:
+        #   limits:
+        #     cpu: 2000m
+        #     memory: 2Gi
+        #   requests:
+        #     cpu: 1000m
+        #     memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8888
+          periodSeconds: 5
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8888
+          periodSeconds: 5
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 5
+        env:
+        - name: JAVA_OPTS
+          value: -server -Xms128m -Xmx512m
+        #   valueFrom:
+        #     resourceFieldRef:
+        #       resource: limits.memory
+        #       divisor: 1Mi
+        # - name: JAVA_OPTS
+        #   value: -server -Xms512m -Xmx4096m -Duser.timezone="Asia/Shanghai" -Djava.security.egd=file:/dev/./urandom
+        - name: SPRING_OPTS
+          value: --spring.config.location=/srv/application.properties
+        volumeMounts:
+        - name: config
+          mountPath:  /srv/application.properties
+          subPath: application.properties
+        # - name: logfile
+        #   mountPath: /tmp          
+      volumes:
+      # - name: logfile
+      #   emptyDir: {} 
+      - name: config
+        configMap:
+          name: config
+      imagePullSecrets:
+        - name: docker-hub

@@ -1,0 +1,134 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis
+  labels:
+    app: redis
+data:
+  redis.conf: |-
+    pidfile /var/lib/redis/redis.pid
+    dir /var/lib/redis
+    port 6379
+    bind 0.0.0.0
+    appendonly yes
+    protected-mode yes
+    requirepass passw0rd
+    maxmemory 2mb
+    maxmemory-policy allkeys-lru
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  type: NodePort
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+#    nodePort: 6379
+  selector:
+    app: redis
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redis
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-volume
+  local:
+    path: /var/lib/redis
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - minikube
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: redis
+spec:
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: local-volume
+  selector:
+    matchLabels:
+      app: redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:latest
+        command: 
+          - "sh"
+          - "-c"
+          - "redis-server /usr/local/etc/redis.conf"
+        ports:
+        - containerPort: 6379
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1024Mi
+          requests:
+            cpu: 1000m
+            memory: 1024Mi
+        livenessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 300
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/redis
+        - name: config
+          mountPath:  /usr/local/etc/redis.conf
+          subPath: redis.conf
+      volumes:
+      - name: data
+        # emptyDir: {} 
+        persistentVolumeClaim:
+          claimName: redis
+      - name: config
+        configMap:
+          name: redis
+

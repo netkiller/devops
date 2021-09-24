@@ -1,0 +1,37 @@
+version: "3.7"
+services:
+
+  rabbit1:
+    image: rabbitmq
+    hostname: rabbit1
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=mypass
+
+  rabbit2:
+    image: rabbitmq
+    hostname: rabbit2
+    links:
+      - rabbit1
+    environment: 
+    - CLUSTERED=true
+    - CLUSTER_WITH=rabbit1
+    - RAM_NODE=true
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+
+  rabbit3:
+    image: rabbitmq
+    hostname: rabbit3
+    links:
+      - rabbit1
+      - rabbit2
+    environment: 
+    - CLUSTERED=true
+    - CLUSTER_WITH=rabbit1
+    ports:
+      - "5674:5672"
