@@ -29,11 +29,11 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: sdist
+    - name: Build and Install
       run: |
         python3 setup.py sdist 
         # bdist_wheel
         python3 setup.py install
-    - name: Test with pytest
-      run: |
-        pytest
+#     - name: Test with pytest
+#       run: |
+#         pytest
