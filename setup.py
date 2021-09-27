@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
 	name="netkiller-devops",
-	version="0.1.17",
+	version="0.2.2",
 	author="Neo Chen",
 	author_email="netkiller@msn.com",
 	description="DevOps of useful deployment and automation",
@@ -23,12 +23,13 @@ setup(
 		"License :: OSI Approved :: MIT License",
 		"Operating System :: OS Independent",
 	],
-	install_requires = ['pyyaml'],
+	install_requires = ['pyyaml','requests'],
   	# package_dir={ '': 'library' },
 	packages=find_packages(),
 
 	scripts=[
 		'bin/deployment',
+		'bin/wechat',
 		'bin/backup',
 		'bin/osconf',
 		'bin/mysqlshell',
@@ -45,7 +46,8 @@ setup(
 		('etc', ['etc/os.ini']),
 		#('log', ['log/deployment.log']),
 		('share', ['share/example/testing/example.com.ini']),
-		('share', ['share/profile.d/devops.sh'])
+		('share', ['share/profile.d/devops.sh']),
+		('share/devops', ['doc/wechat.md'])
 		#('example/testing', ['example/testing/example.com.ini']),
 		#('example/config/testing', ['example/config/testing/www.example.com.ini']),
 		#('example/exclude/testing', ['example/exclude/testing/www.example.com.lst'])
