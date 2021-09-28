@@ -1,0 +1,120 @@
+#! /usr/bin/env python3
+# -*- coding: UTF-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+##############################################
+try:
+	import os, sys
+	import logging, logging.handlers
+	from configparser import ConfigParser,NoSectionError
+	from optparse import OptionParser, OptionGroup
+	from redis import StrictRedis
+	from redis.exceptions import ConnectionError
+	import pyttsx3
+except ImportError as err:
+	print("Error: %s" %(err))
+
+class Vocie():
+
+	def __init__(self): 
+		usage = "usage: %prog [options] message"
+		self.parser = OptionParser(usage)
+		self.parser.add_option('', "--config", dest="config", help="config file", default='/usr/local/etc/notification.ini', metavar="/usr/local/etc/notification.ini")
+		# self.parser.add_option('-l','--logfile', dest='logfile', help='logs file.', default='/var/log/wechat.log', metavar='/var/log/wechat.log')
+		self.parser.add_option('-t', '--test', action="store_true", dest="test", help="voice test")
+		self.parser.add_option('', '--debug', action="store_true", dest="debug", help="debug mode")
+
+		group = OptionGroup(self.parser, "Subscribe")
+		group.add_option('-d','--daemon', dest='daemon', action='store_true', help='run as daemon')
+		self.parser.add_option_group(group)
+
+		group = OptionGroup(self.parser, "Publish")
+		group.add_option('-c','--channel', dest='channel', help='pubsub channel', default=None,metavar='notification')
+		self.parser.add_option_group(group)
+
+		(options, args) = self.parser.parse_args()
+
+		cfgfile = options.config
+
+		self.config = ConfigParser()
+		self.config.read(cfgfile)
+		try:
+			conf = dict(self.config.items('redis'))
+
+			host = conf.get('host')
+			port = conf.get('port')
+			db = conf.get('db')
+			password = conf.get('password')
+
+			if options.channel :
+				self.channel = options.channel
+			else: 
+				self.channel = conf.get('channel')
+
+			self.redis = StrictRedis(host=host, port=port, db=db, password=password)	
+
+		except NoSectionError as err:
+			print(err, '-', cfgfile)
+			exit()
+		except Exception as e :
+			print(e)
+			exit()
+	
+		# if options.logfile :
+			# self.logfile = options.logfile	
+		# 	logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',
+		# 	filename=options.logfile,filemode='a')
+		# self.logging = logging.getLogger()
+
+		if options.debug:
+			print("="*50)
+			print(options, args)
+			print("="*50)
+		if options.test :
+			pyttsx3.speak('hello world')
+			exit()
+		if options.daemon :
+			pid = os.fork()
+			if pid > 0:
+				sys.exit(0)
+			self.broadcast()
+			exit()
+
+		if args :
+			message = ' '.join(args)
+			self.speak(message)
+			# print(message)
+		else:
+			self.usage()
+
+	def speak(self, message):
+		self.redis.publish(self.channel, message) 
+		pass
+
+	def broadcast(self):
+		pubsub = self.redis.pubsub()
+		try:
+			pubsub.subscribe(self.channel)
+			for message in pubsub.listen() :
+			# while True :
+				# message = pubsub.get_message()
+				if type(message['data']) != int:
+					say = message['data'].decode("utf8")
+					# print(say)
+					pyttsx3.speak(say)
+		except Exception as e :
+			print(e)
+
+
+	def usage(self):
+		self.parser.print_help()
+		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
+		exit()
+
+if __name__ == '__main__':
+	try:
+		voice = Vocie()
+	except KeyboardInterrupt:
+		print ("Crtl+C Pressed. Shutting down.")
+	
