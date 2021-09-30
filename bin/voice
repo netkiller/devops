@@ -22,8 +22,9 @@ class Vocie():
 		self.parser = OptionParser(usage)
 		self.parser.add_option('', "--config", dest="config", help="config file", default='/usr/local/etc/notification.ini', metavar="/usr/local/etc/notification.ini")
 		# self.parser.add_option('-l','--logfile', dest='logfile', help='logs file.', default='/var/log/wechat.log', metavar='/var/log/wechat.log')
-		self.parser.add_option('-t', '--test', action="store_true", dest="test", help="voice test")
-		self.parser.add_option('', '--debug', action="store_true", dest="debug", help="debug mode")
+		self.parser.add_option('-t', '--test', action='store_true', dest="test", help="voice test")
+		self.parser.add_option('-s', '--save', dest="save", help="save as wav file")
+		self.parser.add_option('', '--debug', action='store_true', dest="debug", help="debug mode")
 
 		group = OptionGroup(self.parser, "Subscribe")
 		group.add_option('-d','--daemon', dest='daemon', action='store_true', help='run as daemon')
@@ -33,33 +34,11 @@ class Vocie():
 		group.add_option('-c','--channel', dest='channel', help='pubsub channel', default=None,metavar='notification')
 		self.parser.add_option_group(group)
 
-		(options, args) = self.parser.parse_args()
+		(self.options, args) = self.parser.parse_args()
 
-		cfgfile = options.config
+		self.cfgfile = self.options.config
 
-		self.config = ConfigParser()
-		self.config.read(cfgfile)
-		try:
-			conf = dict(self.config.items('redis'))
 
-			host = conf.get('host')
-			port = conf.get('port')
-			db = conf.get('db')
-			password = conf.get('password')
-
-			if options.channel :
-				self.channel = options.channel
-			else: 
-				self.channel = conf.get('channel')
-
-			self.redis = StrictRedis(host=host, port=port, db=db, password=password)	
-
-		except NoSectionError as err:
-			print(err, '-', cfgfile)
-			exit()
-		except Exception as e :
-			print(e)
-			exit()
 	
 		# if options.logfile :
 			# self.logfile = options.logfile	
@@ -67,14 +46,28 @@ class Vocie():
 		# 	filename=options.logfile,filemode='a')
 		# self.logging = logging.getLogger()
 
-		if options.debug:
+		if self.options.debug:
 			print("="*50)
-			print(options, args)
+			print(self.options, args)
 			print("="*50)
-		if options.test :
-			pyttsx3.speak('hello world')
+		if self.options.test :
+			message = ' '.join(args)
+			if message :
+				pyttsx3.speak(message)
 			exit()
-		if options.daemon :
+
+		if self.options.save :
+			file = self.options.save
+			message = ' '.join(args)
+			if message :
+				engine = pyttsx3.init()
+				engine.say(message)
+				engine.save_to_file(message, file)
+				engine.runAndWait()
+				
+			exit()
+
+		if self.options.daemon :
 			pid = os.fork()
 			if pid > 0:
 				sys.exit(0)
@@ -87,12 +80,38 @@ class Vocie():
 			# print(message)
 		else:
 			self.usage()
+	def config(self):
+		self.config = ConfigParser()
+		self.config.read(self.cfgfile)
+		try:
+			conf = dict(self.config.items('redis'))
+
+			host = conf.get('host')
+			port = conf.get('port')
+			db = conf.get('db')
+			password = conf.get('password')
+
+			if self.options.channel :
+				self.channel = self.options.channel
+			else: 
+				self.channel = conf.get('channel')
+
+			self.redis = StrictRedis(host=host, port=port, db=db, password=password)	
+
+		except NoSectionError as err:
+			print(err, '-', cfgfile)
+			exit()
+		except Exception as e :
+			print(e)
+			exit()
 
 	def speak(self, message):
+		self.config()
 		self.redis.publish(self.channel, message) 
 		pass
 
 	def broadcast(self):
+		self.config()
 		pubsub = self.redis.pubsub()
 		try:
 			pubsub.subscribe(self.channel)
