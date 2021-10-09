@@ -1,0 +1,102 @@
+services:
+  master:
+    command:
+    - --requirepass 11223344
+    - --appendonly yes
+    container_name: master
+    environment:
+    - TZ=Asia/Shanghai
+    image: redis:latest
+    ports:
+    - 6379:6379
+    restart: always
+    sysctls:
+    - net.core.somaxconn=1024
+    volumes:
+    - /tmp/master:/data
+  slave-0:
+    command:
+    - --slaveof master 6379
+    - --masterauth 11223344
+    - --requirepass 11223344
+    - --appendonly yes
+    container_name: slave-0
+    environment:
+    - TZ=Asia/Shanghai
+    image: redis:latest
+    ports:
+    - 6380:6379
+    restart: always
+    sysctls:
+    - net.core.somaxconn=1024
+    volumes:
+    - /tmp/slave0:/data
+  slave-1:
+    command:
+    - --slaveof master 6379
+    - --masterauth 11223344
+    - --requirepass 11223344
+    - --appendonly yes
+    container_name: slave-1
+    environment:
+    - TZ=Asia/Shanghai
+    image: redis:latest
+    ports:
+    - 6381:6379
+    restart: always
+    sysctls:
+    - net.core.somaxconn=1024
+    volumes:
+    - /tmp/slave1:/data
+  slave-2:
+    command:
+    - --slaveof master 6379
+    - --masterauth 11223344
+    - --requirepass 11223344
+    - --appendonly yes
+    container_name: slave-2
+    environment:
+    - TZ=Asia/Shanghai
+    image: redis:latest
+    ports:
+    - 6382:6379
+    restart: always
+    sysctls:
+    - net.core.somaxconn=1024
+    volumes:
+    - /tmp/slave2:/data
+  slave-3:
+    command:
+    - --slaveof master 6379
+    - --masterauth 11223344
+    - --requirepass 11223344
+    - --appendonly yes
+    container_name: slave-3
+    environment:
+    - TZ=Asia/Shanghai
+    image: redis:latest
+    ports:
+    - 6383:6379
+    restart: always
+    sysctls:
+    - net.core.somaxconn=1024
+    volumes:
+    - /tmp/slave3:/data
+  slave-4:
+    command:
+    - --slaveof master 6379
+    - --masterauth 11223344
+    - --requirepass 11223344
+    - --appendonly yes
+    container_name: slave-4
+    environment:
+    - TZ=Asia/Shanghai
+    image: redis:latest
+    ports:
+    - 6384:6379
+    restart: always
+    sysctls:
+    - net.core.somaxconn=1024
+    volumes:
+    - /tmp/slave4:/data
+version: '3.9'

@@ -61,13 +61,16 @@ class Services():
 	def extra_hosts(self,array=[]):
 		self.service[self.name]['extra_hosts'] = array
 		return(self)
-	def environment(self, array):
+	def environment(self, obj):
+		print(obj,type(obj))
 		if not 'environment' in self.service[self.name].keys() :
 			self.service[self.name]['environment']=[]
-		if type(array) == str:
+		if type(obj) == str:
 			self.service[self.name]['environment'].append(obj)
+		elif type(obj) == list:
+			self.service[self.name]['environment'].extend(obj)
 		else:
-			self.service[self.name]['environment'] = array
+			self.service[self.name]['environment'] = obj
 		return(self)
 	def env_file(self, array=[]):
 		self.service[self.name]['env_file'] = array
@@ -77,6 +80,8 @@ class Services():
 			self.service[self.name]['ports']=[]
 		if type(obj) == str:
 			self.service[self.name]['ports'].append(obj)
+		elif type(obj) == list:
+			self.service[self.name]['ports'].extend(obj)
 		else:
 			self.service[self.name]['ports'] = obj
 		return(self)
@@ -85,6 +90,8 @@ class Services():
 			self.service[self.name]['expose']=[]
 		if type(obj) == str:
 			self.service[self.name]['expose'].append(obj)
+		elif type(obj) == list:
+			self.service[self.name]['expose'].extend(obj)
 		else:
 			self.service[self.name]['expose'] = obj
 		return(self)
@@ -113,6 +120,8 @@ class Services():
 			self.service[self.name]['depends_on'].append(obj.name)
 		elif type(obj) == str:
 			self.service[self.name]['depends_on'].append(obj)
+		elif type(obj) == list:
+			self.service[self.name]['depends_on'].extend(obj)	
 		else:	
 			self.service[self.name]['depends_on'] = obj
 		return(self)
@@ -121,6 +130,8 @@ class Services():
 			self.service[self.name]['links'].append(obj.name)
 		elif type(obj) == str:
 			self.service[self.name]['links'].append(obj)
+		elif type(obj) == list:
+			self.service[self.name]['links'].extend(obj)
 		else:	
 			self.service[self.name]['links'] = obj
 		return(self)

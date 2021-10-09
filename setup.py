@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
 	name="netkiller-devops",
-	version="0.2.4",
+	version="0.2.5",
 	author="Neo Chen",
 	author_email="netkiller@msn.com",
 	description="DevOps of useful deployment and automation",
@@ -29,7 +29,6 @@ setup(
 
 	scripts=[
 		'bin/deployment',
-		'bin/wechat',
 		'bin/backup',
 		'bin/osconf',
 		'bin/mysqlshell',
@@ -38,6 +37,7 @@ setup(
 		'bin/lrsync',
 		'bin/randpasswd',
 		'bin/matrixpasswd',
+		'bin/wechat',
 		'bin/voice'
 	],
 	data_files = [
@@ -47,10 +47,8 @@ setup(
 		('etc', ['etc/os.ini']),
 		('etc', ['etc/notification.ini']),
 		#('log', ['log/deployment.log']),
-		('share', ['share/example/testing/example.com.ini']),
-		('share', ['share/profile.d/devops.sh']),
-		('share/devops', ['doc/wechat.md']),
-		('share/devops', ['doc/voice.md'])
+		('share', ['share/example/testing/example.com.ini','share/profile.d/devops.sh']),
+		('share/devops', ['doc/wechat.md','doc/voice.md'])
 		#('example/testing', ['example/testing/example.com.ini']),
 		#('example/config/testing', ['example/config/testing/www.example.com.ini']),
 		#('example/exclude/testing', ['example/exclude/testing/www.example.com.lst'])
