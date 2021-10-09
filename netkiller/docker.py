@@ -62,7 +62,6 @@ class Services():
 		self.service[self.name]['extra_hosts'] = array
 		return(self)
 	def environment(self, obj):
-		print(obj,type(obj))
 		if not 'environment' in self.service[self.name].keys() :
 			self.service[self.name]['environment']=[]
 		if type(obj) == str:
