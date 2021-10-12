@@ -5,7 +5,9 @@ Backup struct of database
 
 Help
 ------
-    ./backup.mysql.struct.sh
+	cp /usr/local/libexec/devops/backup.mysql.struct.sh /usr/local/bin/
+	chmod +x /usr/local/bin/backup.mysql.struct.sh
+    backup.mysql.struct.sh
 	Usage: ./backup.mysql.struct.sh {init|start|stop|status|restart}
 
 Create backup user for your database.

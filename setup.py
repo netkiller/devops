@@ -46,7 +46,12 @@ setup(
 		('etc', ['etc/schedule.cfg']),
 		('etc', ['etc/os.ini']),
 		('etc', ['etc/notification.ini']),
-		#('log', ['log/deployment.log']),
+		('libexec/devops', [
+			'libexec/backup/backup.mysql.sh',
+			'libexec/backup/backup.mysql.gpg.sh',
+			'libexec/backup/backup.mysql.gpg.sh',
+			'libexec/backup/backup.mysql.struct.sh'
+			]),
 		('share', ['share/example/testing/example.com.ini','share/profile.d/devops.sh']),
 		('share/devops', ['doc/wechat.md','doc/voice.md'])
 		#('example/testing', ['example/testing/example.com.ini']),
