@@ -5,10 +5,11 @@ class Common():
 	commons = {}
 	def __init__(self): 
 		# self.commons = {}
-		self.commons['apiVersion'] = 'v1'
 		self.commons['metadata'] = {}
 	def apiVersion(self, version = 'v1'):
 		self.commons['apiVersion'] = version
+	def kind(self,value):
+		self.commons['kind'] = value
 	class metadata:
 		# metadatas = {}
 		def __init__(self): 
@@ -68,9 +69,8 @@ class Containers:
 
 class Namespace(Common):
 	def __init__(self):
-		# print(self.commons)
 		super().__init__()
-		# print(self.commons)
+		self.apiVersion()
 		self.commons['kind'] = 'Namespace'
 		# print(self.commons)
 	def dump(self):
@@ -81,6 +81,7 @@ class Namespace(Common):
 class ServiceAccount(Common):
 	def __init__(self): 
 		super().__init__()
+		self.apiVersion()
 		self.commons['kind'] = 'ServiceAccount'
 	def dump(self):
 		return yaml.dump(self.commons)
@@ -96,6 +97,7 @@ class Pod(Common):
 	pods = {}
 	def __init__(self): 
 		super().__init__()
+		self.apiVersion()
 		self.pods['kind'] = 'Pod'
 	class spec:
 		def __init__(self): 
@@ -132,6 +134,7 @@ class Service(Common):
 	services = {}
 	def __init__(self): 
 		super().__init__()
+		self.apiVersion()
 		self.services['kind'] = 'Service'
 	class spec:
 		def __init__(self): 
@@ -165,14 +168,9 @@ class Service(Common):
 	def debug(self):
 		print(self.dump()) 
 
-def Deployment():
-	def __init__(self): 
-		pass
-def Test():
-	def __init__(self): 
-		pass
 class ConfigMap(Common):
 	def __init__(self): 
+		self.apiVersion()
 		self.config = {}
 		self.config['kind'] = 'ConfigMap'
 	def data(self, value):
@@ -184,6 +182,69 @@ class ConfigMap(Common):
 	def debug(self):
 		print(self.dump())
 
+class Deployment(Common):
+	deployment = {}
+	def __init__(self): 
+		super().__init__()
+		# self.apiVersion('apps/v1')
+		# self.kind('Deployment')
+		self.deployment['apiVersion'] = 'apps/v1'
+		self.deployment['kind'] = 'Deployment'
+	class spec:
+		def __init__(self): 
+			if not 'spec' in Deployment.deployment :
+				Deployment.deployment['spec'] = {}
+		class template(Common):
+			def __init__(self): 
+				Deployment.deployment['spec']['template'] = {}
+				pass
+			def __del__(self):
+				Deployment.deployment['spec']['template'].update(self.commons)		
+			class containers(Containers):
+				def __init__(self): 
+					Deployment.deployment['spec']['containers'] = {}
+					pass
+	def dump(self):
+		self.deployment.update(self.commons)
+		return yaml.dump(self.deployment)
+	def debug(self):
+		print(self.dump()) 
+
+class Ingress(Common):
+	ingress = {}
+	def __init__(self): 
+		super().__init__()
+		self.apiVersion('networking.k8s.io/v1beta1')
+		self.ingress['kind'] = 'Ingress'
+	
+	class spec:
+		def __init__(self): 
+			if not 'spec' in Ingress.ingress :
+				Ingress.ingress['spec'] = {}
+		def rules(self, value):
+			if not 'rules' in Ingress.ingress['spec'] :
+				Ingress.ingress['spec']['rules'] = []
+			Ingress.ingress['spec']['rules'].extend(value) 
+	
+	def dump(self):
+		self.ingress.update(self.commons)
+		return yaml.dump(self.ingress)
+	def debug(self):
+		print(self.dump()) 
+
 class Kubernetes():
 	def __init__(self): 
-		pass 
+		super().__init__()
+		self.services['kind'] = 'Service'
+	def describe(self):
+		pass
+	def edit(self):
+		pass
+	def replace(self):
+		pass
+	
+
+deployment = Deployment()
+deployment.metadata().name('redis').labels({'app':'redis'})
+deployment.spec().template().metadata().labels({'app':'redis'})
+deployment.debug()

@@ -82,3 +82,13 @@ service1.status().loadBalancer({
     'ingress': [{'ip': '127.18.10.1'}]
     })
 service1.debug()
+
+print("=" * 40, "Ingress", "=" * 40)
+ingress = Ingress()
+ingress.apiVersion('networking.k8s.io/v1beta1')
+ingress.metadata().name('springboot')
+ingress.metadata().namespace('stage')
+ingress.metadata().annotations(['nginx.ingress.kubernetes.io/rewrite-target: /','nginx.ingress.kubernetes.io/rewrite-target: /article/$1'])
+ingress.spec().rules([{'host':'www.netkiller.cn','http':{'paths': [{'backend':{'serviceName':'www', 'servicePort':80}}] }}])
+ingress.spec().rules([{'host':'article.netkiller.cn','http':{'paths': [{'path':'/($/.*)','backend':{'serviceName':'article', 'servicePort':80}}] }}])
+ingress.debug()
