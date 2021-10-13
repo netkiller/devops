@@ -30,8 +30,12 @@ config.data({'host':'localhost','port':3306,'user':'root','pass':'123456'})
 config.dump()
 config.debug()
 
-print("=" * 40, "Pod", "=" * 40)
+print("=" * 40, "ServiceAccount", "=" * 40)
+account = ServiceAccount()
+account.metadata().name('search').namespace('search').labels({'app':'elasticsearch'})
+account.debug()
 
+print("=" * 40, "Pod", "=" * 40)
 pod = Pod()
 pod.apiVersion()
 pod.metadata().name('counter').annotations(['security.alpha.kubernetes.io/sysctls: kernel.shm_rmid_forced=1'])
@@ -48,12 +52,8 @@ container.image('nginx:latest').volumeMounts([
 	{'name': 'config','mountPath': '/usr/local/etc/redis/redis.conf','subPath': 'redis.conf'}])
 container.command(['nginx -c /etc/nginx/nginx.conf'])
 pod.spec().containers().ports([{'containerPort':'6379'}])
+pod.spec().volumes().name('config-volume').configMap({'name':'special-config', 'items':[{'key':'cache','path':'/mnt/cache'}]})
 pod.debug()
-
-print("=" * 40, "ServiceAccount", "=" * 40)
-account = ServiceAccount()
-account.metadata().name('search').namespace('search').labels({'app':'elasticsearch'})
-account.debug()
 
 print("=" * 40, "Service", "=" * 40)
 service = Service()
