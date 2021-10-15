@@ -14,21 +14,11 @@ except ImportError as err:
 	print("Error: %s" %(err))
 
 class WeWork():
-	def __init__(self, cfgfile):
-		self.config = ConfigParser()
-		self.config.read(cfgfile)
-		conf = dict(self.config.items('DEFAULT'))
-
-		self.CORPID = conf.get('corpid')
-		self.SECRET = conf.get('secret')
-		self.AGENTID = conf.get('agentid')
-		# self.TOTAG = conf.get('totag')
-
+	def __init__(self, corpid, secret, agentid):
+		self.CORPID = corpid
+		self.SECRET = secret
+		self.AGENTID = agentid
 		self.token = None
-
-	def debug(self):
-		for (key,value) in self.config.items('DEFAULT') :
-			print(key,value)
 	def getToken(self):
 		url = "https://qyapi.weixin.qq.com/cgi-bin/gettoken"
 		json = {
