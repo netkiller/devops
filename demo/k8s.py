@@ -83,6 +83,16 @@ service1.status().loadBalancer({
     })
 service1.debug()
 
+print("=" * 40, "Deployment", "=" * 40)
+deployment = Deployment()
+deployment.metadata().name('redis').labels({'app':'redis'})
+deployment.spec().replicas(2)
+deployment.spec().selector({'matchLabels':{'app':'redis'}})
+deployment.spec().template().metadata().labels({'app':'redis'})
+deployment.spec().template().spec().containers().name('redis').image('redis:alpine').ports([{'containerPort':'6379'}])
+deployment.debug()
+deployment.json()
+
 print("=" * 40, "Ingress", "=" * 40)
 ingress = Ingress()
 ingress.apiVersion('networking.k8s.io/v1beta1')
@@ -92,3 +102,4 @@ ingress.metadata().annotations(['nginx.ingress.kubernetes.io/rewrite-target: /',
 ingress.spec().rules([{'host':'www.netkiller.cn','http':{'paths': [{'backend':{'serviceName':'www', 'servicePort':80}}] }}])
 ingress.spec().rules([{'host':'article.netkiller.cn','http':{'paths': [{'path':'/($/.*)','backend':{'serviceName':'article', 'servicePort':80}}] }}])
 ingress.debug()
+

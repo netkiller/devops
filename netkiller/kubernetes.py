@@ -1,5 +1,13 @@
 #-*- coding: utf-8 -*-
+import os
 import yaml,json
+import logging, logging.handlers
+from optparse import OptionParser, OptionGroup
+
+class Logging():
+	def __init__(self): 
+		
+		self.logging = logging.getLogger()
 
 class Common():
 	commons = {}
@@ -302,10 +310,73 @@ class Ingress(Common):
 	def json(self):
 		print(self.ingress)
 
-class Kubernetes():
+class Kubernetes(Logging):
 	def __init__(self): 
 		super().__init__()
-		self.service['kind'] = 'Service'
+		usage = "usage: %prog [options] <command>"
+		self.parser = OptionParser(usage)
+		self.parser.add_option("-e", "--environment", dest="environment", help="environment", metavar="development|testing|production")
+		self.parser.add_option('','--logfile', dest='logfile', help='logs file.', default='debug.log')
+		self.parser.add_option('-l','--list', dest='list', action='store_true', help='print service of environment')
+
+		group = OptionGroup(self.parser, "Cluster Management Commands")
+		group.add_option('-g','--get', dest='get', action='store_true', help='Display one or many resources')
+		group.add_option('-c','--create', dest='create', action='store_true', help='Create a resource from a file or from stdin')
+		group.add_option('-d','--delete', dest='delete', action='store_true', help='Delete resources by filenames, stdin, resources and names, or by resources and label selector')   
+		group.add_option('-r','--replace', dest='replace', action='store_true', help='Replace a resource by filename or stdin')
+		self.parser.add_option_group(group)
+
+		group = OptionGroup(self.parser, "Others")
+		# group.add_option('-d','--daemon', dest='daemon', action='store_true', help='run as daemon')
+		group.add_option("", "--debug", action="store_true", dest="debug", help="debug mode")
+		group.add_option('-v','--version', dest='version', action='store_true', help='print version information')
+		self.parser.add_option_group(group)
+
+		(self.options, self.args) = self.parser.parse_args()
+		if self.options.logfile :
+			logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',filename=self.options.logfile,filemode='a')
+
+		if self.options.debug:
+			print("===================================")
+			print(self.options)
+			print(self.args)
+			print("===================================")
+			self.logging.debug("="*50)
+			self.logging.debug(self.options)
+			self.logging.debug(self.args)
+			self.logging.debug("="*50)
+		
+		if self.options.create :
+			self.create()
+		if self.options.delete :
+			self.delete()
+		if not self.args :
+			self.usage()
+	def usage(self):
+		print("Python controls the Kubernetes cluster manager.\n")
+		self.parser.print_help()
+		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
+		exit()
+	def execute(self,cmd):
+		command = "kubectl {cmd}".format(cmd=cmd)
+		self.logging.debug(command)
+		# os.system(command)
+		return(self)
+	def version(self):
+		self.execure(self,'version')
+		self.execure(self,'api-resources')
+		self.execure(self,'api-versions')
+		exit()
+	def create(self):
+		cmd = "{command} -f {yamlfile}".format(command="create", yamlfile="sss.yaml")
+		self.execute(cmd)
+		self.logging.info(cmd)
+		exit()
+	def delete(self):
+		cmd = "{command} -f {yamlfile}".format(command="delete", yamlfile="sss.yaml")
+		self.execute(cmd)
+		self.logging.info(cmd)
+		exit()
 	def describe(self):
 		pass
 	def edit(self):
@@ -313,12 +384,4 @@ class Kubernetes():
 	def replace(self):
 		pass
 	
-
-deployment = Deployment()
-deployment.metadata().name('redis').labels({'app':'redis'})
-deployment.spec().replicas(2)
-deployment.spec().selector({'matchLabels':{'app':'redis'}})
-deployment.spec().template().metadata().labels({'app':'redis'})
-deployment.spec().template().spec().containers().name('redis').image('redis:alpine').ports([{'containerPort':'6379'}])
-deployment.debug()
-deployment.json()
+kubernetes = Kubernetes()

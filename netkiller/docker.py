@@ -156,10 +156,10 @@ class Services():
 class Composes():
 	compose = {}
 	daemon = False
+	basedir = ''
 	def __init__(self, name): 
 		self.compose = {}
 		self.name = name
-		self.filename = self.name+'.yaml'
 		self.logging = logging.getLogger()
 		self.compose['services'] = {}
 		# self.compose['networks'] = []
@@ -180,12 +180,20 @@ class Composes():
 		return(jsonformat)
 	def dump(self):
 		return(yaml.dump(self.compose))
+	def filename(self):
+		return self.basedir +'/'+ self.name+'.yaml'
 	def save(self, filename=None):
-		if filename :
-			file = open(filename,"w")
-		else:
-			file = open(self.filename,"w")
-		yaml.safe_dump(self.compose,stream=file,default_flow_style=False)
+		try:
+			if filename :
+				file = open(filename,"w")
+			else:
+				file = open(self.filename(),"w")
+			yaml.safe_dump(self.compose,stream=file,default_flow_style=False)
+			self.logging.info("save %s" % (self.filename()))
+		except Exception as e:
+			self.logging.error(e)
+			print(e)
+			exit()
 		return(self)
 	def daemon(self,daemon = True):
 		self.daemon = daemon
@@ -195,47 +203,47 @@ class Composes():
 		d = ''
 		if self.daemon :
 			d = '-d'
-		command = "docker-compose -f {compose} up {daemon} {service}".format(compose=self.filename, daemon=d, service=service)
+		command = "docker-compose -f {compose} up {daemon} {service}".format(compose=self.filename(), daemon=d, service=service)
 		self.logging.debug(command)
 		os.system(command)
 		return(self)
 	def rm(self,service=''):
-		command = "docker-compose -f {compose} rm {service}".format(compose=self.filename, service=service)
+		command = "docker-compose -f {compose} rm {service}".format(compose=self.filename(), service=service)
 		self.logging.debug(command)
 		os.system(command)	
 		return(self)
 	def restart(self,service=''):
-		command = "docker-compose -f {compose} restart {service}".format(compose=self.filename, service=service)
+		command = "docker-compose -f {compose} restart {service}".format(compose=self.filename(), service=service)
 		self.logging.debug(command)
 		os.system(command)
 		return(self)
 	def start(self,service=''):
-		command = "docker-compose -f {compose} start {service}".format(compose=self.filename, service=service)
+		command = "docker-compose -f {compose} start {service}".format(compose=self.filename(), service=service)
 		self.logging.debug(command)
 		os.system(command)	
 		return(self)
 	def stop(self,service=''):
-		command = "docker-compose -f {compose} stop {service}".format(compose=self.filename, service=service)
+		command = "docker-compose -f {compose} stop {service}".format(compose=self.filename(), service=service)
 		self.logging.debug(command)
 		os.system(command)	
 		return(self)
 	def stop(self,service=''):
-		command = "docker-compose -f {compose} stop {service}".format(compose=self.filename, service=service)
+		command = "docker-compose -f {compose} stop {service}".format(compose=self.filename(), service=service)
 		self.logging.debug(command)
 		os.system(command)	
 		return(self)
 	def ps(self,service=''):
-		command = "docker-compose -f {compose} ps {service}".format(compose=self.filename, service=service)
+		command = "docker-compose -f {compose} ps {service}".format(compose=self.filename(), service=service)
 		self.logging.debug(command)
 		os.system(command)
 		return(self)
 	def top(self,service=''):
-		command = "docker-compose -f {compose} top {service}".format(compose=self.filename, service=service)
+		command = "docker-compose -f {compose} top {service}".format(compose=self.filename(), service=service)
 		self.logging.debug(command)
 		os.system(command)
 		return(self)
 	def images(self,service=''):
-		command = "docker-compose -f {compose} images {service}".format(compose=self.filename, service=service)
+		command = "docker-compose -f {compose} images {service}".format(compose=self.filename(), service=service)
 		self.logging.debug(command)
 		os.system(command)
 		return(self)		
@@ -243,17 +251,17 @@ class Composes():
 		tail = ''
 		if follow :
 			tail = '-f --tail=50'
-		command = "docker-compose -f {compose} logs {follow} {service}".format(compose=self.filename, follow=tail,service=service)
+		command = "docker-compose -f {compose} logs {follow} {service}".format(compose=self.filename(), follow=tail,service=service)
 		self.logging.debug(command)
 		os.system(command)		
 		return(self)
 	def exec(self,service, cmd):
-		command = "docker-compose -f {compose} exec {service} {cmd}".format(compose=self.filename, service=service, cmd=cmd)
+		command = "docker-compose -f {compose} exec {service} {cmd}".format(compose=self.filename(), service=service, cmd=cmd)
 		self.logging.debug(command)
 		os.system(command)
 		return(self)
 	def kill(self,service):
-		command = "docker-compose -f {compose} kill {service}".format(compose=self.filename, service=service)
+		command = "docker-compose -f {compose} kill {service}".format(compose=self.filename(), service=service)
 		self.logging.debug(command)
 		os.system(command)
 		return(self)
@@ -263,8 +271,8 @@ class Composes():
 		return(self)
 	def workdir(self,path):
 		os.makedirs( path,exist_ok=True);
-		self.filename = path + '/' + self.filename
-		self.logging.info('working dir is ' + self.filename)
+		self.basedir = path
+		self.logging.info('working dir is ' + self.basedir)
 		return(self)
 class Docker():
 
@@ -273,21 +281,20 @@ class Docker():
 		self.daemon = False
 		usage = "usage: %prog [options] up|rm|start|stop|restart|logs|top|images|exec <service>"
 		self.parser = OptionParser(usage)
-		# self.parser.add_option("-f", "--file", dest="filename", help="write report to FILE", metavar="FILE")
 		self.parser.add_option("", "--debug", action="store_true", dest="debug", help="debug mode")
+		self.parser.add_option("-e", "--environment", dest="environment", help="environment", metavar="development|testing|production")
 		self.parser.add_option('-d','--daemon', dest='daemon', action='store_true', help='run as daemon')
 		self.parser.add_option('','--logfile', dest='logfile', help='logs file.', default='debug.log')
-		self.parser.add_option('-l','--list', dest='list', action='store_true', help='following logging')
+		self.parser.add_option('-l','--list', dest='list', action='store_true', help='print service of environment')
 		self.parser.add_option('-f','--follow', dest='follow', action='store_true', help='following logging')
 		self.parser.add_option('-c','--compose', dest='compose', action='store_true', help='show docker compose')
-		self.parser.add_option('-e','--export', dest='export', action='store_true', help='export docker compose')
+		self.parser.add_option('','--export', dest='export', action='store_true', help='export docker compose')
 
 		(options, args) = self.parser.parse_args()
 		if options.daemon :
 			self.daemon = True
 		self.logfile = options.logfile
 		if options.logfile :
-			
 			logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',
 			filename=options.logfile,filemode='a')
 
@@ -295,8 +302,10 @@ class Docker():
 
 	def environment(self, env):
 		env.logfile(self.logfile)
-		# env.workdir('/tmp')
+		workdir = '/var/tmp/devops'
+		env.workdir(workdir)
 		self.composes[env.name] = env
+		self.logging.info("environment %s : %s" % (env.name, workdir))
 		return(self)
 	def up(self,service=''):
 		for env,obj in self.composes.items():
@@ -338,8 +347,9 @@ class Docker():
 		return(self)
 	def list(self):
 		for env,obj in self.composes.items():
+			print(env,':')
 			for service in obj.compose['services'] :
-				print(service)	
+				print(' '*4, service)
 		return(self)
 	def dump(self):
 		for env,value in self.composes.items():
