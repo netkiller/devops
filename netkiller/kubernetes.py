@@ -384,4 +384,4 @@ class Kubernetes(Logging):
 	def replace(self):
 		pass
 	
-kubernetes = Kubernetes()
+# kubernetes = Kubernetes()

@@ -290,13 +290,13 @@ class Docker():
 		self.parser.add_option('-c','--compose', dest='compose', action='store_true', help='show docker compose')
 		self.parser.add_option('','--export', dest='export', action='store_true', help='export docker compose')
 
-		(options, args) = self.parser.parse_args()
-		if options.daemon :
+		(self.options, self.args) = self.parser.parse_args()
+		if self.options.daemon :
 			self.daemon = True
-		self.logfile = options.logfile
-		if options.logfile :
+		self.logfile = self.options.logfile
+		if self.options.logfile :
 			logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',
-			filename=options.logfile,filemode='a')
+			filename=self.options.logfile,filemode='a')
 
 		self.logging = logging.getLogger()
 
@@ -308,119 +308,176 @@ class Docker():
 		self.logging.info("environment %s : %s" % (env.name, workdir))
 		return(self)
 	def up(self,service=''):
-		for env,obj in self.composes.items():
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
 			if self.daemon :
-				obj.daemon().up(service)
+				composes.daemon().up(service)
 			else:
-				obj.up(service)
+				composes.up(service)
+		else:
+			for env,obj in self.composes.items():
+				if self.daemon :
+					obj.daemon().up(service)
+				else:
+					obj.up(service)
+		return(self)
 	def rm(self,service=''):
-		for env,obj in self.composes.items():
-			obj.rm(service)
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.rm(service)
+		else:
+			for env,obj in self.composes.items():
+				obj.rm(service)
 		return(self)
 	def start(self,service=''):
-		for env,obj in self.composes.items():
-			obj.start(service)
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.start(service)
+		else:
+			for env,obj in self.composes.items():
+				obj.start(service)
 		return(self)
 	def stop(self,service=''):
-		for env,obj in self.composes.items():
-			obj.stop(service)
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.stop(service)
+		else:
+			for env,obj in self.composes.items():
+				obj.stop(service)
 		return(self)
 	def restart(self,service=''):
-		for env,obj in self.composes.items():
-			obj.restart(service)
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.restart(service)
+		else:
+			for env,obj in self.composes.items():
+				obj.restart(service)
 		return(self)
 	def ps(self,service=''):
-		for env,obj in self.composes.items():
-			obj.ps(service)
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.ps(service)
+		else:
+			for env,obj in self.composes.items():
+				obj.ps(service)
 		return(self)
 	def top(self,service=''):
-		for env,obj in self.composes.items():
-			obj.top(service)
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.top(service)
+		else:
+			for env,obj in self.composes.items():
+				obj.top(service)
 		return(self)
 	def images(self,service=''):
-		for env,obj in self.composes.items():
-			obj.images(service)
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.images(service)
+		else:
+			for env,obj in self.composes.items():
+				obj.images(service)
 		return(self)
 	def logs(self,service='', follow=False):
-		for env,obj in self.composes.items():
-			obj.logs(service, follow)
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.logs(service, follow)
+		else:
+			for env,obj in self.composes.items():
+				obj.logs(service, follow)
 		return(self)
 	def list(self):
-		for env,obj in self.composes.items():
-			print(env,':')
-			for service in obj.compose['services'] :
+		if self.options.environment and self.options.environment in self.composes :
+			print(self.options.environment,':')
+			services = self.composes[self.options.environment].compose['services']
+			for service in services :
 				print(' '*4, service)
+		else:
+			for env,obj in self.composes.items():
+				print(env,':')
+				for service in obj.compose['services'] :
+					print(' '*4, service)
 		return(self)
 	def dump(self):
-		for env,value in self.composes.items():
-			print(value.dump())
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.dump()
+		else:
+			for env,value in self.composes.items():
+				print(value.dump())
 	def save_all(self):
-		for filename,value in self.composes.items():
-			value.save(filename+'.yaml')
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.save(self.options.environment+'.yaml')
+		else:
+			for filename,value in self.composes.items():
+				value.save(filename+'.yaml')
 	def exec(self,service, array):
-		for env,obj in self.composes.items():
-			cmd = ' '.join(array)
-			obj.exec(service, cmd)
+		cmd = ' '.join(array)
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.exec(service, cmd)
+		else:
+			for env,obj in self.composes.items():
+				obj.exec(service, cmd)
 		return(self)
 	def usage(self):
+		print("Python controls the docker manager.")
 		self.parser.print_help()
 		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
 		exit()
 	def main(self):
-		(options, args) = self.parser.parse_args()
-		if options.debug:
+		if self.options.debug:
 			print("===================================")
-			print(options, args)
+			print(self.options, self.args)
 			print("===================================")
 			self.logging.debug("="*50)
-			self.logging.debug(options)
-			self.logging.debug(args)
+			self.logging.debug(self.options)
+			self.logging.debug(self.args)
 			self.logging.debug("="*50)
 		
-		if options.export :
+		if self.options.export :
 			self.save_all()
 			exit()
-		if options.compose :
+		if self.options.compose :
 			self.dump()
 			exit()
-		if options.list :
+		if self.options.list :
 			self.list()
 			exit()
-		if not args:
+		if not self.args:
 			self.usage()
 
-		if len(args) > 1 :
-			self.service = ' '.join(args[1:])
+		if len(self.args) > 1 :
+			self.service = ' '.join(self.args[1:])
 		else:
 			self.service = ''
 
 		self.logging.debug('service ' + self.service)
 	
-		if args[0] == 'up' :
+		if self.args[0] == 'up' :
 			self.up(self.service)
 			self.logging.info('up ' + self.service)
-		elif args[0] == 'rm':
+		elif self.args[0] == 'rm':
 			self.rm(self.service)
 			self.logging.info('rm ' + self.service)
-		elif args[0] == 'start':
+		elif self.args[0] == 'start':
 			self.start(self.service)
 			self.logging.info('start ' + self.service)
-		elif args[0] == 'stop':
+		elif self.args[0] == 'stop':
 			self.stop(self.service)
 			self.logging.info('stop ' + self.service)
-		elif args[0] == 'restart':
+		elif self.args[0] == 'restart':
 			self.restart(self.service)
 			self.logging.info('restart' + self.service)
-		elif args[0] == 'ps':
+		elif self.args[0] == 'ps':
 			self.ps(self.service)
-		elif args[0] == 'top':
+		elif self.args[0] == 'top':
 			self.top(self.service)
-		elif args[0] == 'images':
+		elif self.args[0] == 'images':
 			self.images(self.service)
-		elif args[0] == 'logs':
-			self.logs(self.service, options.follow)
-		elif args[0] == 'exec':
-			self.exec(self.service, args[2:])
-			# self.logging.info('restart' + self.service)
+		elif self.args[0] == 'logs':
+			self.logs(self.service, self.options.follow)
+		elif self.args[0] == 'exec':
+			self.exec(self.service, self.args[2:])
 		else:
 			self.usage()
