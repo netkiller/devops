@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
 	name="netkiller-devops",
-	version="0.2.8",
+	version="0.2.9",
 	author="Neo Chen",
 	author_email="netkiller@msn.com",
 	description="DevOps of useful deployment and automation",
@@ -38,7 +38,8 @@ setup(
 		'bin/randpasswd',
 		'bin/matrixpasswd',
 		'bin/wechat',
-		'bin/voice'
+		'bin/voice',
+		'bin/dbdump'
 	],
 	data_files = [
 		('etc', ['etc/deployment.cfg']),
@@ -46,6 +47,7 @@ setup(
 		('etc', ['etc/schedule.cfg']),
 		('etc', ['etc/os.ini']),
 		('etc', ['etc/notification.ini']),
+		('etc', ['etc/dump.ini']),
 		('libexec/devops', [
 			'libexec/backup/backup.mysql.sh',
 			'libexec/backup/backup.mysql.gpg.sh',

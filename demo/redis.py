@@ -1,7 +1,7 @@
 import os,sys
 
 module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print(module)
+# print(module)
 sys.path.insert(0,module)
 
 from netkiller.docker import *
@@ -18,7 +18,7 @@ master.image(image)
 master.container_name('master')
 master.restart('always')
 master.environment(environment)
-master.ports('6379:6379')
+master.ports(['6379:6379'])
 master.volumes(['/tmp/master:/data'])
 master.sysctls(['net.core.somaxconn=1024'])
 master.command([
@@ -45,6 +45,16 @@ for i in range(5) :
     compose.services(slave)
 
 # print (compose.debug())
-print(compose.dump())
+# print(compose.dump())
 # compose.save()
 # compose.up()
+
+if __name__ == '__main__':
+	try:
+		docker = Docker()
+		docker.environment(compose)
+        # docker.environment(development)
+		# docker.environment(testing)
+		docker.main()
+	except KeyboardInterrupt:
+		print ("Crtl+C Pressed. Shutting down.")
