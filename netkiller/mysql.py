@@ -10,7 +10,7 @@ from configparser import ConfigParser
 class MySQL:
 	def __init__(self):
 		super().__init__()
-		self.config = ConfigParser()
+		# self.config = ConfigParser()
 		self.logging = logging.getLogger()
 
 	def host(self, host):
@@ -25,25 +25,36 @@ class MySQL:
 class MySQLDump(MySQL):
 	def __init__(self, directory = None):
 		super().__init__()
-		# umask = os.umask(0x077)
+		umask = os.umask(0o077)
 		if directory :
 			self.directory(directory)
 		self.opts = []
-		self.gpg = False
+		self.gpg = None 
 		self.gzip = False
 	def directory(self, dir):
 		if not os.path.isdir(dir) :
 			os.makedirs(dir)
 		self.directory = dir
 		return self
-	def database(self, database):
+	def host(self, host):
+		super().host(host)
+		self.opts.append('--host='+host)
+		return self
+	def databases(self, database):
 		self.database = database
 		if '--all-databases' in self.opts :
 			self.opts.remove('--all-databases')
-		self.opts.append('--database '+self.database)
+		if database.find(',') :
+			self.opts.append('--databases '+self.database.replace(',',' '))
+		else:	
+			self.opts.append(self.database)
 		return self
-	def tables(self, table):
-		pass
+	def tables(self, database, table):
+		# if database.find(' ') or database.find(','):
+		# 	exit()
+		# else:
+		self.opts.append(databases+' '+table)
+		return self
 	def copies(self, day):
 		self.copies = day
 		return self
@@ -80,8 +91,11 @@ class MySQLDump(MySQL):
 	def set_gtid_purged(self, value =  'OFF'):
 		self.opts.append('--set-gtid-purged='+value)
 		return self
+	def default_character_set(self, value =  'utf8'):
+		self.opts.append('--default-character-set='+value)
+		return self	
 	def cnf(self, clean = False):
-		path = os.path.expanduser('~/.dump.cnf')
+		path = os.path.expanduser('~/.my.cnf')
 		config = ConfigParser()
 		if clean and os.path.exists(path):
 			os.remove(path)
@@ -92,8 +106,8 @@ class MySQLDump(MySQL):
 		}
 		with open(path, 'w') as file:
 			config.write(file)
-
-		self.opts.append('--defaults-extra-file={0}'.format(path))
+		# self.opts.append('--defaults-file={0}'.format(path))
+		# self.opts.append('--defaults-extra-file={0}'.format(path))
 		return self
 	def delete(self, day = None):
 		if day :
@@ -101,32 +115,34 @@ class MySQLDump(MySQL):
 		if self.copies :
 			command = "find {directory} -type f -mtime +{copies} -delete".format(directory=self.directory, copies=self.copies)
 			self.logging.debug(command)
+			os.system(command)
 	def Gzip(self):
-		self.gpg = False
+		self.gpg = None
 		self.gzip = True
-	def OpenGPG(self):
+	def OpenGPG(self, recipient):
 		self.gzip = False
-		self.gpg = True
+		self.gpg = recipient
 	def __command(self):
 		cmd = []
 		cmd.append('/usr/bin/mysqldump')
 		opts = ' '.join(self.opts)
 		cmd.append(opts)
 
-		ext = '.sql'
-		if self.gzip :
-			cmd.append('| gzip')
-			ext = '.sql.gz'
-		if self.gpg :
-			cmd.append('| gpg')
-			ext = '.sql.gpg'
-
-		cmd.append('>')
-
 		timepoint = time.strftime('%Y-%m-%d.%X',time.localtime(time.time()))
-		output =  self.directory + '/' + self.database.replace(' ','_') +'.' + timepoint +ext
-		cmd.append(output)
-		
+		output = self.directory + '/' + self.database.replace(' ','_') +'.' + timepoint
+
+		if self.gzip :
+			cmd.append('| gzip >')
+			output += '.sql.gz'
+			cmd.append(output)
+		elif self.gpg :
+			cmd.append('| gpg -r {userid} -e -o {output}.sql.gpg'.format(userid=self.gpg, output=output) )
+			ext = '.sql.gpg'
+		else:
+			cmd.append('>')
+			output += '.sql'
+			cmd.append(output)
+
 		command = ' '.join(cmd) 
 		return command
 	def execute(self):

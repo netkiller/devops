@@ -1,0 +1,178 @@
+#! /usr/bin/env python3
+# -*- coding: UTF-8 -*-
+import os,sys
+import logging, logging.handlers
+from configparser import ConfigParser,NoSectionError
+from optparse import OptionParser, OptionGroup
+module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0,module)
+from netkiller.mysql import *
+
+class Dump(MySQLDump):
+
+	def __init__(self): 
+		usage = "usage: %prog [options] <item item1 item2 ... item(n)>"
+		self.parser = OptionParser(usage)
+		self.parser.add_option('-c', '--config', dest='config', help='config file', default='/usr/local/etc/dump.ini', metavar='/usr/local/etc/dump.ini')
+		self.parser.add_option('-e', '--edit', dest='edit', action='store_true', help="open the config file")
+		self.parser.add_option('-b','--archive', dest='archive', help='backup directory', default=None, metavar='/opt/backup')
+		self.parser.add_option('-l', '--list', dest='list', action='store_true', help="list items")
+		self.parser.add_option('-a', '--all', dest='all', action='store_true', help="backup history")
+		self.parser.add_option('','--retain', dest='retain', help='The number of days retained', default=30, metavar='30')
+		
+		group = OptionGroup(self.parser, "Compress or expand files")
+		group.add_option('-z', '--gzip', dest='gzip', action='store_true', help="Gzip")
+		group.add_option('-u','--gunzip', dest='gunzip', help='decompress files', default=None, metavar='backup.sql.gz')
+		group.add_option('-s','--show', dest='zcat', help='print sql', default=None, metavar='backup.sql.gz')
+		self.parser.add_option_group(group)
+
+		group = OptionGroup(self.parser, "OpenGPG encrypt or decrypt files")
+		group.add_option('-r','--recipient', dest='recipient', help='encrypt for USER-ID', default=None, metavar='netkiller@msn.com')
+		group.add_option('-g', '--gpg', dest='gpg', action='store_true', help="encrypt file")
+		group.add_option('-d','--decrypt', dest='decrypt', help='decrypt file', default=None, metavar='backup.sql.gpg')
+		group.add_option('','--stdout', dest='stdout', help='print file', default=None, metavar='backup.sql.gpg')
+		self.parser.add_option_group(group)
+		
+		self.parser.add_option('','--logfile', dest='logfile', help='logs file.', default='/dev/null', metavar='/var/log/dump.log')
+		self.parser.add_option('', '--debug', action='store_true', dest="debug", help="debug mode")
+
+		(self.options, self.args) = self.parser.parse_args()
+		
+		self.config = ConfigParser()
+		self.config.read(self.options.config)
+
+		try:
+			if self.options.debug :
+				logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+			else:
+				if 'logfile' in self.config.defaults():
+					self.logfile = self.config.defaults()['logfile']
+				else:
+					self.logfile = self.options.logfile
+				logging.basicConfig(level=logging.NOTSET, format='%(asctime)s %(levelname)-8s %(message)s',	datefmt='%Y-%m-%d %H:%M:%S', filename=self.logfile, filemode='a')
+		except Exception as err:
+			print("Error: %s" %(err))
+			sys.exit(2)	
+
+		if self.options.archive :
+		 	self.archive = self.options.archive
+		else:
+			if 'directory' in self.config.defaults():
+				self.archive = self.config.defaults()['directory']
+			else:
+				self.archive = '.'
+				# print('No backup directory!')
+
+		super().__init__(self.archive)
+		self.logging.info('Backup directory %s', self.archive)
+		self.logging.debug('[DEFAULT] %s', self.config.defaults())
+
+		if self.options.debug :
+			self.logging.debug('Options %s', self.options)
+			self.logging.debug('Args %s', self.args)
+
+		if self.options.list :
+			self.list()
+		if self.options.all :
+			self.all()
+		if self.options.edit :	
+			os.system('vim '+ self.options.config)
+			exit()
+		if self.options.gunzip :	
+			command = 'gunzip '+ self.archive +'/'+ self.options.gunzip
+			self.logging.debug(command)
+			os.system(command)
+			exit()
+		if self.options.decrypt and self.options.recipient:
+			output = self.archive +'/'+ self.options.decrypt.replace('.gpg', '')
+			decrypt = self.archive +'/'+ self.options.decrypt
+			command = 'gpg --recipient {recipient} --output {output} --decrypt {decrypt} '.format(recipient=self.options.recipient, output=output, decrypt=decrypt)
+			self.logging.debug(command)
+			os.system(command)
+			exit()
+		if self.options.zcat :
+			command = 'zcat '+ self.archive +'/'+ self.options.zcat
+			os.system(command)
+			exit()
+		if self.options.stdout :
+			decrypt = self.archive +'/'+ self.options.stdout
+			command = 'gpg --recipient {recipient} --decrypt {decrypt} '.format(recipient=self.options.recipient, decrypt=decrypt)
+			self.logging.debug(command)
+			os.system(command)
+			exit()	
+		if self.args :
+			self.logging.info("==================== Backup starting ====================")
+			for item in self.args :
+				self.dump(item)
+				self.logging.info('%s [Done]', item)
+			self.logging.info("==================== Backup delete ====================")
+			self.retain(self.options.retain)
+		else:
+			self.usage()
+
+	def usage(self):
+		print("Netkiller database backup")
+		self.parser.print_help()
+		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
+		exit()
+
+	def list(self):
+		self.logging.info(self.config.sections())
+		for item in self.config.sections() :
+			# print(self.config.has_option(item, 'description'))
+			if self.config.has_option(item, 'description'):
+				print('%s : %s' % (item, self.config.get(item, 'description')))
+			else:
+				print(item)
+		exit()
+	def conf(self, item):
+		try:
+			# print(self.config[item])
+			conf = dict(self.config.items(item))
+		except NoSectionError as error :
+			print(error)
+			exit()
+		return 
+	def retain(self, days):
+		self.copies(10).delete()
+	def dump(self, item):
+		try:
+			conf = dict(self.config.items(item))
+		except NoSectionError as err :
+			print('%s in %s' % (err, self.options.config))
+			exit()
+		self.logging.info('[%s] : %s' % (item, conf))
+		try:
+			dump = MySQLDump(self.archive)
+			dump.host(conf['host'])
+			dump.username(conf['user'])
+			dump.password(conf['pass'])
+			dump.cnf()
+			dump.compress().events().triggers().routines()
+			# dump.all_databases()
+			dump.single_transaction()
+			# dump.skip_lock_tables()
+			dump.column_statistics()
+			dump.set_gtid_purged()
+			# dump.log_error('/tmp/test.log')
+			if self.options.gzip :
+				dump.Gzip()
+			if self.options.gpg :
+				if self.options.recipient :
+					dump.OpenGPG(self.options.recipient)
+				else:
+					dump.OpenGPG(conf['recipient'])
+			dump.databases(conf['dbname'])
+			dump.execute()
+		except KeyError as error:
+			print('The configuration item was not found: [%s] %s.' % (item, error))
+	def all(self):
+		files = os.listdir(self.archive)
+		for f in files:
+			print(f)
+		exit()
+if __name__ == '__main__':
+	try:
+		dump = Dump()
+	except KeyboardInterrupt:
+		print ("Crtl+C Pressed. Shutting down.")

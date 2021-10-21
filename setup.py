@@ -39,7 +39,7 @@ setup(
 		'bin/matrixpasswd',
 		'bin/wechat',
 		'bin/voice',
-		'bin/dbdump'
+		'bin/sqldump'
 	],
 	data_files = [
 		('etc', ['etc/deployment.cfg']),
