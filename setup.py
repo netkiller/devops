@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
 	name="netkiller-devops",
-	version="0.2.9",
+	version="0.3.0",
 	author="Neo Chen",
 	author_email="netkiller@msn.com",
 	description="DevOps of useful deployment and automation",
@@ -46,8 +46,10 @@ setup(
 		('etc', ['etc/task.cfg']),
 		('etc', ['etc/schedule.cfg']),
 		('etc', ['etc/os.ini']),
-		('etc', ['etc/notification.ini']),
-		('etc', ['etc/dump.ini']),
+		('etc', [
+			'etc/notification.ini',
+			'etc/ddump.ini.sample'
+		]),
 		('libexec/devops', [
 			'libexec/backup/backup.mysql.sh',
 			'libexec/backup/backup.mysql.gpg.sh',

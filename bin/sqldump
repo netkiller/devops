@@ -15,9 +15,9 @@ class Dump(MySQLDump):
 		self.parser = OptionParser(usage)
 		self.parser.add_option('-c', '--config', dest='config', help='config file', default='/usr/local/etc/dump.ini', metavar='/usr/local/etc/dump.ini')
 		self.parser.add_option('-e', '--edit', dest='edit', action='store_true', help="open the config file")
-		self.parser.add_option('-b','--archive', dest='archive', help='backup directory', default=None, metavar='/opt/backup')
+		self.parser.add_option('-a','--archive', dest='archive', help='backup directory', default=None, metavar='/opt/backup')
 		self.parser.add_option('-l', '--list', dest='list', action='store_true', help="list items")
-		self.parser.add_option('-a', '--all', dest='all', action='store_true', help="backup history")
+		self.parser.add_option('-H', '--history', dest='history', action='store_true', help="backup history")
 		self.parser.add_option('','--retain', dest='retain', help='The number of days retained', default=30, metavar='30')
 		
 		group = OptionGroup(self.parser, "Compress or expand files")
@@ -30,7 +30,7 @@ class Dump(MySQLDump):
 		group.add_option('-r','--recipient', dest='recipient', help='encrypt for USER-ID', default=None, metavar='netkiller@msn.com')
 		group.add_option('-g', '--gpg', dest='gpg', action='store_true', help="encrypt file")
 		group.add_option('-d','--decrypt', dest='decrypt', help='decrypt file', default=None, metavar='backup.sql.gpg')
-		group.add_option('','--stdout', dest='stdout', help='print file', default=None, metavar='backup.sql.gpg')
+		group.add_option('-S','--stdout', dest='stdout', help='print file', default=None, metavar='backup.sql.gpg')
 		self.parser.add_option_group(group)
 		
 		self.parser.add_option('','--logfile', dest='logfile', help='logs file.', default='/dev/null', metavar='/var/log/dump.log')
@@ -73,34 +73,44 @@ class Dump(MySQLDump):
 
 		if self.options.list :
 			self.list()
-		if self.options.all :
-			self.all()
+		if self.options.history :
+			if self.args :
+				self.history(self.args)
+			else:
+				self.history()
 		if self.options.edit :	
 			os.system('vim '+ self.options.config)
 			exit()
-		if self.options.gunzip :	
-			command = 'gunzip '+ self.archive +'/'+ self.options.gunzip
-			self.logging.debug(command)
-			os.system(command)
-			exit()
-		if self.options.decrypt and self.options.recipient:
-			output = self.archive +'/'+ self.options.decrypt.replace('.gpg', '')
-			decrypt = self.archive +'/'+ self.options.decrypt
-			command = 'gpg --recipient {recipient} --output {output} --decrypt {decrypt} '.format(recipient=self.options.recipient, output=output, decrypt=decrypt)
-			self.logging.debug(command)
-			os.system(command)
-			exit()
-		if self.options.zcat :
-			command = 'zcat '+ self.archive +'/'+ self.options.zcat
-			os.system(command)
-			exit()
-		if self.options.stdout :
-			decrypt = self.archive +'/'+ self.options.stdout
-			command = 'gpg --recipient {recipient} --decrypt {decrypt} '.format(recipient=self.options.recipient, decrypt=decrypt)
-			self.logging.debug(command)
-			os.system(command)
-			exit()	
+		
 		if self.args :
+
+			if self.options.gunzip :
+				item = self.args[0]
+				command = 'gunzip '+ self.archive +'/'+item+'/'+ self.options.gunzip
+				self.logging.debug(command)
+				os.system(command)
+				exit()
+			if self.options.decrypt and self.options.recipient:
+				item = self.args[0]
+				output = self.archive +'/'+item+'/'+ self.options.decrypt.replace('.gpg', '')
+				decrypt = self.archive +'/'+item+'/'+ self.options.decrypt
+				command = 'gpg --recipient {recipient} --output {output} --decrypt {decrypt} '.format(recipient=self.options.recipient, output=output, decrypt=decrypt)
+				self.logging.debug(command)
+				os.system(command)
+				exit()
+			if self.options.zcat :
+				item = self.args[0]
+				command = 'zcat '+ self.archive +'/'+item+'/'+ self.options.zcat
+				os.system(command)
+				exit()
+			if self.options.stdout :
+				item = self.args[0]
+				decrypt = self.archive +'/'+item+'/'+ self.options.stdout
+				command = 'gpg --recipient {recipient} --decrypt {decrypt} '.format(recipient=self.options.recipient, decrypt=decrypt)
+				self.logging.debug(command)
+				os.system(command)
+				exit()	
+
 			self.logging.info("==================== Backup starting ====================")
 			for item in self.args :
 				self.dump(item)
@@ -119,7 +129,6 @@ class Dump(MySQLDump):
 	def list(self):
 		self.logging.info(self.config.sections())
 		for item in self.config.sections() :
-			# print(self.config.has_option(item, 'description'))
 			if self.config.has_option(item, 'description'):
 				print('%s : %s' % (item, self.config.get(item, 'description')))
 			else:
@@ -143,7 +152,7 @@ class Dump(MySQLDump):
 			exit()
 		self.logging.info('[%s] : %s' % (item, conf))
 		try:
-			dump = MySQLDump(self.archive)
+			dump = MySQLDump(self.archive+'/'+item)
 			dump.host(conf['host'])
 			dump.username(conf['user'])
 			dump.password(conf['pass'])
@@ -166,10 +175,21 @@ class Dump(MySQLDump):
 			dump.execute()
 		except KeyError as error:
 			print('The configuration item was not found: [%s] %s.' % (item, error))
-	def all(self):
-		files = os.listdir(self.archive)
-		for f in files:
-			print(f)
+	def history(self, items = None):
+		if items == None:
+			items = self.config.sections()
+		for item in items :
+			path = self.archive+'/'+item
+			if os.path.isdir(path):
+				files = os.scandir(path)
+				print('%s :' % item)
+				for file in files:
+					print('\t%s' % file.name)
+
+		# for rootdir, dirs, files in os.walk(self.archive):
+		# 	for subdir in dirs:
+		# 		print(os.path.join(rootdir, subdir))
+
 		exit()
 if __name__ == '__main__':
 	try:
