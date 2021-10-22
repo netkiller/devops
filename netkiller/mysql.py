@@ -119,7 +119,7 @@ class MySQLDump(MySQL):
 	def Gzip(self):
 		self.gpg = None
 		self.gzip = True
-	def OpenGPG(self, recipient):
+	def GnuPG(self, recipient):
 		self.gzip = False
 		self.gpg = recipient
 	def __command(self):

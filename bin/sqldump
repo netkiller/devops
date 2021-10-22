@@ -26,7 +26,7 @@ class Dump(MySQLDump):
 		group.add_option('-s','--show', dest='zcat', help='print sql', default=None, metavar='backup.sql.gz')
 		self.parser.add_option_group(group)
 
-		group = OptionGroup(self.parser, "OpenGPG encrypt or decrypt files")
+		group = OptionGroup(self.parser, "GnuPG encrypt or decrypt files")
 		group.add_option('-r','--recipient', dest='recipient', help='encrypt for USER-ID', default=None, metavar='netkiller@msn.com')
 		group.add_option('-g', '--gpg', dest='gpg', action='store_true', help="encrypt file")
 		group.add_option('-d','--decrypt', dest='decrypt', help='decrypt file', default=None, metavar='backup.sql.gpg')
@@ -168,9 +168,9 @@ class Dump(MySQLDump):
 				dump.Gzip()
 			if self.options.gpg :
 				if self.options.recipient :
-					dump.OpenGPG(self.options.recipient)
+					dump.GnuPG(self.options.recipient)
 				else:
-					dump.OpenGPG(conf['recipient'])
+					dump.GnuPG(conf['recipient'])
 			dump.databases(conf['dbname'])
 			dump.execute()
 		except KeyError as error:
