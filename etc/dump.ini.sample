@@ -11,21 +11,27 @@ user=root
 pass=test
 dbname=test
 description=这是测试环境的数据库
+recipient=netkiller@msn.com
 
 [test]
 host=192.168.10.10
 user=test
 pass=test
 dbname=test test1 test2 test3 test4
+recipient=netkiller@msn.com
 
 [stage]
+host=127.0.0.1
 user=root
-dbname=stage
 pass=
-dbname=test
+dbname=stage
+description=test
+recipient=netkiller@msn.com
 
 [prod]
+host=127.0.0.1
 user=root
-dbname=prod
 pass=
-dbname=test
+dbname=prod
+description==test
+recipient=netkiller@msn.com

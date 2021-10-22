@@ -128,7 +128,7 @@ class MySQLDump(MySQL):
 		opts = ' '.join(self.opts)
 		cmd.append(opts)
 
-		timepoint = time.strftime('%Y-%m-%d.%X',time.localtime(time.time()))
+		timepoint = time.strftime('%Y-%m-%d.%H:%M:%S',time.localtime(time.time()))
 		output = self.directory + '/' + self.database.replace(' ','_') +'.' + timepoint
 
 		if self.gzip :
