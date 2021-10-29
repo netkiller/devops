@@ -13,11 +13,19 @@ try:
 except ImportError as err:
 	print("%s" %(err))
 
+extra_hosts = [
+	'mongo.sfzito.com:172.17.195.17',
+	'eos.sfzito.com:172.17.15.17',
+	'cfca.sfzito.com:172.17.15.17'
+	]
+
+
 nginx =  Services('nginx')
 nginx.image('nginx:latest')
 nginx.container_name('nginx')
 # service.restart('always')
 # service.hostname('www.netkiller.cn')
+nginx.extra_hosts(extra_hosts)
 # service.extra_hosts(['db.netkiller.cn:127.0.0.1','cache.netkiller.cn:127.0.0.1','api.netkiller.cn:127.0.0.1'])
 # service.environment(['TA=Asia/Shanghai'])
 # service.ports(['8080:8080'])
@@ -27,7 +35,7 @@ sms =  Services('sms')
 sms.image('sms:latest')
 sms.container_name('nginx')
 # sms.restart('always')
-# sms.hostname('www.netkiller.cn')
+sms.hostname("7899")
 sms.depends_on(['aaa','bbb','ccc'])
 # # sms.debug()
 

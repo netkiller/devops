@@ -56,10 +56,18 @@ class Services():
 		self.service[self.name]['restart'] =value
 		return(self)	
 	def hostname(self,value='localhost.localdomain'):
-		self.service[self.name]['hostname'] =value
+		if type(value) == str:
+			self.service[self.name]['hostname'] =value
 		return(self)
-	def extra_hosts(self,array=[]):
-		self.service[self.name]['extra_hosts'] = array
+	def extra_hosts(self,obj):
+		if not 'extra_hosts' in self.service[self.name].keys() :
+			self.service[self.name]['extra_hosts']=[]
+		if type(obj) == str:
+			self.service[self.name]['extra_hosts'].append(obj)
+		elif type(obj) == list:
+			self.service[self.name]['extra_hosts'].extend(obj)
+		else:
+			self.service[self.name]['extra_hosts'] = obj
 		return(self)
 	def environment(self, obj):
 		if not 'environment' in self.service[self.name].keys() :
@@ -181,15 +189,20 @@ class Composes():
 	def dump(self):
 		return(yaml.dump(self.compose))
 	def filename(self):
-		return self.basedir +'/'+ self.name+'.yaml'
+		return self.basedir +'/'+ self.name+'/'+'compose.yaml'
 	def save(self, filename=None):
+		if not filename :
+			filename = self.filename()
+			dirname = os.path.dirname(filename)
+
+			if not os.path.isdir(dirname) :
+				os.makedirs(dirname)
+				self.logging.info("Create directory %s" % (dirname))
+
 		try:
-			if filename :
-				file = open(filename,"w")
-			else:
-				file = open(self.filename(),"w")
+			file = open(filename,"w")
 			yaml.safe_dump(self.compose,stream=file,default_flow_style=False)
-			self.logging.info("save %s" % (self.filename()))
+			self.logging.info("Save compose file %s" % (filename))
 		except Exception as e:
 			self.logging.error(e)
 			print(e)
