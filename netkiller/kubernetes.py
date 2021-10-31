@@ -135,7 +135,7 @@ class ConfigMap(Common):
 			super().__init__()
 			ConfigMap.config['metadata'] = {}
 		def __del__(self):
-			ConfigMap.config['metadata'].update(self.metadata)
+			ConfigMap.config['metadata'].update(self.metadata())
 	def data(self, value):
 		self.config['data'] = value
 	def dump(self):
@@ -219,7 +219,7 @@ class Service(Common):
 			super().__init__()
 			Service.service['metadata'] = {}
 		def __del__(self):
-			Service.service['metadata'].update(self.metadata)
+			Service.service['metadata'].update(self.metadata())
 	class spec:
 		def __init__(self): 
 			if not 'spec' in Service.service :
@@ -265,7 +265,7 @@ class Deployment(Common):
 			super().__init__()
 			Deployment.deployment['metadata'] = {}
 		def __del__(self):
-			Deployment.deployment['metadata'].update(self.metadata)
+			Deployment.deployment['metadata'].update(self.metadata())
 			# print(Deployment.deployment)
 	class spec:
 		def __init__(self): 
@@ -289,7 +289,7 @@ class Deployment(Common):
 					super().__init__()
 					Deployment.deployment['spec']['template']['metadata'] = {}
 				def __del__(self):
-					Deployment.deployment['spec']['template']['metadata'].update(self.metadata)
+					Deployment.deployment['spec']['template']['metadata'].update(self.metadata())
 			class spec:
 				def __init__(self): 
 					Deployment.deployment['spec']['template']['spec'] = {}		

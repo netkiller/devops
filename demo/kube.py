@@ -48,6 +48,15 @@ account = ServiceAccount()
 account.metadata.name('search').namespace('testing').labels({'app':'elasticsearch'})
 # account.debug()
 
+print("=" * 40, "ConfigMap", "=" * 40)
+config = ConfigMap()
+config.apiVersion('v1')
+config.metadata().name('test')
+# .namespace('test')
+config.data({'db.host':'localhost','db.port':'3306','db.user':'root','db.pass':'123456'})
+# config.data({'db.host':'localhost'})
+# config.debug()
+
 print("=" * 40, "Pod", "=" * 40)
 pod = Pod()
 pod.apiVersion()
@@ -71,27 +80,41 @@ pod.spec().containers().args(["echo 'Helloworld!!!'"])
 # pod.spec().containers().ports([{'containerPort':'6379'}])
 # pod.spec().volumes().name('config-volume').configMap({'name':'special-config', 'items':[{'key':'cache','path':'/mnt/cache'}]})
 
-pod.debug()
-
-# apiVersion: v1
-# kind: Pod
-# metadata:
-#   name: counter
-# spec:
-#   containers:
-#   - name: count
-#     image: busybox
-#     args: [/bin/sh, -c, 'i=0; while true; do echo "$i: $(date)"; i=$((i+1)); sleep 1; done']
-
+# pod.debug()
 # exit()
+
+print("=" * 40, "Service", "=" * 40)
+service = Service()
+service.metadata().name('nginx')
+# service.metadata().namespace('stage')
+service.spec().selector({'app': 'nginx'})
+service.spec().type('NodePort')
+# service.spec().ports([{'name':'http','protocol':'TCP','port':80,'targetPort':80, 'nodePort': 31000}])
+service.spec().ports([{'port':80,'targetPort':80, 'nodePort': 31000}])
+# service.spec().externalIPs(['172.16.0.250'])
+# service.spec().clusterIP('172.168.0.254')
+# service.debug()
+# exit()
+
+print("=" * 40, "Deployment", "=" * 40)
+deployment = Deployment()
+deployment.metadata().name('nginx').labels({'app':'nginx'})
+deployment.spec().replicas(2)
+deployment.spec().selector({'matchLabels':{'app':'nginx'}})
+deployment.spec().template().metadata().labels({'app':'nginx'})
+deployment.spec().template().spec().containers().name('nginx').image('nginx:alpine').ports([{'containerPort':80}])
+deployment.debug()
 
 print("=" * 40, "Compose", "=" * 40)
 compose = Compose('development')
-# compose.add(namespace)
-# compose.add(staging)
-# compose.add(testing)
-# compose.add(account)
+compose.add(namespace)
+compose.add(staging)
+compose.add(testing)
+compose.add(account)
+compose.add(config)
 compose.add(pod)
+compose.add(service)
+compose.add(deployment)
 compose.debug()
 compose.yaml()
 compose.save('/tmp/test.yaml')
