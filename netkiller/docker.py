@@ -34,7 +34,9 @@ class Volumes():
 		self.volumes = {}
 		if name :
 			self.volumes[name] = None
-	def add(self, name):
+	def ls(self):
+		pass
+	def create(self, name):
 		self.volumes[name] = None
 		return(self)
 		
@@ -133,6 +135,8 @@ class Services():
 			self.service[self.name]['depends_on'] = obj
 		return(self)
 	def links(self, obj):
+		if not 'links' in self.service[self.name].keys() :
+			self.service[self.name]['links']=[]
 		if isinstance(obj, Services):
 			self.service[self.name]['links'].append(obj.name)
 		elif type(obj) == str:
@@ -164,7 +168,7 @@ class Services():
 class Composes():
 	compose = {}
 	daemon = False
-	basedir = ''
+	basedir = '.'
 	def __init__(self, name): 
 		self.compose = {}
 		self.name = name
@@ -288,8 +292,7 @@ class Composes():
 		self.logging.info('working dir is ' + self.basedir)
 		return(self)
 class Docker():
-
-	def __init__(self): 
+	def __init__(self,environment = None ):
 		self.composes= {}
 		self.daemon = False
 		usage = "usage: %prog [options] up|rm|start|stop|restart|logs|top|images|exec <service>"
@@ -307,11 +310,24 @@ class Docker():
 		if self.options.daemon :
 			self.daemon = True
 		self.logfile = self.options.logfile
-		if self.options.logfile :
-			logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',
-			filename=self.options.logfile,filemode='a')
+		if self.options.debug :
+			logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+		elif self.options.logfile :
+			logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',filename=self.options.logfile,filemode='a')
 
 		self.logging = logging.getLogger()
+
+		if self.options.debug:
+			print("===================================")
+			print(self.options, self.args)
+			print("===================================")
+			self.logging.debug("="*50)
+			self.logging.debug(self.options)
+			self.logging.debug(self.args)
+			self.logging.debug("="*50)
+
+		if environment :
+			self.environment(environment)
 
 	def environment(self, env):
 		env.logfile(self.logfile)
@@ -319,6 +335,9 @@ class Docker():
 		env.workdir(workdir)
 		self.composes[env.name] = env
 		self.logging.info("environment %s : %s" % (env.name, workdir))
+		# self.logging.debug('-' * 50)
+		# self.logging.debug(env.dump())
+		# self.logging.debug('-' * 50)
 		return(self)
 	def up(self,service=''):
 		if self.options.environment and self.options.environment in self.composes :
@@ -399,6 +418,7 @@ class Docker():
 				obj.logs(service, follow)
 		return(self)
 	def list(self):
+		self.logging.debug('-' * 50)
 		if self.options.environment and self.options.environment in self.composes :
 			print(self.options.environment,':')
 			services = self.composes[self.options.environment].compose['services']
@@ -439,14 +459,6 @@ class Docker():
 		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
 		exit()
 	def main(self):
-		if self.options.debug:
-			print("===================================")
-			print(self.options, self.args)
-			print("===================================")
-			self.logging.debug("="*50)
-			self.logging.debug(self.options)
-			self.logging.debug(self.args)
-			self.logging.debug("="*50)
 		
 		if self.options.export :
 			self.save_all()
@@ -494,3 +506,4 @@ class Docker():
 			self.exec(self.service, self.args[2:])
 		else:
 			self.usage()
+		# pass

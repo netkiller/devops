@@ -1,14 +1,14 @@
 import os,sys
 
 module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print(module)
+# print(module)
 sys.path.insert(0,module)
 
 from netkiller.kubernetes import *
 
 print("=" * 40, "Namespace", "=" * 40)
 namespace = Namespace()
-namespace.metadata().namespace('production')
+namespace.metadata.namespace('production')
 namespace.debug()
 
 # exit()
@@ -32,14 +32,14 @@ config.debug()
 
 print("=" * 40, "ServiceAccount", "=" * 40)
 account = ServiceAccount()
-account.metadata().name('search').namespace('search').labels({'app':'elasticsearch'})
+account.metadata.name('search').namespace('search').labels({'app':'elasticsearch'})
 account.debug()
 
 print("=" * 40, "Pod", "=" * 40)
 pod = Pod()
 pod.apiVersion()
-pod.metadata().name('counter').annotations(['security.alpha.kubernetes.io/sysctls: kernel.shm_rmid_forced=1'])
-pod.metadata().namespace('development')
+pod.metadata.name('counter').annotations(['security.alpha.kubernetes.io/sysctls: kernel.shm_rmid_forced=1'])
+pod.metadata.namespace('development')
 spec = container = pod.spec()
 spec.restartPolicy('Always')
 spec.hostAliases([{'ip':'127.0.0.1','hostname':['www.netkiller.cn','db.netkiller.cn']}])

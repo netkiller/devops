@@ -1,0 +1,20 @@
+services:
+  nginx:
+    container_name: nginx
+    environment:
+    - TZ=Asia/Shanghai
+    extra_hosts:
+    - db.netkiller.cn:127.0.0.1
+    - cache.netkiller.cn:127.0.0.1
+    - api.netkiller.cn:127.0.0.1
+    hostname: www.netkiller.cn
+    image: nginx:latest
+    links:
+    - nginx:web1.netkiller.cn
+    ports:
+    - 80:80
+    - 443:443
+    restart: always
+    volumes:
+    - /tmp:/tmp
+version: '3.9'

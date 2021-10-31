@@ -66,9 +66,13 @@ testing.services(sms)
 testing.services(test)
 testing.workdir('/tmp/compose')
 
+staging = Composes('staging')
+staging.version('3.9')
+staging.services(sms)
+
 if __name__ == '__main__':
 	try:
-		docker = Docker()
+		docker = Docker() 
 		docker.environment(development)
 		docker.environment(testing)
 		docker.main()

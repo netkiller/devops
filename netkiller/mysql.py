@@ -104,6 +104,10 @@ class MySQLDump(MySQL):
 			'user': self.username,
 			'password': self.password
 		}
+		config['mysql'] = {
+			'user': self.username,
+			'password': self.password
+		}
 		with open(path, 'w') as file:
 			config.write(file)
 		# self.opts.append('--defaults-file={0}'.format(path))

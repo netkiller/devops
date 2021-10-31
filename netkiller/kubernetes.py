@@ -1,8 +1,9 @@
 #-*- coding: utf-8 -*-
-import os
+import os,sys
 import yaml,json
-import logging, logging.handlers
 from optparse import OptionParser, OptionGroup
+import logging, logging.handlers
+from logging import basicConfig
 
 class Logging():
 	def __init__(self): 
@@ -20,29 +21,30 @@ class Common():
 		self.commons['kind'] = value
 
 class Metadata:
-	metadata = {}
+	__metadata = {}
 	def __init__(self): 
-		self.metadata = {}
+		self.__metadata = {}
 		pass
 	def name(self, value):
-		self.metadata['name'] = value
+		self.__metadata['name'] = value
 		# Common.commons['metadata']['name'] = value
 		return self
 	def namespace(self, value):
-		self.metadata['namespace'] = value
+		self.__metadata['namespace'] = value
 		# Common.commons['metadata']['namespace'] = value
 		return self
 	def labels(self, value):
-		self.metadata['labels'] = value
+		self.__metadata['labels'] = value
 		# Common.commons['metadata']['labels'] = value
 		return self
 	def annotations(self, value):
-		self.metadata['annotations'] = value
+		self.__metadata['annotations'] = value
 		# Common.commons['metadata']['annotations'] = value
 		return self
-		# def __del__(self):
-			# Common.commons.update(self.metadatas)
 	# def __del__(self):
+			# Common.commons.update(self.metadatas)
+	def metadata(self):
+		return(self.__metadata)
 		# Common.commons['metadata'] = {}
 		# print(self.commons)
       
@@ -55,15 +57,15 @@ class Containers:
 		self.container['name'] = value
 		return self
 	def image(self,value):
-		self.container['images'] = value
+		self.container['image'] = value
 		return self
 	def command(self,value):
 		self.container['command'] = []
 		self.container['command'].append(value)
 		return self
 	def args(self, value):
-		self.container['args'] = []
-		self.container['args'].append(value)
+		self.container['args'] = value
+		# self.container['args'].append(value)
 		return self
 	def volumeMounts(self,value):
 		self.container['volumeMounts'] = value
@@ -90,16 +92,34 @@ class Namespace(Common):
 	namespace = {}
 	def __init__(self):
 		super().__init__()
+		# if 'apiVersion' in self.namespace :
 		self.apiVersion()
 		self.kind('Namespace')
-	class metadata(Metadata):
-		def __init__(self): 
-			super().__init__()
-			Namespace.namespace['metadata'] = {}
-		def __del__(self):
-			Namespace.namespace['metadata'].update(self.metadata)
+		# self.namespace = {}
+		# self.namespace['apiVersion'] = 'v1'
+		# self.namespace['kind'] = 'Namespace'
+		self.namespace['metadata'] = {}
+		# print('ns', self.namespace)
+		self.metadata = Metadata()
+	def __del__(self):
+		self.namespace = {}
+	# def test(self, value):
+		# self.namespace['test'] = value
+	# class metadata(Metadata):
+	# 	def __init__(self): 
+	# 		# super().__init__()
+	# 		print('Meta:', Namespace.namespace)
+	# 		# if not 'metadata' in Namespace.namespace :
+	# 			# Namespace.namespace['metadata'] = {}
+	# 	def __del__(self):
+	# 		Namespace.namespace['metadata'].update(self.metadata())
+	# 		# self.metadata = {}
+	# 		print('del NS', Namespace.namespace)
+	# def compose(self):
+		# return(self.namespace)
 	def dump(self):
 		self.namespace.update(self.commons)
+		self.namespace['metadata'].update(self.metadata.metadata())
 		return yaml.dump(self.namespace)
 	def debug(self):
 		print(self.dump()) 
@@ -130,14 +150,17 @@ class ServiceAccount(Common):
 		super().__init__()
 		self.apiVersion()
 		self.kind('ServiceAccount')
-	class metadata(Metadata):
-		def __init__(self): 
-			super().__init__()
-			ServiceAccount.account['metadata'] = {}
-		def __del__(self):
-			ServiceAccount.account['metadata'].update(self.metadata)
+		self.metadata = Metadata()
+		self.account['metadata'] = {}
+	# class metadata(Metadata):
+	# 	def __init__(self): 
+	# 		super().__init__()
+	# 		ServiceAccount.account['metadata'] = {}
+	# 	def __del__(self):
+	# 		ServiceAccount.account['metadata'].update(self.metadata)
 	def dump(self):
 		self.account.update(self.commons)
+		self.account['metadata'].update(self.metadata.metadata())
 		return yaml.dump(self.account)
 	def debug(self):
 		print(self.dump()) 
@@ -148,12 +171,14 @@ class Pod(Common):
 		super().__init__()
 		self.apiVersion()
 		self.kind('Pod')
-	class metadata(Metadata):
-		def __init__(self): 
-			super().__init__()
-			Pod.pod['metadata'] = {}
-		def __del__(self):
-			Pod.pod['metadata'].update(self.metadata)
+		self.metadata = Metadata()
+		self.pod['metadata'] = {}
+	# class metadata(Metadata):
+	# 	def __init__(self): 
+	# 		super().__init__()
+	# 		Pod.pod['metadata'] = {}
+	# 	def __del__(self):
+	# 		Pod.pod['metadata'].update(self.metadata)
 	class spec:
 		def __init__(self): 
 			if not 'spec' in Pod.pod :
@@ -178,6 +203,7 @@ class Pod(Common):
 				Pod.pod['spec']['volumes'].append(self.volumes)
 	def dump(self):
 		self.pod.update(self.commons)
+		self.pod['metadata'].update(self.metadata.metadata())
 		return yaml.dump(self.pod)
 	def debug(self):
 		print(self.dump()) 
@@ -310,11 +336,38 @@ class Ingress(Common):
 	def json(self):
 		print(self.ingress)
 
+class Compose(Logging):
+	def __init__(self, environment): 
+		super().__init__()
+		self.compose = []
+		self.environment = environment
+	# def __del__(self):
+		# Kubernetes.composes.update(self.metadata)	
+		# print(self.compose)
+	def add(self, object):
+		self.compose.append(object.dump())
+		return(self) 
+	def dump(self):
+		# yaml.safe_dump(self.compose,stream=file,default_flow_style=False)
+		return(yaml.dump(self.compose))
+	def debug(self):
+		print(self.compose)	
+	def yaml(self):
+		print('---\n'.join(self.compose))
+	def save(self, path):
+		path = os.path.expanduser(path)
+		# if os.path.exists(path):
+			# os.remove(path)
+		with open(path, 'w') as file:
+			file.write('---\n'.join(self.compose))	
+
 class Kubernetes(Logging):
 	def __init__(self): 
 		super().__init__()
-		usage = "usage: %prog [options] <command>"
-		self.parser = OptionParser(usage)
+		self.kubernetes = {}
+		self.workspace = '/tmp'
+
+		self.parser = OptionParser("usage: %prog [options] <command>")
 		self.parser.add_option("-e", "--environment", dest="environment", help="environment", metavar="development|testing|production")
 		self.parser.add_option('','--logfile', dest='logfile', help='logs file.', default='debug.log')
 		self.parser.add_option('-l','--list', dest='list', action='store_true', help='print service of environment')
@@ -327,55 +380,75 @@ class Kubernetes(Logging):
 		self.parser.add_option_group(group)
 
 		group = OptionGroup(self.parser, "Others")
+		group.add_option('-y','--yaml', dest='yaml', action='store_true', help='show yaml compose')
+		group.add_option('','--export', dest='export', action='store_true', help='export docker compose')
 		# group.add_option('-d','--daemon', dest='daemon', action='store_true', help='run as daemon')
 		group.add_option("", "--debug", action="store_true", dest="debug", help="debug mode")
 		group.add_option('-v','--version', dest='version', action='store_true', help='print version information')
 		self.parser.add_option_group(group)
 
 		(self.options, self.args) = self.parser.parse_args()
-		if self.options.logfile :
+		if self.options.debug :
+			logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S')
+		elif self.options.logfile :
 			logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',filename=self.options.logfile,filemode='a')
 
 		if self.options.debug:
-			print("===================================")
-			print(self.options)
-			print(self.args)
-			print("===================================")
 			self.logging.debug("="*50)
 			self.logging.debug(self.options)
 			self.logging.debug(self.args)
 			self.logging.debug("="*50)
 		
-		if self.options.create :
-			self.create()
-		if self.options.delete :
-			self.delete()
-		if not self.args :
-			self.usage()
 	def usage(self):
 		print("Python controls the Kubernetes cluster manager.\n")
 		self.parser.print_help()
 		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
 		exit()
+
+	def compose(self, compose):
+		# env.logfile(self.logfile)
+		# workdir = '/var/tmp/devops'
+		# env.workdir(workdir)
+		self.kubernetes[compose.environment] = compose
+		self.logging.info("kubernetes %s : %s" % (compose.environment, compose.dump()))
+	def save(self, env):
+		if env in self.kubernetes.keys() :
+			path = os.path.expanduser(self.workspace + '/' + env +'.yaml')
+			self.kubernetes[env].save(path)
+			if os.path.exists(path):
+				# os.remove(path)
+				return path
+			else:
+				return None
+		
+	def yaml(self):
+		print(self.composes)
+		print('---\n'.join(self.composes))
+	def debug(self):
+		self.logging.debug(self.kubernetes)
 	def execute(self,cmd):
 		command = "kubectl {cmd}".format(cmd=cmd)
 		self.logging.debug(command)
-		# os.system(command)
+		os.system(command)
 		return(self)
 	def version(self):
 		self.execure(self,'version')
 		self.execure(self,'api-resources')
 		self.execure(self,'api-versions')
 		exit()
-	def create(self):
-		cmd = "{command} -f {yamlfile}".format(command="create", yamlfile="sss.yaml")
-		self.execute(cmd)
-		self.logging.info(cmd)
+	def create(self, env):
+		path = self.save(env)
+		if path :
+			cmd = "{command} -f {yamlfile}".format(command="create", yamlfile=path)
+			self.logging.info('create %s' % path)
+			self.execute(cmd)
 		exit()
-	def delete(self):
-		cmd = "{command} -f {yamlfile}".format(command="delete", yamlfile="sss.yaml")
-		self.execute(cmd)
-		self.logging.info(cmd)
+	def delete(self, env):
+		path = self.save(env)
+		if path :
+			cmd = "{command} -f {yamlfile}".format(command="delete", yamlfile=path)
+			self.logging.info('delete %s ' % path)
+			self.execute(cmd)
 		exit()
 	def describe(self):
 		pass
@@ -383,5 +456,14 @@ class Kubernetes(Logging):
 		pass
 	def replace(self):
 		pass
+	def main(self):
+		if self.options.create :
+			self.create(self.options.environment)
+		elif self.options.delete :
+			self.delete(self.options.environment)
+		elif self.options.yaml :
+			self.yaml()
+		else:	
+			if not self.args :
+				self.usage()
 	
-# kubernetes = Kubernetes()
