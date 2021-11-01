@@ -369,7 +369,6 @@ class Kubernetes(Logging):
 
 		self.parser = OptionParser("usage: %prog [options] <command>")
 		self.parser.add_option("-e", "--environment", dest="environment", help="environment", metavar="development|testing|production")
-		self.parser.add_option('','--logfile', dest='logfile', help='logs file.', default='debug.log')
 		self.parser.add_option('-l','--list', dest='list', action='store_true', help='print service of environment')
 
 		group = OptionGroup(self.parser, "Cluster Management Commands")
@@ -380,6 +379,7 @@ class Kubernetes(Logging):
 		self.parser.add_option_group(group)
 
 		group = OptionGroup(self.parser, "Others")
+		group.add_option('','--logfile', dest='logfile', help='logs file.', default='debug.log')
 		group.add_option('-y','--yaml', dest='yaml', action='store_true', help='show yaml compose')
 		group.add_option('','--export', dest='export', action='store_true', help='export docker compose')
 		# group.add_option('-d','--daemon', dest='daemon', action='store_true', help='run as daemon')
@@ -406,21 +406,18 @@ class Kubernetes(Logging):
 		exit()
 
 	def compose(self, compose):
-		# env.logfile(self.logfile)
-		# workdir = '/var/tmp/devops'
-		# env.workdir(workdir)
 		self.kubernetes[compose.environment] = compose
-		self.logging.info("kubernetes %s : %s" % (compose.environment, compose.dump()))
+		self.logging.info("kubernetes : %s" % (compose.environment))
 	def save(self, env):
 		if env in self.kubernetes.keys() :
 			path = os.path.expanduser(self.workspace + '/' + env +'.yaml')
 			self.kubernetes[env].save(path)
 			if os.path.exists(path):
 				# os.remove(path)
+				self.logging.info('save as %s' % path)
 				return path
 			else:
 				return None
-		
 	def yaml(self):
 		print(self.composes)
 		print('---\n'.join(self.composes))
@@ -432,9 +429,9 @@ class Kubernetes(Logging):
 		os.system(command)
 		return(self)
 	def version(self):
-		self.execure(self,'version')
-		self.execure(self,'api-resources')
-		self.execure(self,'api-versions')
+		self.execute('version')
+		self.execute('api-resources')
+		self.execute('api-versions')
 		exit()
 	def create(self, env):
 		path = self.save(env)
@@ -450,19 +447,53 @@ class Kubernetes(Logging):
 			self.logging.info('delete %s ' % path)
 			self.execute(cmd)
 		exit()
+	def replace(self,env):
+		path = self.save(env)
+		if path :
+			cmd = "{command} -f {yamlfile}".format(command="replace", yamlfile=path)
+			self.logging.info('replace %s ' % path)
+			self.execute(cmd)
+		exit()
 	def describe(self):
 		pass
 	def edit(self):
 		pass
-	def replace(self):
-		pass
+	def get(self, args):
+		cmd = "get {args}".format(args=args)
+		self.logging.info('%s ' % cmd)
+		self.execute(cmd)
+	def list(self):
+		for item in self.kubernetes :
+			print(item)
 	def main(self):
-		if self.options.create :
-			self.create(self.options.environment)
-		elif self.options.delete :
-			self.delete(self.options.environment)
+		
+		if self.options.list :
+			self.list()
+		elif self.options.get :
+			self.get(' '.join(self.args) )
 		elif self.options.yaml :
 			self.yaml()
+		elif self.options.version :
+			self.version()
+
+		elif self.options.create :
+			if self.options.environment :
+				self.create(self.options.environment)
+			else:
+				for env in self.kubernetes.keys() :
+					self.create(env)
+		elif self.options.delete :
+			if self.options.environment :
+				self.delete(self.options.environment)
+			else:
+				for env in self.kubernetes.keys() :
+					self.delete(env)
+		elif self.options.replace :
+			if self.options.environment :
+				self.replace(self.options.environment)
+			else:
+				for env in self.kubernetes.keys() :
+					self.replace(env)
 		else:	
 			if not self.args :
 				self.usage()
