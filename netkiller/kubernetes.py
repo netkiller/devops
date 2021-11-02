@@ -165,6 +165,36 @@ class ServiceAccount(Common):
 	def debug(self):
 		print(self.dump()) 
 
+class Spec:
+	spec = {}
+	def __init__(self): 
+		if not 'containers' in self.spec :
+			# self.spec = {}
+			self.spec['containers'] = []
+		self.containers = Containers()
+	def restartPolicy(self, value):
+		self.spec['restartPolicy'] = value
+	def hostAliases(self, value):
+		self.spec['hostAliases'] = value
+	def env(self, value):
+		self.spec['env'] = value
+	def securityContext(self,value):
+		self.spec['securityContext'] = value
+	# def spec(self):
+		# return self.spec
+	# class containers(Containers):
+		# def __init__(self): 
+	# 		spec['containers'] = []
+		# def __del__(self):
+			# self.spec['containers'].append(self.containers.container)
+		# print(self.containers.container)
+		print(self.spec)
+	class volumes(Volumes):
+		def __init__(self): 
+			self.spec['volumes'] = []
+		def __del__(self):
+			self.spec['volumes'].append(self.volumes)
+
 class Pod(Common):
 	pod = {}
 	def __init__(self): 
@@ -173,37 +203,45 @@ class Pod(Common):
 		self.kind('Pod')
 		self.metadata = Metadata()
 		self.pod['metadata'] = {}
+		self.pod['spec'] = {}
+		self.pod['spec']['containers'] = []
+		self.spec = Spec()
 	# class metadata(Metadata):
 	# 	def __init__(self): 
 	# 		super().__init__()
 	# 		Pod.pod['metadata'] = {}
 	# 	def __del__(self):
 	# 		Pod.pod['metadata'].update(self.metadata)
-	class spec:
-		def __init__(self): 
-			if not 'spec' in Pod.pod :
-				Pod.pod['spec'] = {}
-		def restartPolicy(self, value):
-			Pod.pod['spec']['restartPolicy'] = value
-		def hostAliases(self, value):
-			Pod.pod['spec']['hostAliases'] = value
-		def env(self, value):
-			Pod.pod['spec']['env'] = value
-		def securityContext(self,value):
-			Pod.pod['spec']['securityContext'] = value
-		class containers(Containers):
-			def __init__(self): 
-				Pod.pod['spec']['containers'] = []
-			def __del__(self):
-				Pod.pod['spec']['containers'].append(self.container)
-		class volumes(Volumes):
-			def __init__(self): 
-				Pod.pod['spec']['volumes'] = []
-			def __del__(self):
-				Pod.pod['spec']['volumes'].append(self.volumes)
+	# class spec:
+	# 	containers = Containers()
+	# 	def __init__(self): 
+	# 		if not 'spec' in Pod.pod :
+	# 			Pod.pod['spec'] = {}
+	# 	def restartPolicy(self, value):
+	# 		Pod.pod['spec']['restartPolicy'] = value
+	# 	def hostAliases(self, value):
+	# 		Pod.pod['spec']['hostAliases'] = value
+	# 	def env(self, value):
+	# 		Pod.pod['spec']['env'] = value
+	# 	def securityContext(self,value):
+	# 		Pod.pod['spec']['securityContext'] = value
+	# 	# class containers(Containers):
+	# 	# 	def __init__(self): 
+	# 	# 		Pod.pod['spec']['containers'] = []
+	# 	def __del__(self):
+	# 		Pod.pod['spec']['containers'].append(self.containers.container)
+	# 		print(self.containers.container)
+	# 	class volumes(Volumes):
+	# 		def __init__(self): 
+	# 			Pod.pod['spec']['volumes'] = []
+	# 		def __del__(self):
+	# 			Pod.pod['spec']['volumes'].append(self.volumes)
 	def dump(self):
 		self.pod.update(self.commons)
 		self.pod['metadata'].update(self.metadata.metadata())
+		self.pod['spec'].update(self.spec.spec)
+		self.pod['spec']['containers'].append(self.spec.containers.container)
+		print(self.pod)
 		return yaml.dump(self.pod)
 	def debug(self):
 		print(self.dump()) 
@@ -295,6 +333,7 @@ class Deployment(Common):
 					Deployment.deployment['spec']['template']['spec'] = {}		
 				class containers(Containers):
 					def __init__(self): 
+						super().__init__()
 						Deployment.deployment['spec']['template']['spec']['containers'] = []
 						pass
 					def __del__(self):
