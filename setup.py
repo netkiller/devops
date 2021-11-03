@@ -39,7 +39,7 @@ setup(
 		'bin/matrixpasswd',
 		'bin/wechat',
 		'bin/voice',
-		'bin/sqldump'
+		'bin/sqldump',
 		'bin/mdump'
 	],
 	data_files = [
