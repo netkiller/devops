@@ -158,7 +158,7 @@ class MongoTools(Mongo):
 				if self.options.archive :
 					output = self.options.archive
 				else:
-					output = self.out+'/'+item +'/'+ time.strftime('%Y-%m-%d.%H:%M:%S',time.localtime(time.time())) + '/' +dump.db  
+					output = self.out+'/'+item +'/'+ time.strftime('%Y-%m-%d.%H:%M:%S',time.localtime(time.time())) + '/' +dump.db
 				if self.options.recipient :
 					dump.GnuPG(self.options.recipient, output)
 				else:
@@ -181,10 +181,6 @@ class MongoTools(Mongo):
 				print('%s :' % item)
 				for file in files:
 					print('\t%s' % file.name)
-
-		# for rootdir, dirs, files in os.walk(self.out):
-		# 	for subdir in dirs:
-		# 		print(os.path.join(rootdir, subdir))
 
 		exit()
 if __name__ == '__main__':

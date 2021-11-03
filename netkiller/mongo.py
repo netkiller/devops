@@ -118,6 +118,8 @@ class MongoDump(Mongo):
 		if status :
 			self.opts.append('--gzip')
 	def GnuPG(self, recipient, output):
+		if not os.path.isdir(os.path.dirname(output)) :
+			os.makedirs(os.path.dirname(output))
 		self.opts.append('--archive')
 		self.opts.append('| gpg -r {recipient} -e -o {output}.mongo.gpg'.format(recipient=recipient, output=output) )
 	def __command(self):
