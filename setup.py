@@ -40,6 +40,7 @@ setup(
 		'bin/wechat',
 		'bin/voice',
 		'bin/sqldump'
+		'bin/mdump'
 	],
 	data_files = [
 		('etc', ['etc/deployment.cfg']),
@@ -48,7 +49,8 @@ setup(
 		('etc', ['etc/os.ini']),
 		('etc', [
 			'etc/notification.ini',
-			'etc/dump.ini.sample'
+			'etc/dump.ini.sample',
+			'etc/mongo.ini.sample'
 		]),
 		('libexec/devops', [
 			'libexec/backup/backup.mysql.sh',
