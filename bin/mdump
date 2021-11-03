@@ -71,7 +71,6 @@ class MongoTools(Mongo):
 				self.out = '.'
 				# print('No backup directory!')
 
-		self.logging.info('Backup directory %s', self.out)
 		self.logging.debug('[DEFAULT] %s', self.config.defaults())
 
 		if self.options.debug :
@@ -167,7 +166,9 @@ class MongoTools(Mongo):
 				if self.options.archive :
 					dump.archive(self.options.archive)
 				else:
-					dump.out(self.out+'/'+item)
+					timepoint = time.strftime('%Y-%m-%d.%H:%M:%S',time.localtime(time.time()))
+					output = self.out+'/'+item + '/' + timepoint
+					dump.out(output)
 			dump.execute()
 		except KeyError as error:
 			print('The configuration item was not found: [%s] %s.' % (item, error))

@@ -12,7 +12,6 @@ from logging import getLogger
 class Mongo:
 	def __init__(self):
 		super().__init__()
-		# self.config = ConfigParser()
 		self.logging = getLogger()
 		self.port = 27017
 
@@ -48,14 +47,12 @@ class MongoDump(Mongo):
 		umask = os.umask(0o077)
 		self.opts = []
 		
-	def out(self, dir):
-		self.directory = dir
-		timepoint = time.strftime('%Y-%m-%d.%H:%M:%S',time.localtime(time.time()))
-		output = self.directory + '/' + timepoint
-		# self.db.replace(' ','_') +'.' + 
-		if not os.path.isdir(output) :
-			os.makedirs(output)
-		self.opts.append('--out={0}'.format(output))
+	def out(self, directory):
+		self.directory = directory
+		if not os.path.isdir(self.directory) :
+			os.makedirs(self.directory)
+		self.opts.append('--out={0}'.format(self.directory))
+		self.logging.info('Backup directory %s', self.directory)
 		return self
 	def archive(self, archive):
 		if archive :
@@ -66,6 +63,7 @@ class MongoDump(Mongo):
 				self.opts.append('--archive=%s' % self.archive)
 		else:
 			self.archive = self.db + '-' +time.strftime('%Y-%m-%d.%H:%M:%S',time.localtime(time.time()))
+		self.logging.info('Archive directory %s', self.archive)
 		return self
 	# def databases(self, database):
 	# 	self.database = database
@@ -122,6 +120,8 @@ class MongoDump(Mongo):
 			os.makedirs(os.path.dirname(output))
 		self.opts.append('--archive')
 		self.opts.append('| gpg -r {recipient} -e -o {output}.mongo.gpg'.format(recipient=recipient, output=output) )
+		self.logging.info('GnuPG output %s', output)
+		return self
 	def __command(self):
 		cmd = []
 		cmd.append('mongodump')
