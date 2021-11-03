@@ -12,14 +12,16 @@ from logging import getLogger
 class Mongo:
 	def __init__(self):
 		super().__init__()
-		self.logging = getLogger()
-		self.port = 27017
+		self.logging = getLogger(__name__)
+		self.host = 'localhost'
+		self.__port = '27017'
+		self.authSource = None
 
-	def host(self, host = 'localhost'):
+	def hostname(self, host):
 		self.host = host
 		return self
-	def port(self,port = 27017):
-		self.port = port
+	def port(self,value):
+		self.__port = value
 		return self
 	def username(self, value):
 		self.username = value
@@ -28,7 +30,7 @@ class Mongo:
 		self.password = value
 		return self
 	def authenticationDatabase(self, value):
-		self.authenticationDatabase = value
+		self.authSource = value
 		return self
 	def db(self, db):
 		self.db = db
@@ -38,7 +40,26 @@ class Mongo:
 		return self
 	def uri(self):
 		# uri = "mongodb://{username}:{password}@{host}:{port}/{db}".format(username=self.username,password=self.password,host=self.host,port=self.port,db=self.db)
-		uri = "mongodb://{username}@{host}:{port}/{db}".format(username=self.username,host=self.host,port=self.port,db=self.db)
+		# uri = "mongodb://{username}@{host}:{port}/{db}".format(username=self.username,host=self.host,port=self.port,db=self.db)
+		mongodb = []
+		mongodb.append('mongodb://')
+		if self.username :
+			mongodb.append(self.username)
+		# if self.password :
+			# mongodb.append(":%s" % self.password)
+
+		mongodb.append("@%s" % self.host)
+
+		# print(self.port)
+		if self.__port :
+			mongodb.append(":%s" % self.__port)
+		if self.db :
+			mongodb.append("/%s" % self.db)
+		if self.authSource :
+			mongodb.append("?authSource=%s" % self.authSource)
+			
+		uri = ''.join(mongodb)
+		self.logging.info('%s', uri)
 		return uri
 
 class MongoDump(Mongo):
@@ -92,11 +113,12 @@ class MongoDump(Mongo):
 	def collection(self, value):
 		self.opts.append('--collection='+value)
 		return self	
-	def config(self, clean = False):
-		path = os.path.expanduser('~/.mongo.yaml')
-		if clean and os.path.exists(path):
-			os.remove(path)
-			exit()
+	def config(self, item):
+		path = os.path.expanduser('~/.mongo/%s.yaml' % item)
+		if not os.path.isdir(os.path.dirname(path)) :
+			os.makedirs(os.path.dirname(path))
+		# if clean and os.path.exists(path):
+		# 	os.remove(path)
 		with open(path, 'w') as file:
 			file.write('password: %s\n' % self.password)
 		self.opts.append('--config={0}'.format(path))
@@ -134,7 +156,3 @@ class MongoDump(Mongo):
 		command = self.__command()
 		self.logging.debug(command)
 		os.system(command)
-
-# dump = MongoDump()
-# dump.host('192.168.30.5').username('sfzito').password('sfzito').authenticationDatabase('sfzito').db('sfzito')
-# print(dump.uri())	

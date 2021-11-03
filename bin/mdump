@@ -7,16 +7,17 @@
 ###################################
 import os,sys
 import logging, logging.handlers
-from configparser import ConfigParser,NoSectionError
+from configparser import ConfigParser,RawConfigParser, NoSectionError
 from optparse import OptionParser, OptionGroup
 module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,module)
 from netkiller.mongo import *
 
-class MongoTools(Mongo):
+class MongoTools():
 
 	def __init__(self): 
-		super().__init__()
+		# super().__init__()
+		self.logging = getLogger(__name__)
 
 		self.parser = OptionParser("usage: %prog [options] <item item1 item2 ... item(n)>")
 		self.parser.add_option('-c', '--config', dest='config', help='config file', default='/usr/local/etc/mongo.ini', metavar='/usr/local/etc/mongo.ini')
@@ -46,7 +47,9 @@ class MongoTools(Mongo):
 
 		(self.options, self.args) = self.parser.parse_args()
 		
-		self.config = ConfigParser()
+		# self.config = ConfigParser()
+		self.config = RawConfigParser()
+		self.config.optionxform = lambda option: option
 		self.config.read(self.options.config)
 
 		try:
@@ -143,12 +146,21 @@ class MongoTools(Mongo):
 		self.logging.info('[%s] : %s' % (item, conf))
 		try:
 			dump = MongoDump()
-			
-			dump.host(conf['host'])
+
 			dump.username(conf['username'])
 			dump.password(conf['password'])
-			dump.db(conf['db'])			
-			dump.config()
+			dump.db(conf['db'])	
+
+			if 'host' in conf.keys():
+				dump.hostname(conf['host'])
+
+			if 'port' in conf.keys():
+				dump.port(conf['port'])
+
+			if 'authenticationDatabase' in conf.keys():
+				dump.authenticationDatabase(conf['authenticationDatabase'])
+
+			dump.config(item)
 
 			if self.options.gzip :
 				dump.gzip()
