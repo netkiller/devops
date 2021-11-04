@@ -24,9 +24,12 @@ host=localhost
 username=root
 password=
 db=stage
+recipient=netkiller@msn.com
 
 [prod]
 host=localhost
 username=root
 password=
 db=prod
+authenticationDatabase=test
+recipient=netkiller@msn.com
