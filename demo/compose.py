@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 ##############################################
 # Home	: http://netkiller.github.io
@@ -50,6 +50,7 @@ test.image('test:latest')
 # # sms.container_name('nginx')
 # # sms.restart('always')
 # # sms.hostname('www.netkiller.cn')
+test.entrypoint(['ls','-l', '/bin'])
 test.depends_on(nginx)
 # # test.depends_on_object(service)
 # # test.depends_on_object([service,sms])

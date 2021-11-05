@@ -81,8 +81,15 @@ class Services():
 		else:
 			self.service[self.name]['environment'] = obj
 		return(self)
-	def env_file(self, array=[]):
-		self.service[self.name]['env_file'] = array
+	def env_file(self, obj):
+		if not 'env_file' in self.service[self.name].keys() :
+			self.service[self.name]['env_file']=[]
+		if type(obj) == str:
+			self.service[self.name]['env_file'].append(obj)
+		elif type(obj) == list:
+			self.service[self.name]['env_file'].extend(obj)
+		else:
+			self.service[self.name]['env_file'] = obj
 		return(self)
 	def ports(self, obj):
 		if not 'ports' in self.service[self.name].keys() :
@@ -116,8 +123,11 @@ class Services():
 	def sysctls(self,array):
 		self.service[self.name]['sysctls'] = array
 		return(self)
-	def entrypoint(self, cmd):
-		self.service[self.name]['entrypoint'] = cmd
+	def entrypoint(self, obj):
+		if type(obj) == str:
+			self.service[self.name]['entrypoint'] = obj
+		elif type(obj) == list:
+			self.service[self.name]['entrypoint'] = ' '.join(obj)
 		return(self)
 	def command(self, array=[]):
 		self.service[self.name]['command'] = array
