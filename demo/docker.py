@@ -34,7 +34,7 @@ nginx.depends_on('test')
 sms =  Services('sms')
 sms.image('sms:latest')
 sms.container_name('nginx')
-# sms.restart('always')
+# sms.restart('always')ing
 sms.hostname("7899")
 sms.depends_on(['aaa','bbb','ccc'])
 # # sms.debug()
