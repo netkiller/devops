@@ -234,6 +234,11 @@ class Composes():
 		self.logging.debug(command)
 		os.system(command)
 		return(self)
+	def down(self,service=''):
+		command = "docker-compose -f {compose} down {service}".format(compose=self.filename(), service=service)
+		self.logging.debug(command)
+		os.system(command)	
+		return(self)
 	def rm(self,service=''):
 		command = "docker-compose -f {compose} rm {service}".format(compose=self.filename(), service=service)
 		self.logging.debug(command)
@@ -371,6 +376,14 @@ class Docker():
 			for env,obj in self.composes.items():
 				obj.rm(service)
 		return(self)
+	def down(self,service=''):
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.down(service)
+		else:
+			for env,obj in self.composes.items():
+				obj.down(service)
+		return(self)
 	def start(self,service=''):
 		if self.options.environment and self.options.environment in self.composes :
 			composes = self.composes[self.options.environment]
@@ -492,6 +505,9 @@ class Docker():
 		if self.args[0] == 'up' :
 			self.up(self.service)
 			self.logging.info('up ' + self.service)
+		elif self.args[0] == 'down' :
+			self.down(self.service)
+			self.logging.info('down ' + self.service)
 		elif self.args[0] == 'rm':
 			self.rm(self.service)
 			self.logging.info('rm ' + self.service)
