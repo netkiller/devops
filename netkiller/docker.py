@@ -443,7 +443,7 @@ class Docker():
 	def dump(self):
 		if self.options.environment and self.options.environment in self.composes :
 			composes = self.composes[self.options.environment]
-			composes.dump()
+			print(composes.dump())
 		else:
 			for env,value in self.composes.items():
 				print(value.dump())
