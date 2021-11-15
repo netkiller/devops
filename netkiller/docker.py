@@ -170,6 +170,9 @@ class Services():
 		if options :
 			self.service[self.name]['logging'].update({'options': options})
 		return(self)
+	def user(self, value):
+		self.service[self.name]['user'] = value
+		return(self)
 	def dump(self):
 		return(yaml.dump(self.service))
 	def debug(self):
@@ -307,7 +310,7 @@ class Composes():
 		self.logging.info('working dir is ' + self.basedir)
 		return(self)
 class Docker():
-	def __init__(self,environment = None ):
+	def __init__(self,env = None ):
 		self.composes= {}
 		self.daemon = False
 		usage = "usage: %prog [options] up|rm|start|stop|restart|logs|top|images|exec <service>"
@@ -341,8 +344,13 @@ class Docker():
 			self.logging.debug(self.args)
 			self.logging.debug("="*50)
 
-		if environment :
-			self.environment(environment)
+		if env :
+			self.logging.info('-' * 50)
+			for var, value in env.items():
+				cmd = "export {var}={value}".format(var=var,value=value)
+				self.logging.info(cmd)
+				os.system(cmd)
+			self.logging.info('-' * 50)
 
 	def environment(self, env):
 		env.logfile(self.logfile)
@@ -350,10 +358,16 @@ class Docker():
 		env.workdir(workdir)
 		self.composes[env.name] = env
 		self.logging.info("environment %s : %s" % (env.name, workdir))
-		# self.logging.debug('-' * 50)
-		# self.logging.debug(env.dump())
-		# self.logging.debug('-' * 50)
+		
 		return(self)
+	def sysctl(self, conf):
+		self.logging.info('-' * 50)
+		for name, value in conf.items():
+			cmd = "sysctl -w {name}={value}".format(name=name,value=value)
+			self.logging.info(cmd)
+			os.system(cmd)
+		self.logging.info('-' * 50)
+		
 	def up(self,service=''):
 		if self.options.environment and self.options.environment in self.composes :
 			composes = self.composes[self.options.environment]

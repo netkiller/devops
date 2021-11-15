@@ -72,7 +72,8 @@ staging.services(sms)
 
 if __name__ == '__main__':
 	try:
-		docker = Docker() 
+		docker = Docker({'DEO':'ssss','SSS':'sdfff'}) 
+		docker.sysctl({'neo':'1'})
 		docker.environment(development)
 		docker.environment(testing)
 		docker.main()
