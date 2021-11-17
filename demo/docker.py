@@ -6,21 +6,20 @@
 # Upgrade: 2021-09-05
 ##############################################
 # try:
-import os,  sys
+import os, sys
+
 module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0,module)
+sys.path.insert(0, module)
 from netkiller.docker import *
 # except ImportError as err:
 # 	print("%s" %(err))
 
 extra_hosts = [
-	'mongo.netkiller.cn:172.17.195.17',
-	'eos.netkiller.cn:172.17.15.17',
-	'cfca.netkiller.cn:172.17.15.17'
-	]
+    'mongo.netkiller.cn:172.17.195.17', 'eos.netkiller.cn:172.17.15.17',
+    'cfca.netkiller.cn:172.17.15.17'
+]
 
-
-nginx =  Services('nginx')
+nginx = Services('nginx')
 nginx.image('nginx:latest')
 nginx.container_name('nginx')
 # service.restart('always')
@@ -31,21 +30,24 @@ nginx.extra_hosts(extra_hosts)
 # service.ports(['8080:8080'])
 nginx.depends_on('test')
 
-sms =  Services('sms')
+sms = Services('sms')
 sms.image('sms:latest')
 sms.container_name('nginx')
 # sms.restart('always')ing
 sms.hostname("7899")
-sms.depends_on(['aaa','bbb','ccc'])
+sms.depends_on(['aaa', 'bbb', 'ccc'])
 # # sms.debug()
 
-test =  Services('test')
+test = Services('test')
 test.image('test:latest')
-# # sms.container_name('nginx')
+# # sms.container_name('nginx')ß
 # # sms.restart('always')
 # # sms.hostname('www.netkiller.cn')
 test.depends_on(nginx)
-# # test.depends_on_object(service)
+test.logging('fluentd', {
+    'fluentd-address': 'localhost:24224',
+    'tag': 'dev.redis.sfzito.com'
+})
 # # test.depends_on_object([service,sms])
 # # test.debug()
 
@@ -71,11 +73,14 @@ staging.version('3.9')
 staging.services(sms)
 
 if __name__ == '__main__':
-	try:
-		docker = Docker({'DOCKER_HOST':'ssh://root@192.168.30.11','SSS':'sdfff'}) 
-		docker.sysctl({'neo':'1'})
-		docker.environment(development)
-		docker.environment(testing)
-		docker.main()
-	except KeyboardInterrupt:
-		print ("Crtl+C Pressed. Shutting down.")
+    try:
+        docker = Docker({
+            'DOCKER_HOST': 'ssh://root@192.168.30.11',
+            'SSS': 'sdfff'
+        })
+        docker.sysctl({'neo': '1'})
+        docker.environment(development)
+        docker.environment(testing)
+        docker.main()
+    except KeyboardInterrupt:
+        print("Crtl+C Pressed. Shutting down.")

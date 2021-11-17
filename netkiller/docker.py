@@ -137,11 +137,10 @@ class Volumes(Common):
 		self.volumes[name] = None
 		return(self)
 		
-class Services(Common):	
+class Services():	
 	# service = {}
 	def __init__(self, name): 
 		super().__init__()
-		self.logging = getLogger(__name__)
 		self.service = {}
 		self.name = name
 		self.service[self.name]={}
