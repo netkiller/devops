@@ -7,12 +7,12 @@ from optparse import OptionParser, OptionGroup
 
 class Common:
 	def __init__(self):
-		self.logging = getLogger(__name__)
+		self.logger = getLogger(__name__)
 
 class Dockerfile(Common):
 	def __init__(self):
 		super().__init__()
-		self.logging = getLogger(__name__)
+		self.logger = getLogger(__name__)
 		self.dockerfile = []
 	def label(self, map):
 		for key,value in map.items():
@@ -83,13 +83,13 @@ class Dockerfile(Common):
 		dirname = os.path.dirname(path)
 		if not os.path.isdir(dirname) :
 			os.makedirs(dirname)
-			self.logging.info("Create Dockerfile directory %s" % (dirname))
+			self.logger.info("Create Dockerfile directory %s" % (dirname))
 		# os.makedirs( path,exist_ok=True);
 		with open(path, 'w') as file:
 			file.writelines('\r\n'.join(self.dockerfile))
 			file.write('\r\n')
 
-		self.logging.info('Dockerfile %s' % path)
+		self.logger.info('Dockerfile %s' % path)
 		return(self)	
 	def debug(self):
 		print(self.dockerfile)
@@ -100,7 +100,7 @@ class Dockerfile(Common):
 class Networks(Common):
 	def __init__(self, name=None): 
 		super().__init__()
-		self.logging = getLogger(__name__)
+		self.logger = getLogger(__name__)
 		self.networks = {}
 		if name :
 			self.name = name
@@ -127,7 +127,7 @@ class Networks(Common):
 class Volumes(Common):
 	def __init__(self, name="None"): 
 		super().__init__()
-		self.logging = getLogger(__name__)
+		self.logger = getLogger(__name__)
 		self.volumes = {}
 		if name :
 			self.volumes[name] = None
@@ -292,10 +292,10 @@ class Composes(Common):
 	basedir = '.'
 	def __init__(self, name): 
 		super().__init__()
-		self.logging = getLogger(__name__)
+		self.logger = getLogger(__name__)
 		self.compose = {}
 		self.name = name
-		# self.logging = logging.getLogger()
+		# self.logger = logging.getLogger()
 		self.compose['services'] = {}
 		self.dockerfile = {}
 	def version(self, version):
@@ -307,7 +307,7 @@ class Composes(Common):
 				self.dockerfile[obj.name] = obj.dockerfile
 				# dockerfile = '%s/%s/Dockerfile' % (self.basedir,obj.name)
 				# obj.dockerfile.save(dockerfile)
-				# self.logging.info("Create Dockerfile %s" % (dockerfile))
+				# self.logger.info("Create Dockerfile %s" % (dockerfile))
 			self.compose['services'].update(obj.service)
 		return(self)
 	def networks(self, obj):
@@ -330,7 +330,7 @@ class Composes(Common):
 		dirname = os.path.dirname(filename)
 		if not os.path.isdir(dirname) :
 			os.makedirs(dirname)
-			self.logging.info("Create directory %s" % (dirname))
+			self.logger.info("Create directory %s" % (dirname))
 
 		try:
 			for service,dockerfile in self.dockerfile.items() :
@@ -339,9 +339,9 @@ class Composes(Common):
 
 			file = open(filename,"w")
 			yaml.safe_dump(self.compose,stream=file,default_flow_style=False)
-			self.logging.info("Save compose file %s" % (filename))
+			self.logger.info("Save compose file %s" % (filename))
 		except Exception as e:
-			self.logging.error(e)
+			self.logger.error(e)
 			print(e)
 			exit()
 		return(self)
@@ -354,52 +354,52 @@ class Composes(Common):
 		if self.daemon :
 			d = '-d'
 		command = "docker-compose -f {compose} up {daemon} {service}".format(compose=self.filename(), daemon=d, service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)
 		return(self)
 	def down(self,service=''):
 		command = "docker-compose -f {compose} down {service}".format(compose=self.filename(), service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)	
 		return(self)
 	def rm(self,service=''):
 		command = "docker-compose -f {compose} rm {service}".format(compose=self.filename(), service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)	
 		return(self)
 	def restart(self,service=''):
 		command = "docker-compose -f {compose} restart {service}".format(compose=self.filename(), service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)
 		return(self)
 	def start(self,service=''):
 		command = "docker-compose -f {compose} start {service}".format(compose=self.filename(), service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)	
 		return(self)
 	def stop(self,service=''):
 		command = "docker-compose -f {compose} stop {service}".format(compose=self.filename(), service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)	
 		return(self)
 	def stop(self,service=''):
 		command = "docker-compose -f {compose} stop {service}".format(compose=self.filename(), service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)	
 		return(self)
 	def ps(self,service=''):
 		command = "docker-compose -f {compose} ps {service}".format(compose=self.filename(), service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)
 		return(self)
 	def top(self,service=''):
 		command = "docker-compose -f {compose} top {service}".format(compose=self.filename(), service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)
 		return(self)
 	def images(self,service=''):
 		command = "docker-compose -f {compose} images {service}".format(compose=self.filename(), service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)
 		return(self)		
 	def logs(self,service='', follow = False):
@@ -407,17 +407,17 @@ class Composes(Common):
 		if follow :
 			tail = '-f --tail=50'
 		command = "docker-compose -f {compose} logs {follow} {service}".format(compose=self.filename(), follow=tail,service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)		
 		return(self)
 	def exec(self,service, cmd):
 		command = "docker-compose -f {compose} exec {service} {cmd}".format(compose=self.filename(), service=service, cmd=cmd)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)
 		return(self)
 	def kill(self,service):
 		command = "docker-compose -f {compose} kill {service}".format(compose=self.filename(), service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)
 		return(self)
 	def logfile(self, filename):
@@ -427,12 +427,12 @@ class Composes(Common):
 	def workdir(self,path):
 		os.makedirs( path,exist_ok=True);
 		self.basedir = path
-		self.logging.info('working dir is ' + self.basedir)
+		self.logger.info('working dir is ' + self.basedir)
 		return(self)
 	def build(self, service):
 		self.save()
 		command = "docker-compose -f {compose} build {service}".format(compose=self.filename(), service=service)
-		self.logging.debug(command)
+		self.logger.debug(command)
 		os.system(command)
 		return(self)
 
@@ -464,24 +464,24 @@ class Docker(Common):
 		elif self.options.logfile :
 			logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',filename=self.options.logfile,filemode='a')
 
-		# self.logging = logging.getLogger(__name__)
+		# self.logger = logging.getLogger(__name__)
 
 		if self.options.debug:
 			print("===================================")
 			print(self.options, self.args)
 			print("===================================")
-			self.logging.debug("="*50)
-			self.logging.debug(self.options)
-			self.logging.debug(self.args)
-			self.logging.debug("="*50)
+			self.logger.debug("="*50)
+			self.logger.debug(self.options)
+			self.logger.debug(self.args)
+			self.logger.debug("="*50)
 
 		if env :
-			self.logging.info('-' * 50)
+			self.logger.info('-' * 50)
 			for var, value in env.items():
 				cmd = "export {var}={value}".format(var=var,value=value)
-				self.logging.info(cmd)
+				self.logger.info(cmd)
 				os.system(cmd)
-			self.logging.info('-' * 50)
+			self.logger.info('-' * 50)
 
 	def workdir(self,path):
 		self.workdir = path
@@ -489,21 +489,21 @@ class Docker(Common):
 		env.logfile(self.logfile)
 		env.workdir(self.workdir)
 		self.composes[env.name] = env
-		self.logging.info("environment %s : %s" % (env.name, self.workdir))
+		self.logger.info("environment %s : %s" % (env.name, self.workdir))
 		return(self)
 	def sysctl(self, conf):
-		self.logging.info('-' * 50)
+		self.logger.info('-' * 50)
 		for name, value in conf.items():
 			cmd = "sysctl -w {name}={value}".format(name=name,value=value)
-			self.logging.info(cmd)
+			self.logger.info(cmd)
 			os.system(cmd)
-		self.logging.info('-' * 50)
+		self.logger.info('-' * 50)
 		return(self)
 	def createfile(self, filename, text):
 		path = self.workdir + '/' + filename
 		with open(path, 'w') as file:
 			file.writelines(text)
-		self.logging.info('Create file %s' % path)
+		self.logger.info('Create file %s' % path)
 		return(self)
 	def up(self,service=''):
 		if self.options.environment and self.options.environment in self.composes :
@@ -592,7 +592,7 @@ class Docker(Common):
 				obj.logs(service, follow)
 		return(self)
 	def list(self):
-		self.logging.debug('-' * 50)
+		self.logger.debug('-' * 50)
 		if self.options.environment and self.options.environment in self.composes :
 			print(self.options.environment,':')
 			services = self.composes[self.options.environment].compose['services']
@@ -605,7 +605,7 @@ class Docker(Common):
 					print(' '*4, service)
 		return(self)
 	def build(self, service):
-		self.logging.info('build ' + self.service)
+		self.logger.info('build ' + self.service)
 		if self.options.environment and self.options.environment in self.composes :
 			composes = self.composes[self.options.environment]
 			composes.build(service)
@@ -664,26 +664,26 @@ class Docker(Common):
 			self.service = ' '.join(self.args[1:])
 		else:
 			self.service = ''
-		self.logging.debug('service ' + self.service)
+		self.logger.debug('service ' + self.service)
 
 
 		if self.args[0] == 'up' :
 			self.up(self.service)
 		elif self.args[0] == 'down' :
 			self.down(self.service)
-			self.logging.info('down ' + self.service)
+			self.logger.info('down ' + self.service)
 		elif self.args[0] == 'rm':
 			self.rm(self.service)
-			self.logging.info('rm ' + self.service)
+			self.logger.info('rm ' + self.service)
 		elif self.args[0] == 'start':
 			self.start(self.service)
-			self.logging.info('start ' + self.service)
+			self.logger.info('start ' + self.service)
 		elif self.args[0] == 'stop':
 			self.stop(self.service)
-			self.logging.info('stop ' + self.service)
+			self.logger.info('stop ' + self.service)
 		elif self.args[0] == 'restart':
 			self.restart(self.service)
-			self.logging.info('restart' + self.service)
+			self.logger.info('restart' + self.service)
 		elif self.args[0] == 'ps':
 			self.ps(self.service)
 		elif self.args[0] == 'top':
