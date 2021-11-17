@@ -5,18 +5,18 @@
 # Author: Neo <netkiller@msn.com>
 # Upgrade: 2021-09-05
 ##############################################
-try:
-	import os,  sys
-	module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-	sys.path.insert(0,module)
-	from netkiller.docker import *
-except ImportError as err:
-	print("%s" %(err))
+# try:
+import os,  sys
+module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0,module)
+from netkiller.docker import *
+# except ImportError as err:
+# 	print("%s" %(err))
 
 extra_hosts = [
-	'mongo.sfzito.com:172.17.195.17',
-	'eos.sfzito.com:172.17.15.17',
-	'cfca.sfzito.com:172.17.15.17'
+	'mongo.netkiller.cn:172.17.195.17',
+	'eos.netkiller.cn:172.17.15.17',
+	'cfca.netkiller.cn:172.17.15.17'
 	]
 
 
@@ -72,7 +72,7 @@ staging.services(sms)
 
 if __name__ == '__main__':
 	try:
-		docker = Docker({'DEO':'ssss','SSS':'sdfff'}) 
+		docker = Docker({'DOCKER_HOST':'ssh://root@192.168.30.11','SSS':'sdfff'}) 
 		docker.sysctl({'neo':'1'})
 		docker.environment(development)
 		docker.environment(testing)

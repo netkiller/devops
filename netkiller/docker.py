@@ -2,10 +2,105 @@
 import os, sys
 import yaml,json
 import logging, logging.handlers
+from logging import getLogger
 from optparse import OptionParser, OptionGroup
 
-class Networks():
+class Common:
+	def __init__(self):
+		self.logging = getLogger(__name__)
+
+class Dockerfile(Common):
+	def __init__(self):
+		super().__init__()
+		self.logging = getLogger(__name__)
+		self.dockerfile = []
+	def label(self, map):
+		for key,value in map.items():
+			self.dockerfile.append('LABEL %s="%s"' % (key,value))
+	def image(self, value):
+		self.dockerfile.append('FROM %s' % value)
+		return self
+	def env(self, obj):
+		if type(obj) == dict:
+			for key,value in obj.items():
+				self.dockerfile.append('ENV %s %s' % (key,value))
+		return(self)
+	def arg(self, obj):
+		if type(obj) == dict:
+			for key,value in obj.items():
+				self.dockerfile.append('ARG %s=%s' % (key,value))
+		return(self)
+	def run(self,obj):
+		if type(obj) == str:
+			self.dockerfile.append('RUN %s' % obj)
+		elif type(obj) == list:
+			self.dockerfile.append('RUN %s' % ' '.join(obj))
+		else:	
+			pass
+		return(self)
+	def volume(self, obj):
+		if type(obj) == str:
+			self.dockerfile.append('VOLUME %s' % obj)
+		elif type(obj) == list:
+			self.dockerfile.append('VOLUME ["%s"]' % '","'.join(obj))
+			# for vol in obj :
+				# self.dockerfile.append('VOLUME %s' % vol)
+		return(self)
+	def expose(self,obj):
+		if type(obj) == str:
+			self.dockerfile.append('EXPOSE %s' % obj)
+		elif type(obj) == list:
+			self.dockerfile.append('EXPOSE %s' % ' '.join(obj))
+			# for port in obj :
+				# self.dockerfile.append('EXPOSE %s' % port)
+		return(self)
+	def copy(self,source, target):
+		self.dockerfile.append('COPY %s %s' % (source, target))
+		return(self)
+	def entrypoint(self,obj):
+		if type(obj) == str:
+			self.dockerfile.append('ENTRYPOINT %s' % obj)
+		elif type(obj) == list:
+			self.dockerfile.append('ENTRYPOINT %s' % ' '.join(obj))
+		else:	
+			pass
+		return(self)
+	def cmd(self,obj):
+		if type(obj) == str:
+			self.dockerfile.append('CMD %s' % obj)
+		elif type(obj) == list:
+			self.dockerfile.append('CMD %s' % ' '.join(obj))
+		else:	
+			pass
+		return(self)		
+	def workdir(self, value):
+		self.dockerfile.append('WORKDIR %s' % value)
+		return(self)
+	def user(self, value):
+		self.dockerfile.append('USER %s' % value)
+		return(self)
+	def save(self, path=None):
+		dirname = os.path.dirname(path)
+		if not os.path.isdir(dirname) :
+			os.makedirs(dirname)
+			self.logging.info("Create Dockerfile directory %s" % (dirname))
+		# os.makedirs( path,exist_ok=True);
+		with open(path, 'w') as file:
+			file.writelines('\r\n'.join(self.dockerfile))
+			file.write('\r\n')
+
+		self.logging.info('Dockerfile %s' % path)
+		return(self)	
+	def debug(self):
+		print(self.dockerfile)
+	def render(self):
+		# for line in self.dockerfile:
+		print('\r\n'.join(self.dockerfile))
+
+class Networks(Common):
 	def __init__(self, name=None): 
+		super().__init__()
+		self.logging = getLogger(__name__)
 		self.networks = {}
 		if name :
 			self.name = name
@@ -29,8 +124,10 @@ class Networks():
 			self.networks['ipam']['config'] = array
 			return(self)
 
-class Volumes():
+class Volumes(Common):
 	def __init__(self, name="None"): 
+		super().__init__()
+		self.logging = getLogger(__name__)
 		self.volumes = {}
 		if name :
 			self.volumes[name] = None
@@ -40,12 +137,24 @@ class Volumes():
 		self.volumes[name] = None
 		return(self)
 		
-class Services():	
+class Services(Common):	
 	# service = {}
 	def __init__(self, name): 
+		super().__init__()
+		self.logging = getLogger(__name__)
 		self.service = {}
 		self.name = name
 		self.service[self.name]={}
+		self.dockerfile = None
+	def build(self, obj):
+		if not 'build' in self.service[self.name].keys() :
+			self.service[self.name]['build']={}
+		if isinstance(obj, Dockerfile):
+			self.service[self.name]['build']={'context': '.','dockerfile': 'Dockerfile','target':'dev'}
+			self.dockerfile = obj
+		elif type(obj) == dict:
+			self.service[self.name]['build']=obj
+		return(self)
 	def image(self, name):
 		self.service[self.name]['image']= name
 		return(self)
@@ -178,21 +287,29 @@ class Services():
 	def debug(self):
 		print(self.service)
 		
-class Composes():
+class Composes(Common):
 	compose = {}
 	daemon = False
 	basedir = '.'
 	def __init__(self, name): 
+		super().__init__()
+		self.logging = getLogger(__name__)
 		self.compose = {}
 		self.name = name
-		self.logging = logging.getLogger()
+		# self.logging = logging.getLogger()
 		self.compose['services'] = {}
-		# self.compose['networks'] = []
+		self.dockerfile = {}
 	def version(self, version):
 		self.compose['version'] = str(version)
 		return(self)
 	def services(self,obj):
-		self.compose['services'].update(obj.service)
+		if isinstance(obj, Services) :
+			if obj.dockerfile :
+				self.dockerfile[obj.name] = obj.dockerfile
+				# dockerfile = '%s/%s/Dockerfile' % (self.basedir,obj.name)
+				# obj.dockerfile.save(dockerfile)
+				# self.logging.info("Create Dockerfile %s" % (dockerfile))
+			self.compose['services'].update(obj.service)
 		return(self)
 	def networks(self, obj):
 		self.compose['networks'] = obj.networks
@@ -210,13 +327,17 @@ class Composes():
 	def save(self, filename=None):
 		if not filename :
 			filename = self.filename()
-			dirname = os.path.dirname(filename)
-
-			if not os.path.isdir(dirname) :
-				os.makedirs(dirname)
-				self.logging.info("Create directory %s" % (dirname))
+		
+		dirname = os.path.dirname(filename)
+		if not os.path.isdir(dirname) :
+			os.makedirs(dirname)
+			self.logging.info("Create directory %s" % (dirname))
 
 		try:
+			for service,dockerfile in self.dockerfile.items() :
+				dockerfile.save('%s/%s/%s/Dockerfile' % (self.basedir,self.name,service))
+				self.compose['services'][service]['build']= '%s/%s/%s/' % (self.basedir,self.name,service)
+
 			file = open(filename,"w")
 			yaml.safe_dump(self.compose,stream=file,default_flow_style=False)
 			self.logging.info("Save compose file %s" % (filename))
@@ -309,10 +430,20 @@ class Composes():
 		self.basedir = path
 		self.logging.info('working dir is ' + self.basedir)
 		return(self)
-class Docker():
+	def build(self, service):
+		self.save()
+		command = "docker-compose -f {compose} build {service}".format(compose=self.filename(), service=service)
+		self.logging.debug(command)
+		os.system(command)
+		return(self)
+
+class Docker(Common):
 	def __init__(self,env = None ):
+		super().__init__()
 		self.composes= {}
 		self.daemon = False
+		self.workdir = '/var/tmp/devops'
+
 		usage = "usage: %prog [options] up|rm|start|stop|restart|logs|top|images|exec <service>"
 		self.parser = OptionParser(usage)
 		self.parser.add_option("", "--debug", action="store_true", dest="debug", help="debug mode")
@@ -323,6 +454,7 @@ class Docker():
 		self.parser.add_option('-f','--follow', dest='follow', action='store_true', help='following logging')
 		self.parser.add_option('-c','--compose', dest='compose', action='store_true', help='show docker compose')
 		self.parser.add_option('','--export', dest='export', action='store_true', help='export docker compose')
+		self.parser.add_option('-b','--build', dest='build', action='store_true', help='build docker image')
 
 		(self.options, self.args) = self.parser.parse_args()
 		if self.options.daemon :
@@ -333,7 +465,7 @@ class Docker():
 		elif self.options.logfile :
 			logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',filename=self.options.logfile,filemode='a')
 
-		self.logging = logging.getLogger()
+		# self.logging = logging.getLogger(__name__)
 
 		if self.options.debug:
 			print("===================================")
@@ -352,13 +484,13 @@ class Docker():
 				os.system(cmd)
 			self.logging.info('-' * 50)
 
+	def workdir(self,path):
+		self.workdir = path
 	def environment(self, env):
 		env.logfile(self.logfile)
-		workdir = '/var/tmp/devops'
-		env.workdir(workdir)
+		env.workdir(self.workdir)
 		self.composes[env.name] = env
-		self.logging.info("environment %s : %s" % (env.name, workdir))
-		
+		self.logging.info("environment %s : %s" % (env.name, self.workdir))
 		return(self)
 	def sysctl(self, conf):
 		self.logging.info('-' * 50)
@@ -367,7 +499,13 @@ class Docker():
 			self.logging.info(cmd)
 			os.system(cmd)
 		self.logging.info('-' * 50)
-		
+		return(self)
+	def createfile(self, filename, text):
+		path = self.workdir + '/' + filename
+		with open(path, 'w') as file:
+			file.writelines(text)
+		self.logging.info('Create file %s' % path)
+		return(self)
 	def up(self,service=''):
 		if self.options.environment and self.options.environment in self.composes :
 			composes = self.composes[self.options.environment]
@@ -467,6 +605,14 @@ class Docker():
 				for service in obj.compose['services'] :
 					print(' '*4, service)
 		return(self)
+	def build(self, service):
+		self.logging.info('build ' + self.service)
+		if self.options.environment and self.options.environment in self.composes :
+			composes = self.composes[self.options.environment]
+			composes.build(service)
+		else:
+			for env,value in self.composes.items():
+				value.build(service)
 	def dump(self):
 		if self.options.environment and self.options.environment in self.composes :
 			composes = self.composes[self.options.environment]
@@ -506,6 +652,12 @@ class Docker():
 		if self.options.list :
 			self.list()
 			exit()
+			
+		if self.options.build :
+			self.service = ' '.join(self.args)
+			self.build(self.service)
+			exit()
+
 		if not self.args:
 			self.usage()
 
@@ -513,12 +665,11 @@ class Docker():
 			self.service = ' '.join(self.args[1:])
 		else:
 			self.service = ''
-
 		self.logging.debug('service ' + self.service)
-	
+
+
 		if self.args[0] == 'up' :
 			self.up(self.service)
-			self.logging.info('up ' + self.service)
 		elif self.args[0] == 'down' :
 			self.down(self.service)
 			self.logging.info('down ' + self.service)
@@ -546,4 +697,3 @@ class Docker():
 			self.exec(self.service, self.args[2:])
 		else:
 			self.usage()
-		# pass
