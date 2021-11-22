@@ -1,37 +1,23 @@
-class Human:
-    def __init__(self,n,a):
-        self.name = n
-        self.age = a
-        print("Human种的init函数被调用")
 
-    def show_info(self):
-        print("姓名:",self.name)
-        print("年龄:",self.age)
+from ruamel.yaml import YAML
+from ruamel.yaml.scalarstring import PreservedScalarString as pss
 
-class Student(Human):
-    def __init__(self,n,a,s = 0):
-        super().__init__(n,a)   #显式调用父类的初始化方法
-        #super(Human,self)._init_(n,a)  #也可以这样显式的调用
-        self.score = s
-        print("Student中的init函数被调用")
-    class ss(Human):
-        def __init__(self,n,a):
-            super().__init__(n,a) 
-            Student.score = 1000
-    def show_info(self):
-        super().show_info() 
-        print("成绩为：",self.score)
-    def test(self):
-        print(self.name)
+x = pss("""\
+external_url 'https://gitlab.example.com'
+gitlab_rails['time_zone'] = 'Asia/Shanghai'
+gitlab_rails['smtp_enable'] = true
+gitlab_rails['smtp_address'] = "smtp.aliyun.com"
+gitlab_rails['smtp_port'] = 465
+gitlab_rails['smtp_user_name'] = "netkiller@msn.com" 
+gitlab_rails['smtp_password'] = "******"
+gitlab_rails['smtp_domain'] = "aliyun.com"
+gitlab_rails['smtp_authentication'] = "login"
+gitlab_rails['smtp_enable_starttls_auto'] = true
+gitlab_rails['smtp_tls'] = true
+gitlab_rails['gitlab_email_from'] = 'netkiller@msn.com'
+gitlab_rails['gitlab_shell_ssh_port'] = 22
+""")
 
-student = Student('neo','25')
+yaml = YAML()
 
-student.show_info()
-
-student1 = Student('jam','27')
-student1.show_info()
-
-student.ss('netkiller','30').show_info()
-student.show_info()
-#.name='netkiller'
-student.test()
+yaml.dump(dict(a=1, b='hello world', c=x), sys.stdout)
