@@ -24,12 +24,17 @@ gitlab.hostname('gitlab.netkiller.cn')
 # gitlab.environment(['TA=Asia/Shanghai'])
 gitlab.environment({'TA':'Asia/Shanghai','GITLAB_OMNIBUS_CONFIG':pss(
 '''\
-external_url 'https://gitlab.example.com'
+external_url 'http://gitlab.netkiller.cn'
+registry_external_url 'http://registry.netkiller.cn'
 gitlab_rails['time_zone'] = 'Asia/Shanghai'
 ''')
 })
-gitlab.ports(['80:80','443:443']) 
-gitlab.volumes(['/opt/gitlab/config:/etc/gitlab','/opt/gitlab/logs:/var/log/gitlab','/opt/gitlab/data:/var/opt/gitlab'])
+gitlab.ports(['80:80']) # ,'443:443'
+gitlab.volumes([
+    '/opt/gitlab/config:/etc/gitlab',
+    '/opt/gitlab/logs:/var/log/gitlab',
+    '/opt/gitlab/data:/var/opt/gitlab'
+])
 
 runner = Services('gitlab-runner')
 runner.image('gitlab/gitlab-runner:alpine')
@@ -41,11 +46,3 @@ runner.environment(['TA=Asia/Shanghai'])
 # runner.ports(['80:80','443:443']) 
 runner.volumes(['./gitlab/config:/etc/gitlab-runner','/var/run/docker.sock:/var/run/docker.sock','/usr/bin/docker:/usr/bin/docker'])
 runner.privileged(True)
-
-devops = Composes('devops')
-devops.version('3.9')
-# devops.volumes(volumes)
-devops.services(gitlab)
-devops.services(runner)
-# devops.services(portainer)
-# devops.services(agent)

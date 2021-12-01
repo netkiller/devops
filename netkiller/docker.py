@@ -618,13 +618,13 @@ class Docker(Common):
 	def list(self):
 		self.logger.debug('-' * 50)
 		if self.options.environment and self.options.environment in self.composes :
-			print(self.options.environment,':')
+			print('%s: %s' % (self.options.environment, self.composes[self.options.environment].environ))
 			services = self.composes[self.options.environment].compose['services']
 			for service in services :
 				print(' '*4, service)
 		else:
 			for env,obj in self.composes.items():
-				print(env,':')
+				print('%s: %s' % (env, obj.environ))
 				for service in obj.compose['services'] :
 					print(' '*4, service)
 		exit()

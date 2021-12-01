@@ -7,9 +7,9 @@ from netkiller.docker import *
 # from environment.development import development
 # from environment.production import production
 
-from libexec.gitlab import devops
-from libexec.logging import logging
-from libexec.portainer import portainer
+from compose.devops import devops
+# from libexec.logging import logging
+# from libexec.portainer import portainer
 
 # print(test)
 # exit()
@@ -17,13 +17,13 @@ from libexec.portainer import portainer
 if __name__ == "__main__":
     try:
         docker = Docker()
-        # docker.env({'DOCKER_HOST':'ssh://www@192.168.30.11'}) 
+        docker.env({'DOCKER_HOST':'ssh://root@192.168.30.13'}) 
         # docker.sysctl({"vm.max_map_count": "262144"})
         # docker.environment(experiment)
         # docker.environment(development)
-        docker.environment(logging)
+        # docker.environment(logging)
         docker.environment(devops)
-        docker.environment(portainer)
+        # docker.environment(portainer)
         
         docker.main()
     except KeyboardInterrupt:
