@@ -1,0 +1,116 @@
+#! /usr/bin/env python3
+# -*- coding: UTF-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+##############################################
+from re import split
+
+try:
+    import os, sys
+    from simple_term_menu import TerminalMenu
+    from prompt_toolkit.shortcuts import input_dialog
+    from configparser import ConfigParser, NoSectionError
+    from optparse import OptionParser, OptionGroup
+except ImportError as err:
+    print("Error: %s" % (err))
+
+
+class Logviewer():
+    def __init__(self):
+        usage = "%prog [options] message\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>"
+        self.parser = OptionParser(usage)
+        self.parser.add_option('-c',
+                               "--config",
+                               dest="config",
+                               help="config file",
+                               default='/usr/local/etc/logviewer.ini',
+                               metavar="/usr/local/etc/logviewer.ini")
+        # self.parser.add_option('-l','--logfile', dest='logfile', help='logs file.', default='/var/log/logviewer.log', metavar='/var/log/logviewer.log')
+        self.parser.add_option('-d',
+                               '--debug',
+                               action='store_true',
+                               dest="debug",
+                               help="debug mode")
+
+        (self.options, self.args) = self.parser.parse_args()
+
+        if self.options.debug:
+            print("=" * 50)
+            print(self.options, self.args)
+            print("=" * 50)
+        while True:
+            self.tui()
+
+    def tui(self):
+        self.config = ConfigParser()
+        self.config.read(self.options.config)
+
+        try:
+            options = list(dict(self.config.items()).keys())
+            terminal_menu = TerminalMenu(options)
+            menu_entry_index = terminal_menu.show()
+            print(f"You have selected: {options[menu_entry_index]}!")
+            self.view(options[menu_entry_index])
+
+        except NoSectionError as err:
+            print(err)
+            exit()
+        except Exception as e:
+            print(e)
+            exit()
+
+    def view(self, item):
+        conf = dict(self.config.items(item))
+        files = []
+        # print(conf)
+        if 'logfile' in conf.keys():
+            files = conf['logfile'].split(',')
+        elif 'logdir' in conf.keys():
+            files = self.lists(conf['logdir'])
+        else:
+            return
+        # print(files)
+        terminal_menu = TerminalMenu(files,
+                                     preview_command="tail {}",
+                                     preview_size=0.75,
+                                     clear_screen=True)
+        menu_entry_index = terminal_menu.show()
+        logfile = files[menu_entry_index]
+        self.tail(logfile)
+
+    def lists(self, logdir):
+        filelists = []
+        for root, dirs, files in os.walk(logdir):
+            for file in files:
+                file = os.path.join(root, file)
+                filelists.append(file)
+            # for dir in dirs:
+            # all_dirs.append(os.path.join(root,dir))
+        return (filelists)
+
+    def tail(self, file):
+        cmd = []
+        cmd.append('tail -n 500 -f')
+        cmd.append(file)
+        text = input_dialog(title='Keyword Search',
+                            text='Please type regular expression:').run()
+        if text:
+            cmd.append('|')
+            cmd.append('grep --color "%s"' % text)
+
+        command = ' '.join(cmd)
+        # print(command)
+        os.system(command)
+
+    def usage(self):
+        self.parser.print_help()
+        # print("")
+        exit()
+
+
+if __name__ == '__main__':
+    try:
+        viewer = Logviewer()
+    except KeyboardInterrupt:
+        print("Crtl+C Pressed. Shutting down.")

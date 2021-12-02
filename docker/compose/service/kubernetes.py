@@ -11,4 +11,4 @@ rancher.container_name('rancher')
 rancher.image('rancher/rancher:stable').restart('unless-stopped').volumes([
     '/var/lib/rancher/:/var/lib/rancher/',
     '/var/log/auditlog:/var/log/auditlog'
-]).ports(['443:443']).privileged() # '8080:80',
+]).ports(['8080:80','443:443']).privileged()

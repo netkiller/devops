@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
 	name="netkiller-devops",
-	version="0.3.10",
+	version="0.4.1",
 	author="Neo Chen",
 	author_email="netkiller@msn.com",
 	description="DevOps of useful deployment and automation",
@@ -23,7 +23,7 @@ setup(
 		"License :: OSI Approved :: MIT License",
 		"Operating System :: OS Independent",
 	],
-	install_requires = ['ruamel.yaml','requests','redis','pyttsx3'],
+	install_requires = ['ruamel.yaml','requests','redis','pyttsx3','simple_term_menu','prompt_toolkit'],
   	# package_dir={ '': 'library' },
 	packages=find_packages(),
 
@@ -40,7 +40,8 @@ setup(
 		'bin/wechat',
 		'bin/voice',
 		'bin/sqldump',
-		'bin/mdump'
+		'bin/mdump',
+		'bin/logviewer'
 	],
 	data_files = [
 		('etc', ['etc/deployment.cfg']),
@@ -50,7 +51,8 @@ setup(
 		('etc', [
 			'etc/notification.ini',
 			'etc/dump.ini.sample',
-			'etc/mongo.ini.sample'
+			'etc/mongo.ini.sample',
+			'etc/logviewer.ini.sample',
 		]),
 		('libexec/devops', [
 			'libexec/backup/backup.mysql.sh',
