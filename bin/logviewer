@@ -83,6 +83,9 @@ class Logviewer():
         filelists = []
         for root, dirs, files in os.walk(logdir):
             for file in files:
+                ext = os.path.splitext(file)[1]
+                if ext in ['.gz','.bz2','.bin','.zip'] :
+                    continue
                 file = os.path.join(root, file)
                 filelists.append(file)
             # for dir in dirs:
