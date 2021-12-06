@@ -302,6 +302,8 @@ class Composes(Common):
 		# self.context = 'default'
 		self.context = None
 		self.environ = None
+		self.projectName = None
+		self.envFile = None
 	def env(self, default):
 		# if not self.environ :
 		self.environ = default
@@ -309,6 +311,10 @@ class Composes(Common):
 		self.logger.info('%s: %s' %( self.name, self.environ))
 		self.logger.info('-' * 50)
 		return(self)
+	def env_file(self, file):
+		self.envFile = file
+	def project_name(self, name):
+		self.projectName = name
 	def version(self, version):
 		self.compose['version'] = str(version)
 		return(self)
@@ -435,6 +441,10 @@ class Composes(Common):
 	def __command(self, cmd):
 		command = []
 		command.append('docker-compose')
+		if self.projectName :
+			command.append('--project-name %s' % self.projectName)
+		if self.envFile :
+			command.append('--env-file %s' % self.envFile)
 		if self.context :
 			command.append('‐‐context %s' % self.context)
 		command.append('-f {compose}'.format(compose=self.filename()))

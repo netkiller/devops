@@ -17,7 +17,7 @@ from compose.devops import devops
 if __name__ == "__main__":
     try:
         docker = Docker()
-        docker.env({'DOCKER_HOST':'ssh://root@192.168.30.13'}) 
+        # docker.env({'DOCKER_HOST':'ssh://root@192.168.30.13','COMPOSE_PROJECT_NAME':'experiment'}) 
         # docker.sysctl({"vm.max_map_count": "262144"})
         # docker.environment(experiment)
         # docker.environment(development)
