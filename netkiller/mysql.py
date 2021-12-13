@@ -95,6 +95,9 @@ class MySQLDump(MySQL):
 	def default_character_set(self, value =  'utf8'):
 		self.opts.append('--default-character-set='+value)
 		return self	
+	def no_data(self):
+		self.opts.append('--no-data')
+		return self	
 	def cnf(self, clean = False):
 		path = os.path.expanduser('~/.my.cnf')
 		config = ConfigParser()

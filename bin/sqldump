@@ -24,6 +24,7 @@ class Dump(MySQLDump):
 		self.parser.add_option('-l', '--list', dest='list', action='store_true', help="list items")
 		self.parser.add_option('-H', '--history', dest='history', action='store_true', help="backup history")
 		self.parser.add_option('','--retain', dest='retain', help='The number of days retained', default=30, metavar='30')
+		self.parser.add_option('','--no-data', dest='nodata', action='store_true', help='No row information.')
 		
 		group = OptionGroup(self.parser, "Compress or expand files")
 		group.add_option('-z', '--gzip', dest='gzip', action='store_true', help="Gzip")
@@ -168,6 +169,8 @@ class Dump(MySQLDump):
 			# dump.skip_lock_tables()
 			dump.column_statistics()
 			dump.set_gtid_purged()
+			if self.options.nodata :
+				dump.no_data()
 			# dump.log_error('/tmp/test.log')
 			if self.options.gzip :
 				dump.Gzip()

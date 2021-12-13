@@ -109,8 +109,14 @@ class Networks(Common):
 		else:
 			self.name = 'default'
 		self.networks[self.name] = {}
+	def enable_ipv6(self, value):
+		self.networks[self.name]['enable_ipv6'] = value
+		return(self)
 	def driver(self, name="bridge"):
 		self.networks[self.name]['driver'] = name
+		return(self)
+	def driver_opts(self, value):
+		self.networks[self.name]['driver_opts'] = value
 		return(self)
 	def ipam(self):
 		return(self.Ipam(self.networks[self.name]))
