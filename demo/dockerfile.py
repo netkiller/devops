@@ -5,41 +5,65 @@
 # Author: Neo <netkiller@msn.com>
 # Upgrade: 2021-09-05
 ##############################################
-# try:
-import os,  sys
-module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0,module)
-from netkiller.docker import *
-# except ImportError as err:
-# 	print("%s" %(err))
+try:
+	import os,  sys
+	module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+	sys.path.insert(0,module)
+	from netkiller.docker import *
+except ImportError as err:
+	print("%s" %(err))
 
 nginx = Dockerfile() 
 nginx.image('nginx:latest').volume(['/etc/nginx','/var/log/nginx']).run('apt update -y && apt install -y procps').expose(['80','443']).workdir('/opt')
+nginx.show()
 
-# dockerfile = Dockerfile() 
-# dockerfile.label({'org.opencontainers.image.authors':'netkiller'})
-# dockerfile.image('openjdk:8-jdk-alpine')
-# dockerfile.copy('/tmp/test.txt','/tmp')
+# exit()
+
+nginx = Dockerfile()
+# 基于什么镜像
+nginx.image('nginx:latest')
+# 挂载卷
+nginx.volume(['/etc/nginx','/var/log/nginx'])
+# 运行脚本
+nginx.run('apt update -y && apt install -y procps')
+# 暴漏端口
+nginx.expose(['80','443'])
+# 工作目录
+nginx.workdir('/opt')
+# 打印 Dockerfile
+nginx.show()
+
+
+
+# exit()
+
+
+dockerfile = Dockerfile() 
+dockerfile.label({'org.opencontainers.image.authors':'netkiller'})
+dockerfile.image('openjdk:8-jdk-alpine')
+dockerfile.copy('test.txt','/tmp')
 # dockerfile.run('ls /')
-# dockerfile.run(['aa','bb','cc'])
+dockerfile.run(['aa','bb','cc'])
 # dockerfile.expose('9000')
-# dockerfile.expose(['80','443'])
-# dockerfile.volume([
-# 	'/usr/local'
-# ])
-# dockerfile.volume([
-# 	'/etc/nginx',
-# 	'/var/www'
-# ])
-# dockerfile.env({'JAVA_HOME':'/lib/jvm'})
+dockerfile.expose(['80','443'])
+dockerfile.volume([
+	'/usr/local'
+])
+dockerfile.volume([
+	'/etc/nginx',
+	'/var/www'
+])
+dockerfile.env({'JAVA_HOME':'/lib/jvm'})
 # dockerfile.cmd('startup.sh')
-# dockerfile.cmd(['sh','/startup.sh','-e sss'])
+dockerfile.cmd(['sh','/startup.sh','-e sss'])
 # dockerfile.entrypoint('startup.sh')
-# dockerfile.entrypoint(['sh','/startup.sh','-e sss'])
-# dockerfile.user('nginx:nginx')
-# dockerfile.workdir('/srv')
-# dockerfile.render()
-# dockerfile.save('/tmp/Dockerfile')
+dockerfile.entrypoint(['sh','/startup.sh','-e sss'])
+dockerfile.user('nginx:nginx')
+dockerfile.workdir('/srv')
+dockerfile.show()
+dockerfile.save('/tmp/Dockerfile')
+
+exit()
 
 dockerfile = Dockerfile() 
 dockerfile.label({'org.opencontainers.image.authors':'netkiller'})

@@ -8,7 +8,7 @@ from netkiller.docker import *
 # from environment.production import production
 
 from compose.devops import devops
-# from libexec.logging import logging
+from compose.demo import demo
 # from libexec.portainer import portainer
 
 # print(test)
@@ -24,7 +24,7 @@ if __name__ == "__main__":
         # docker.environment(logging)
         docker.environment(devops)
         # docker.environment(portainer)
-        
+        docker.environment(demo)
         docker.main()
     except KeyboardInterrupt:
         print("Crtl+C Pressed. Shutting down.")

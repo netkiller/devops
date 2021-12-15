@@ -112,8 +112,7 @@ class Dockerfile(Common):
 	def debug(self):
 		print(self.dockerfile)
 
-	def render(self):
-		# for line in self.dockerfile:
+	def show(self):
 		print('\r\n'.join(self.dockerfile))
 
 
@@ -534,7 +533,7 @@ class Composes(Common):
 		self.context = value
 		return (self)
 
-	def build(self, service):
+	def build(self, service = ''):
 		self.save()
 		command = self.__command("build {service}".format(service=service))
 		self.execute(command)
