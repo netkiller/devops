@@ -1,5 +1,6 @@
 services:
   image:
+    container_name: image
     build: ./demo/image/
     image: netkiller:openjdk8
 version: '3.9'

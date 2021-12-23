@@ -23,7 +23,7 @@ nginx = Dockerfile()
 # 基于什么镜像
 nginx.image('nginx:latest')
 # 挂载卷
-nginx.volume(['/etc/nginx','/var/log/nginx'])
+nginx.volume(['/etc/nginx','/var/log/nginx','/opt'])
 # 运行脚本
 nginx.run('apt update -y && apt install -y procps')
 # 暴漏端口
