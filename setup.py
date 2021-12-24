@@ -55,10 +55,10 @@ setup(
 			'etc/logviewer.ini.sample',
 		]),
 		('libexec/devops', [
-			'libexec/backup/backup.mysql.sh',
-			'libexec/backup/backup.mysql.gpg.sh',
-			'libexec/backup/backup.mysql.gpg.sh',
-			'libexec/backup/backup.mysql.struct.sh'
+			'shell/backup/backup.mysql.sh',
+			'shell/backup/backup.mysql.gpg.sh',
+			'shell/backup/backup.mysql.gpg.sh',
+			'shell/backup/backup.mysql.struct.sh'
 			]),
 		('share', ['share/example/testing/example.com.ini','share/profile.d/devops.sh']),
 		('share/devops', ['doc/wechat.md','doc/voice.md'])
