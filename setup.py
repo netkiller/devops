@@ -41,7 +41,8 @@ setup(
 		'bin/voice',
 		'bin/sqldump',
 		'bin/mdump',
-		'bin/logviewer'
+		'bin/logviewer',
+		'bin/merge'
 	],
 	data_files = [
 		('etc', ['etc/deployment.cfg']),

@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
+###################################
+# git branch merge
+# Author: netkiller@msn.com
+# Home:	http://www.netkiller.cn
+###################################
+#basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))	
+from os import getcwd
+
+
+try:
+	#sys.path.append(basedir + '/lib/python3.3/site-packages')	
+	import os,io,sys,subprocess
+	import logging, configparser
+	from logging import getLogger
+	# import threading
+	from optparse import OptionParser, OptionGroup
+	# import time
+	# from datetime import datetime	
+	# import getpass
+	module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+	sys.path.insert(0,module)
+	from netkiller.git import *
+except ImportError as err:
+	print("Error: %s" %(err))
+
+class Merge():
+
+	def __init__(self): 
+
+		self.workspace = None
+
+		usage = "usage: %prog [options] <parameter>"
+		self.parser = OptionParser(usage)
+
+		group = OptionGroup(self.parser, "Repository")
+		group.add_option('-w','--workspace', dest='workspace', help='workspace ~/workspace', default='None', metavar='~/workspace')
+		group.add_option('-c','--clone', dest='clone', help='clone branch', default=None, metavar='')
+		group.add_option('-p','--project', dest='project', help='project directory', default=None, metavar='')
+		self.parser.add_option_group(group)
+
+		group = OptionGroup(self.parser, "Custom merge branch")
+		group.add_option('-s', '--source', dest='source', help='source', default=None, metavar='development')
+		group.add_option('-t','--to', dest='target', help='target', default=None, metavar='testing')
+		group.parser.add_option_group(group)
+
+		group = OptionGroup(self.parser, "Workflow merge development -> testing -> staging -> production(master)")
+		group.add_option('', '--testing', dest='testing', action='store_true', default = False, help="from development to testing")
+		group.add_option('', '--staging', dest='staging', action='store_true', default = False, help="from testing to staging")
+		group.add_option('', '--production', dest='production', action='store_true', default = False, help="from staging to production(master)")
+		self.parser.add_option_group(group)
+
+		group = OptionGroup(self.parser, "Create branch")
+		group.add_option('-b','--branch', dest='branch', help='create custom branch', default=None, metavar='mybranch')
+		group.add_option('-f','--feature', dest='feature', help='feature branch from development', default=None, metavar='feature/0001')
+		group.add_option('-H','--hotfix', dest='hotfix', help='hotfix branch from master', default=None, metavar='hotfix/0001')
+		self.parser.add_option_group(group)
+
+		self.parser.add_option('-l','--logfile', dest='logfile', help='log file', default='/tmp/merge.log', metavar='/tmp/merge.log')
+		self.parser.add_option('-d', '--debug', dest='debug', action='store_true', help="debug")
+
+		(self.options, self.args) = self.parser.parse_args()
+		
+		try:
+			if self.options.debug :
+				print(self.options, self.args)
+				logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+			elif self.options.logfile :
+				logging.basicConfig(level=logging.NOTSET, format='%(asctime)s %(levelname)-8s %(message)s',	datefmt='%Y-%m-%d %H:%M:%S', filename=self.options.logfile, filemode='a')
+		except Exception as err:
+			print("Error: %s" %(err))
+			sys.exit(2)	
+
+		self.logger = getLogger(__name__)
+		
+	def usage(self):
+		print("Netkiller branch administrator")
+		self.parser.print_help()
+		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
+		exit()
+	def branch(self, name):
+		git = GitBranch(self.project,self.logger)
+		if len(self.args) == 1 :
+			git.create(name, self.args[0])	
+		else:
+			git.create(name)
+		git.list()
+		git.debug()
+		git.execute()
+	def feature(self,name = None):
+		git = GitBranch(self.project,self.logger)
+		if name :
+			git.create('feature/%s' % name)
+		else:
+			git.create('feature')
+		git.list()
+		git.debug()
+		git.execute()
+	def hotfix(self,name = None):	
+		git = GitBranch(self.project,self.logger)
+		if name :
+			git.create('hotfix/%s' % name)
+		else:
+			git.create('hotfix')
+		git.list()
+		git.debug()
+		git.execute()
+	def clone(self,url):
+		git = Git(self.workspace, self.logger)
+		git.clone(url)
+		git.execute()
+
+	def merge(self, source, target):
+		git = GitMerge(self.project,self.logger)
+		git.source(source).target(target).merge().push()
+		git.execute()
+
+	def main(self):
+		if self.options.workspace :
+			self.workspace = self.options.workspace
+
+		if self.options.project :
+			if self.workspace :
+				self.project = self.workspace + '/' + self.project
+			else:
+				self.project = self.options.project
+		else:
+			self.project = os.getcwd()
+
+		if self.options.clone :	
+			self.clone(self.options.clone)
+		if self.options.branch :
+			self.branch(self.options.branch)
+		elif self.options.feature :
+			self.feature(self.options.feature)
+		elif self.options.hotfix :
+			self.hotfix(self.options.hotfix)
+		
+		if self.options.source and self.options.target :
+			self.merge(self.options.source, self.options.target)
+		if self.options.testing :
+			self.merge('development', 'testing')
+		elif self.options.staging :
+			self.merge('testing', 'staging')
+		elif self.options.production :
+			self.merge('staging', 'master')
+			pass
+		self.logger.info('-' * 50)
+
+if __name__ == '__main__':
+	try:
+		merge = Merge()
+		merge.main()
+	except KeyboardInterrupt:
+		print ("Crtl+C Pressed. Shutting down.")

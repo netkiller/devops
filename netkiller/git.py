@@ -7,12 +7,20 @@ class Git():
 		self.workspace = os.path.expanduser(workspace)
 		if os.path.exists(self.workspace) :
 			os.chdir(self.workspace)
+			self.logger.info('workspace %s' % self.workspace)
+		else:
+			self.logger.info("directory doesn't exist %s" % self.workspace)
+			exit(0)
+		self.logger.info('project directory %s' % os.getcwd())
+		
 	def option(self, opt):
 		if opt:
 			self.opt = opt
-	def clone(self, uri):
-		if self.workspace :
-			self.cmd.append('clone '+ uri +' '+ self.workspace)
+	def clone(self, uri, project = None):
+		if project :
+			self.cmd.append('clone '+ uri +' '+ project)
+		else:
+			self.cmd.append('clone '+ uri)
 		return(self)
 	def clean(self, param=''):
 		#git clean -df
@@ -74,11 +82,66 @@ class Git():
 	def debug(self):
 		cmd = ''
 		for line in self.cmd:
-			cmd += 'git ' + line + '; '
+			cmd = 'git ' + line
+			self.logger.debug(cmd)
 		return(cmd)
 	def execute(self):
 		for line in self.cmd:
-			os.system('git '+ line)
+			rev = os.system('git '+ line)
 			self.logger.debug('git '+ line)
+			self.logger.debug(rev)
+			if rev == 256 :
+				exit(0)
 		self.cmd = []
 		print("-")
+
+class GitBranch(Git):
+	def __init__(self,workspace = None, logger = None):
+		super().__init__(workspace, logger)
+	def show(self):
+		self.cmd.append('branch --show-current')
+	def list(self, pattern = None):
+		if pattern :
+			self.cmd.append("branch --list '%s'" % pattern)
+		else:
+			self.cmd.append('branch -l')
+	def create(self, name, origin = None):
+		if origin :
+			self.cmd.append('checkout -b %s origin/%s' % (name, origin))	
+		else:
+			self.cmd.append('branch %s ' % name)
+	def delete(self, name):	
+		self.cmd.append('branch --delete %s ' % name)
+	def move(self, old, new):
+		self.cmd.append('checkout %s' % old)
+		self.cmd.append('branch -m "%s" "%s"' % (old, new))
+		self.cmd.append('push --delete origin %s' % old)
+		self.cmd.append('push origin %s' % new)
+		pass
+
+class GitMerge(Git):
+	def __init__(self,workspace = None, logger = None):
+		super().__init__(workspace, logger)
+	def source(self, name):
+		self.src = name
+		self.cmd.append('fetch origin')
+		self.cmd.append('checkout "%s"' % name)
+		self.cmd.append('branch --show-current')
+		return(self)
+	def target(self, name):
+		self.tgt = name
+		self.cmd.append('fetch origin')
+		self.cmd.append('checkout "%s"' % name)
+		self.cmd.append('branch --show-current')
+		return(self)
+	def merge(self):
+		self.cmd.append('merge --no-ff  "%s"' % self.src)
+		return(self)
+	def push(self):
+		self.cmd.append('push --set-upstream origin %s' % self.tgt)
+		# self.cmd.append('push origin')
+		return(self)
+
+class GitUtility(Git):
+	def __init__():
+		pass
