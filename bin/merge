@@ -5,12 +5,7 @@
 # Author: netkiller@msn.com
 # Home:	http://www.netkiller.cn
 ###################################
-#basedir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))	
-from os import getcwd
-
-
 try:
-	#sys.path.append(basedir + '/lib/python3.3/site-packages')	
 	import os,io,sys,subprocess
 	import logging, configparser
 	from logging import getLogger
@@ -18,7 +13,6 @@ try:
 	from optparse import OptionParser, OptionGroup
 	# import time
 	# from datetime import datetime	
-	# import getpass
 	module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 	sys.path.insert(0,module)
 	from netkiller.git import *
@@ -33,11 +27,12 @@ class Merge():
 
 		usage = "usage: %prog [options] <parameter>"
 		self.parser = OptionParser(usage)
+		self.parser.add_option('-w','--workspace', dest='workspace', help='workspace ~/workspace', default='None', metavar='~/workspace')
+		self.parser.add_option('-p','--project', dest='project', help='project directory', default=None, metavar='')
 
 		group = OptionGroup(self.parser, "Repository")
-		group.add_option('-w','--workspace', dest='workspace', help='workspace ~/workspace', default='None', metavar='~/workspace')
 		group.add_option('-c','--clone', dest='clone', help='clone branch', default=None, metavar='')
-		group.add_option('-p','--project', dest='project', help='project directory', default=None, metavar='')
+		group.add_option('-r','--reset', dest='reset', help='Reset current HEAD to the specified state', default=None, metavar='8547cb94')
 		self.parser.add_option_group(group)
 
 		group = OptionGroup(self.parser, "Custom merge branch")
@@ -75,7 +70,7 @@ class Merge():
 		self.logger = getLogger(__name__)
 		
 	def usage(self):
-		print("Netkiller branch administrator")
+		print("Netkiller git administrator")
 		self.parser.print_help()
 		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
 		exit()
@@ -115,7 +110,9 @@ class Merge():
 		git = GitMerge(self.project,self.logger)
 		git.source(source).target(target).merge().push()
 		git.execute()
-
+	def reset(self, ver):
+		git = GitReset(self.project,self.logger)
+		git.hard(ver).execute()
 	def main(self):
 		if self.options.workspace :
 			self.workspace = self.options.workspace
@@ -130,6 +127,8 @@ class Merge():
 
 		if self.options.clone :	
 			self.clone(self.options.clone)
+		elif self.options.reset :
+			self.reset(self.options.reset)
 		if self.options.branch :
 			self.branch(self.options.branch)
 		elif self.options.feature :

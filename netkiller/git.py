@@ -79,6 +79,8 @@ class Git():
 		if revision :
 			self.cmd.append('checkout -f '+revision)
 		return(self)
+	def command(self, cmd, argument):
+		self.cmd.append('%s %s' %(cmd, argument))
 	def debug(self):
 		cmd = ''
 		for line in self.cmd:
@@ -141,6 +143,24 @@ class GitMerge(Git):
 		self.cmd.append('push --set-upstream origin %s' % self.tgt)
 		# self.cmd.append('push origin')
 		return(self)
+
+class GitReset(Git):
+	def __init__(self,workspace = None, logger = None):
+		super().__init__(workspace, logger)
+	def hard(self, ver):
+		self.command('reset', '--hard %s --' % ver)
+		return(self)
+	def mixed(self, ver):
+		self.command('reset', '--mixed %s --' % ver)
+		return(self)
+	def push(self, force = False):
+		if force :
+			self.command('push', 'origin --force --all')
+		else:
+			self.command('push', 'origin')
+		return(self)
+		# git push --force --progress "origin" master:master
+			
 
 class GitUtility(Git):
 	def __init__():

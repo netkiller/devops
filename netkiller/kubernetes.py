@@ -255,7 +255,8 @@ class Service(Common):
 	class metadata(Metadata):
 		def __init__(self): 
 			super().__init__()
-			Service.service['metadata'] = {}
+			if not 'metadata' in Service.service :
+				Service.service['metadata'] = {}
 		def __del__(self):
 			Service.service['metadata'].update(self.metadata())
 	class spec:
@@ -355,9 +356,10 @@ class Ingress(Common):
 	class metadata(Metadata):
 		def __init__(self): 
 			super().__init__()
-			Ingress.ingress['metadata'] = {}
+			if not 'metadata' in Ingress.ingress :
+				Ingress.ingress['metadata'] = {}
 		def __del__(self):
-			Ingress.ingress['metadata'].update(self.metadata)
+			Ingress.ingress['metadata'].update(self.metadata())
 	class spec:
 		def __init__(self): 
 			if not 'spec' in Ingress.ingress :
@@ -415,6 +417,11 @@ class Kubernetes(Logging):
 		group.add_option('-c','--create', dest='create', action='store_true', help='Create a resource from a file or from stdin')
 		group.add_option('-d','--delete', dest='delete', action='store_true', help='Delete resources by filenames, stdin, resources and names, or by resources and label selector')   
 		group.add_option('-r','--replace', dest='replace', action='store_true', help='Replace a resource by filename or stdin')
+		self.parser.add_option_group(group)
+
+		group = OptionGroup(self.parser, "Namespace")
+		group.add_option('-n','--namespace', dest='namespace', action='store_true', help='Display namespace')
+		group.add_option('-s','--service', dest='service', action='store_true', help='Display service')
 		self.parser.add_option_group(group)
 
 		group = OptionGroup(self.parser, "Others")
@@ -493,6 +500,14 @@ class Kubernetes(Logging):
 			self.logging.info('replace %s ' % path)
 			self.execute(cmd)
 		exit()
+	def namespace(self):
+		cmd = "get namespace"
+		self.logging.info(cmd)
+		self.execute(cmd)
+	def service(self):
+		cmd = "get service"
+		self.logging.info(cmd)
+		self.execute(cmd)
 	def describe(self):
 		pass
 	def edit(self):
@@ -514,6 +529,11 @@ class Kubernetes(Logging):
 			self.yaml()
 		elif self.options.version :
 			self.version()
+
+		if self.options.namespace :
+			self.namespace()
+		elif self.options.service :
+			self.service()
 
 		elif self.options.create :
 			if self.options.environment :
