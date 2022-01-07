@@ -256,6 +256,15 @@ class Services(Common):
             self.service[self.name]['ports'] = obj
         return (self)
 
+    def dns(self, obj):
+        if not 'dns' in self.service[self.name].keys():
+            self.service[self.name]['dns'] = []
+        if type(obj) == str:
+            self.service[self.name]['dns'].append(obj)
+        elif type(obj) == list:
+            self.service[self.name]['dns'].extend(obj)
+        return (self)
+
     def expose(self, obj):
         if not 'expose' in self.service[self.name].keys():
             self.service[self.name]['expose'] = []

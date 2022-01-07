@@ -50,9 +50,7 @@ class Git():
 	def push(self):
 		self.cmd.append('push --progress')
 		return(self)
-	def reset(self):
-		self.cmd.append('reset HEAD --hard')
-		return(self)
+	
 	def branch(self, branchname=None, op=None):
 		os.chdir(self.workspace)
 		if branchname :
@@ -162,6 +160,9 @@ class GitReset(Git):
 	def mixed(self, ver):
 		self.command('reset', '--mixed %s --' % ver)
 		return(self)
+	def head(self):
+		self.command('reset','HEAD --hard')
+		return(self)	
 	def push(self, force = False):
 		if force :
 			self.command('push', 'origin --force') #--all
