@@ -74,11 +74,7 @@ class Git():
 		os.chdir(self.workspace)
 		self.cmd.append('tag ' + tagname)
 		return(self)
-	def checkout(self, revision=None):
-		os.chdir(self.workspace)
-		if revision :
-			self.cmd.append('checkout -f '+revision)
-		return(self)
+	
 	def command(self, cmd, argument):
 		self.cmd.append('%s %s' %(cmd, argument))
 	def debug(self):
@@ -144,6 +140,17 @@ class GitMerge(Git):
 		# self.cmd.append('push origin')
 		return(self)
 
+class GitCheckout(Git):
+	def __init__(self,workspace = None, logger = None):
+		super().__init__(workspace, logger)
+	def checkout(self, branch):
+		self.command('checkout', branch)
+		return(self)
+	def force(self, revision=None):
+		if revision :
+			self.command('checkout -f',revision)
+		return(self)
+
 class GitReset(Git):
 	def __init__(self,workspace = None, logger = None):
 		super().__init__(workspace, logger)
@@ -155,7 +162,7 @@ class GitReset(Git):
 		return(self)
 	def push(self, force = False):
 		if force :
-			self.command('push', 'origin --force --all')
+			self.command('push', 'origin --force') #--all
 		else:
 			self.command('push', 'origin')
 		return(self)

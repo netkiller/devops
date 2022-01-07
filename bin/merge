@@ -33,6 +33,7 @@ class Merge():
 		group = OptionGroup(self.parser, "Repository")
 		group.add_option('-c','--clone', dest='clone', help='clone branch', default=None, metavar='')
 		group.add_option('-r','--reset', dest='reset', help='Reset current HEAD to the specified state', default=None, metavar='8547cb94')
+		group.add_option('-b','--checkout', dest='checkout', help='checkout branch', default=None, metavar='master')
 		self.parser.add_option_group(group)
 
 		group = OptionGroup(self.parser, "Custom merge branch")
@@ -47,7 +48,7 @@ class Merge():
 		self.parser.add_option_group(group)
 
 		group = OptionGroup(self.parser, "Create branch")
-		group.add_option('-b','--branch', dest='branch', help='create custom branch', default=None, metavar='mybranch')
+		group.add_option('-B','--branch', dest='branch', help='create custom branch', default=None, metavar='mybranch')
 		group.add_option('-f','--feature', dest='feature', help='feature branch from development', default=None, metavar='feature/0001')
 		group.add_option('-H','--hotfix', dest='hotfix', help='hotfix branch from master', default=None, metavar='hotfix/0001')
 		self.parser.add_option_group(group)
@@ -110,9 +111,12 @@ class Merge():
 		git = GitMerge(self.project,self.logger)
 		git.source(source).target(target).merge().push()
 		git.execute()
+	def checkout(self, branch):
+		git = GitCheckout(self.project,self.logger)
+		git.checkout(branch).pull().execute()
 	def reset(self, ver):
 		git = GitReset(self.project,self.logger)
-		git.hard(ver).execute()
+		git.hard(ver).push(True).execute()
 	def main(self):
 		if self.options.workspace :
 			self.workspace = self.options.workspace
@@ -127,8 +131,11 @@ class Merge():
 
 		if self.options.clone :	
 			self.clone(self.options.clone)
-		elif self.options.reset :
+		if self.options.checkout :
+			self.checkout(self.options.checkout)
+		if self.options.reset :
 			self.reset(self.options.reset)
+		
 		if self.options.branch :
 			self.branch(self.options.branch)
 		elif self.options.feature :
