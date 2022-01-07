@@ -122,21 +122,23 @@ class GitMerge(Git):
 		super().__init__(workspace, logger)
 	def source(self, name):
 		self.src = name
-		self.cmd.append('fetch origin')
-		self.cmd.append('checkout "%s"' % name)
-		self.cmd.append('branch --show-current')
+		self.command('fetch','origin')
+		self.command('checkout', name)
+		self.command('branch', '--show-current')
+		self.pull()
 		return(self)
 	def target(self, name):
 		self.tgt = name
-		self.cmd.append('fetch origin')
-		self.cmd.append('checkout "%s"' % name)
-		self.cmd.append('branch --show-current')
+		self.command('fetch','origin')
+		self.command('checkout', name)
+		self.command('branch','--show-current')
+		self.pull()
 		return(self)
 	def merge(self):
-		self.cmd.append('merge --no-ff  "%s"' % self.src)
+		self.command('merge','--no-ff "%s"' % self.src)
 		return(self)
 	def push(self):
-		self.cmd.append('push --set-upstream origin %s' % self.tgt)
+		self.command('push','--set-upstream origin %s' % self.tgt)
 		# self.cmd.append('push origin')
 		return(self)
 
