@@ -23,20 +23,11 @@ mysql.host = 127.0.0.1
 mysql.user = root
 mysql.pwd  = root123
 mysql.port = 3306
-''')})
-
-
-# nginx.conf: |
-#     your config
-#     comes here
-#     like this
-#   other.conf: |
-#     second file
-#     contents
+''')}).from_file('passwd.conf', '/etc/passwd').from_file('group.conf','/etc/group')
 
 # print(len(config.dump()))
 # config.json()
-config.debug()
+# config.debug()
 
 print("=" * 40, "Pod", "=" * 40)
 
@@ -45,19 +36,20 @@ pod.metadata().name('busybox')
 pod.spec().containers().name('test').image('busybox').command([ "/bin/sh","-c","cat /etc/config/keys" ]).volumeMounts([{'name':'config-volume','mountPath':'/tmp/config'}])
 pod.spec().volumes().name('config-volume').configMap({'name':'test', 'items':[{'key':'redis.conf','path':'keys'}]})
 pod.debug()
+pod.json()
 
 print("=" * 40, "Compose", "=" * 40)
 compose = Compose('development')
 # compose.add(namespace)
-compose.add(config)
-# compose.add(pod)
+# compose.add(config)
+compose.add(pod)
 # compose.add(service)
 # compose.add(deployment)
-compose.debug()
+# compose.debug()
 # compose.json()
 # compose.save('/tmp/test.yaml')
-# compose.create()
-compose.replace()
+compose.create()
+# compose.replace()
 
 
 '''

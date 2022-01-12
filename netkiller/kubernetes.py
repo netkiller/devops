@@ -93,7 +93,7 @@ class Containers:
 
     def command(self, value):
         self.container['command'] = []
-        self.container['command'].append(value)
+        self.container['command'].extend(value)
         return self
 
     def args(self, value):
@@ -234,6 +234,16 @@ class ConfigMap(Common):
             self.config['data'] = value
         return(self)
 
+    def from_file(self, name, path):
+        with open(path, 'r') as file:
+            text = file.read()
+            self.data({name: pss(text)})
+        return(self)
+
+    def from_env_file(self, name, path):
+        self.from_file(name, path)
+        return(self)
+
     def dump(self):
         self.config.update(self.commons)
         return super().dump(self.config)
@@ -289,12 +299,9 @@ class Pod(Common):
         super().__init__()
         self.apiVersion()
         self.kind('Pod')
-        # self.metadata = Metadata()
         self.pod['metadata'] = {}
         self.pod['spec'] = {}
         self.pod['spec']['containers'] = []
-        # self.spec = Spec()
-
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
@@ -337,8 +344,11 @@ class Pod(Common):
         self.pod.update(self.commons)
         # self.pod['metadata'].update(self.metadata.metadata())
         self.pod['spec'].update(self.spec.spec)
-        self.pod['spec']['containers'].append(self.spec.containers.container)
+        # self.pod['spec']['containers'].append(self.spec.containers.container)
         return super().dump(self.pod)
+
+    def json(self):
+        print(self.pod)
 
     def debug(self):
         print(self.dump())
