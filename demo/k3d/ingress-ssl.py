@@ -34,14 +34,18 @@ deployment.spec().template().spec().containers().name('nginx').image(
     'nginx:latest').ports([{
         'containerPort': 80
     }])
-# deployment.debug()
-# # deployment.json()
+
+secret = Secret()
+secret.metadata().name('tls').namespace('development')
+secret.data({'tls.crt':' ','tls.key':' '})
+secret.type('kubernetes.io/tls')
+secret.debug()
 
 ingress = Ingress()
 ingress.apiVersion('networking.k8s.io/v1')
-ingress.metadata().name('nginx')
-ingress.metadata().namespace('development')
-ingress.metadata().annotations({'ingress.kubernetes.io/ssl-redirect': "false"})
+ingress.metadata().name('nginx').namespace('development')
+ingress.metadata().annotations({'ingress.kubernetes.io/ssl-redirect': "true"})
+ingress.spec().tls([{'hosts':['www.netkiller.cn'],'secretName':'tls'}])
 ingress.spec().rules([{
     # 'host': 'www.netkiller.cn',
     'http': {
@@ -60,27 +64,14 @@ ingress.spec().rules([{
     }
 }])
 # ingress.spec().rules([{'host':'article.netkiller.cn','http':{'paths': [{'path':'/($/.*)','backend':{'serviceName':'article', 'servicePort':80}}] }}])
-# ingress.debug()
+ingress.debug()
 
-print("=" * 40, "Compose", "=" * 40)
 compose = Compose('development')
 compose.add(namespace)
-# compose.add(staging)
-# compose.add(testing)
-# compose.add(account)
-# compose.add(config)
-
 compose.add(service)
 compose.add(deployment)
 compose.add(ingress)
-# compose.debug()
-# compose.yaml()
-# compose.save('/tmp/test.yaml')
-
-print("=" * 40, "Kubernetes", "=" * 40)
 
 kubernetes = Kubernetes()
 kubernetes.compose(compose)
-# kubernetes.debug()
-# print(kubernetes.dump())
 kubernetes.main()

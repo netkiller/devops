@@ -29,6 +29,8 @@ class Merge():
 		self.parser = OptionParser(usage)
 		self.parser.add_option('-w','--workspace', dest='workspace', help='workspace ~/workspace', default='None', metavar='~/workspace')
 		self.parser.add_option('-p','--project', dest='project', help='project directory', default=None, metavar='')
+		self.parser.add_option('-l','--logfile', dest='logfile', help='log file', default='/tmp/merge.log', metavar='/tmp/merge.log')
+		self.parser.add_option('-d', '--debug', dest='debug', action='store_true', help="debug")
 
 		group = OptionGroup(self.parser, "Repository")
 		group.add_option('-c','--clone', dest='clone', help='clone branch', default=None, metavar='')
@@ -52,9 +54,6 @@ class Merge():
 		group.add_option('-f','--feature', dest='feature', help='feature branch from development', default=None, metavar='feature/0001')
 		group.add_option('-H','--hotfix', dest='hotfix', help='hotfix branch from master', default=None, metavar='hotfix/0001')
 		self.parser.add_option_group(group)
-
-		self.parser.add_option('-l','--logfile', dest='logfile', help='log file', default='/tmp/merge.log', metavar='/tmp/merge.log')
-		self.parser.add_option('-d', '--debug', dest='debug', action='store_true', help="debug")
 
 		(self.options, self.args) = self.parser.parse_args()
 		
@@ -131,6 +130,7 @@ class Merge():
 
 		if self.options.clone :	
 			self.clone(self.options.clone)
+			exit()
 		if self.options.checkout :
 			self.checkout(self.options.checkout)
 		if self.options.reset :

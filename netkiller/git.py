@@ -43,8 +43,8 @@ class Git():
 		self.cmd.append('log')
 		return(self)
 	def pull(self):
-		if self.workspace :
-			os.chdir(self.workspace)
+		# if self.workspace :
+			# os.chdir(self.workspace)
 		self.cmd.append('pull --progress')
 		return(self)
 	def push(self):

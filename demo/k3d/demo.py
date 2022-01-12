@@ -4,6 +4,7 @@ module = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # print(module)
 sys.path.insert(0, module)
+
 from netkiller.kubernetes import *
 
 namespace = Namespace()
@@ -35,7 +36,6 @@ deployment.spec().template().spec().containers().name('nginx').image(
         'containerPort': 80
     }])
 # deployment.debug()
-# # deployment.json()
 
 ingress = Ingress()
 ingress.apiVersion('networking.k8s.io/v1')
@@ -59,17 +59,10 @@ ingress.spec().rules([{
         }]
     }
 }])
-# ingress.spec().rules([{'host':'article.netkiller.cn','http':{'paths': [{'path':'/($/.*)','backend':{'serviceName':'article', 'servicePort':80}}] }}])
 # ingress.debug()
 
-print("=" * 40, "Compose", "=" * 40)
 compose = Compose('development')
 compose.add(namespace)
-# compose.add(staging)
-# compose.add(testing)
-# compose.add(account)
-# compose.add(config)
-
 compose.add(service)
 compose.add(deployment)
 compose.add(ingress)
@@ -77,10 +70,6 @@ compose.add(ingress)
 # compose.yaml()
 # compose.save('/tmp/test.yaml')
 
-print("=" * 40, "Kubernetes", "=" * 40)
-
 kubernetes = Kubernetes()
 kubernetes.compose(compose)
-# kubernetes.debug()
-# print(kubernetes.dump())
 kubernetes.main()
