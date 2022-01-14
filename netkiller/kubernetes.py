@@ -7,7 +7,7 @@ import logging
 import logging.handlers
 from logging import basicConfig
 from ruamel.yaml import YAML
-from ruamel.yaml.scalarstring import PreservedScalarString as pss
+from ruamel.yaml.scalarstring import LiteralScalarString as lss, PreservedScalarString as pss
 from io import StringIO
 from base64 import b64encode
 
@@ -247,7 +247,7 @@ class ConfigMap(Common):
     def from_file(self, name, path):
         with open(path, 'r') as file:
             text = file.read()
-            self.data({name: pss(text)})
+            self.data({name: lss(text)})
         return(self)
 
     def from_env_file(self, name, path):
@@ -259,7 +259,7 @@ class ConfigMap(Common):
         return super().dump(self.config[self.name])
 
     def json(self):
-        print(self.config)
+        print(self.config[self.name])
 
     def debug(self):
         print(self.dump())
