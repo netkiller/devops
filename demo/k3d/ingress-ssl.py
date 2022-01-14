@@ -7,9 +7,9 @@ sys.path.insert(0, module)
 from netkiller.kubernetes import *
 
 namespace = Namespace()
-namespace.metadata.name('development')
-namespace.metadata.namespace('development')
-# namespace.debug()
+namespace.metadata().name('development')
+namespace.metadata().namespace('development')
+namespace.debug()
 
 service = Service()
 service.metadata().name('nginx')
@@ -34,12 +34,6 @@ deployment.spec().template().spec().containers().name('nginx').image(
     'nginx:latest').ports([{
         'containerPort': 80
     }])
-
-secret = Secret()
-secret.metadata().name('tls').namespace('development')
-secret.data({'tls.crt':' ','tls.key':' '})
-secret.type('kubernetes.io/tls')
-secret.debug()
 
 ingress = Ingress()
 ingress.apiVersion('networking.k8s.io/v1')
@@ -72,6 +66,6 @@ compose.add(service)
 compose.add(deployment)
 compose.add(ingress)
 
-kubernetes = Kubernetes()
-kubernetes.compose(compose)
-kubernetes.main()
+# kubernetes = Kubernetes()
+# kubernetes.compose(compose)
+# kubernetes.main()

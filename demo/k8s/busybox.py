@@ -17,13 +17,13 @@ config.data({'redis.conf':pss(
     'requirepass 123456\n'
     )
     })
-config.data({'dbhost':'localhost','dbport':'3306','dbuser':'root','dbpass':'123456'}).data({'mysql.cnf':pss('''\
-mysql.db = devops
-mysql.host = 127.0.0.1
-mysql.user = root
-mysql.pwd  = root123
-mysql.port = 3306
-''')}).from_file('passwd.conf', '/etc/passwd').from_file('group.conf','/etc/group')
+# config.data({'dbhost':'localhost','dbport':'3306','dbuser':'root','dbpass':'123456'}).data({'mysql.cnf':pss('''\
+# mysql.db = devops
+# mysql.host = 127.0.0.1
+# mysql.user = root
+# mysql.pwd  = root123
+# mysql.port = 3306
+# ''')}).from_file('passwd.conf', '/etc/passwd').from_file('group.conf','/etc/group')
 
 # print(len(config.dump()))
 # config.json()
@@ -31,66 +31,31 @@ mysql.port = 3306
 
 print("=" * 40, "Pod", "=" * 40)
 
+# pod = Pod()
+# pod.metadata().name('busybox')
+# pod.spec().containers().name('test').image('busybox').command([ "/bin/sh","-c","cat /tmp/config/redis.conf" ]).volumeMounts([{'name':'config-volume','mountPath':'/tmp/config/redis.conf','subPath':'redis.conf'}])
+# pod.spec().volumes().name('config-volume').configMap({'name':'test'}) # , 'items':[{'key':'redis.conf','path':'keys'}]
+
 pod = Pod()
 pod.metadata().name('busybox')
-pod.spec().containers().name('test').image('busybox').command([ "/bin/sh","-c","cat /etc/config/keys" ]).volumeMounts([{'name':'config-volume','mountPath':'/tmp/config'}])
-pod.spec().volumes().name('config-volume').configMap({'name':'test', 'items':[{'key':'redis.conf','path':'keys'}]})
-pod.debug()
-pod.json()
+pod.spec().containers().name('test').image('busybox').command([ "/bin/sh","-c","env" ]).env([{'name':'DBHOST','valueFrom':{'configMapKeyRef':{'name':'test','key':'host'}}}])
+
+# pod.debug()
+# pod.json()
 
 print("=" * 40, "Compose", "=" * 40)
 compose = Compose('development')
 # compose.add(namespace)
-# compose.add(config)
+compose.add(config)
 compose.add(pod)
 # compose.add(service)
 # compose.add(deployment)
 # compose.debug()
 # compose.json()
 # compose.save('/tmp/test.yaml')
+compose.delete()
 compose.create()
 # compose.replace()
 
-
-'''
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: name-of-your-configmap
-data:
-  your-file.json: |
-    {key1: value1, key2: value2, keyN: valueN}
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: name-of-your-configmap-2
-data:
-  your-file.txt: |
-    key1: value1
-    key2: value2
-    keyN: valueN
-
-
-apiVersion: v1
-kind: Pod
-metadata:
-  name: dapi-test-pod
-spec:
-  containers:
-    - name: test-container
-      image: k8s.gcr.io/busybox
-      command: [ "/bin/sh","-c","cat /etc/config/keys" ]
-      volumeMounts:
-      - name: config-volume
-        mountPath: /etc/config
-  volumes:
-    - name: config-volume
-      configMap:
-        name: name-of-your-configmap
-        items:
-        - key: your-file.json
-          path: keys
-restartPolicy: Never    
-
-'''
+print("=" * 40, "Busybox", "=" * 40)
+os.system("sleep 10 && kubectl logs busybox")

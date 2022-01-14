@@ -9,6 +9,7 @@ from logging import basicConfig
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import PreservedScalarString as pss
 from io import StringIO
+from base64 import b64encode
 
 
 class Logging():
@@ -39,6 +40,13 @@ class Common():
         output = stream.getvalue()
         stream.close()
         return output
+
+    def save(self, filename, text=''):
+        path = os.path.expanduser(filename)
+        # if os.path.exists(path):
+        # os.remove(path)
+        with open(path, 'w') as file:
+            file.write(text)
 
 
 class Metadata:
@@ -113,6 +121,18 @@ class Containers:
         self.container['ports'] = value
         return self
 
+    def stdin(self, value=True):
+        self.container['stdin'] = value
+        return self
+
+    def env(self, value):
+        self.container['env'] = value
+        return self
+
+    def resources(self, value):
+        self.container['resources'] = value
+        return self
+
 
 class Volumes(Common):
     volumes = {}
@@ -134,9 +154,7 @@ class Spec:
 
     def __init__(self):
         if not 'containers' in self.spec:
-            # self.spec = {}
             self.spec['containers'] = []
-        # self.containers = Containers()
 
     def restartPolicy(self, value):
         self.spec['restartPolicy'] = value
@@ -154,19 +172,19 @@ class Spec:
 
     class containers(Containers):
         def __init__(self):
+            super().__init__()
             Spec.spec['containers'] = []
 
         def __del__(self):
             Spec.spec['containers'].append(self.container)
-            # print(self.containers.container)
-            # print(self.spec)
 
     class volumes(Volumes):
         def __init__(self):
-            self.spec['volumes'] = []
+            super().__init__()
+            Spec.spec['volumes'] = []
 
         def __del__(self):
-            self.spec['volumes'].append(self.volumes)
+            Spec.spec['volumes'].append(self.volumes)
 
 
 class Namespace(Common):
@@ -174,64 +192,56 @@ class Namespace(Common):
 
     def __init__(self):
         super().__init__()
-        # if 'apiVersion' in self.namespace :
         self.apiVersion()
         self.kind('Namespace')
         # self.namespace = {}
-        # self.namespace['apiVersion'] = 'v1'
-        # self.namespace['kind'] = 'Namespace'
         self.namespace['metadata'] = {}
-        # print('ns', self.namespace)
-        self.metadata = Metadata()
 
-    def __del__(self):
-        self.namespace = {}
-    # def test(self, value):
-        # self.namespace['test'] = value
-    # class metadata(Metadata):
-    # 	def __init__(self):
-    # 		# super().__init__()
-    # 		print('Meta:', Namespace.namespace)
-    # 		# if not 'metadata' in Namespace.namespace :
-    # 			# Namespace.namespace['metadata'] = {}
-    # 	def __del__(self):
-    # 		Namespace.namespace['metadata'].update(self.metadata())
-    # 		# self.metadata = {}
-    # 		print('del NS', Namespace.namespace)
-    # def compose(self):
-        # return(self.namespace)
+    class metadata(Metadata):
+        def __init__(self):
+            super().__init__()
+            if not 'metadata' in Namespace.namespace:
+                Namespace.namespace['metadata'] = {}
+
+        def __del__(self):
+            Namespace.namespace['metadata'].update(self.metadata())
 
     def dump(self):
         self.namespace.update(self.commons)
-        self.namespace['metadata'].update(self.metadata.metadata())
-        return self.yaml.dump(self.namespace)
+        return super().dump(self.namespace)
 
     def debug(self):
         print(self.dump())
 
 
 class ConfigMap(Common):
+    name = ''
     config = {}
 
-    def __init__(self):
+    def __init__(self, name):
         super().__init__()
         self.apiVersion()
         self.kind('ConfigMap')
-        ConfigMap.config = {}
+
+        ConfigMap.name = name
+        self.name = name
+        ConfigMap.config[self.name] = {}
+        self.config[self.name]['metadata'] = {}
 
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
-            ConfigMap.config['metadata'] = {}
+            # ConfigMap.config[ConfigMap.name]['metadata'] = {}
 
         def __del__(self):
-            ConfigMap.config['metadata'].update(self.metadata())
+            ConfigMap.config[ConfigMap.name]['metadata'].update(
+                self.metadata())
 
     def data(self, value):
-        if 'data' in self.config:
-            self.config['data'].update(value)
+        if 'data' in self.config[self.name]:
+            self.config[self.name]['data'].update(value)
         else:
-            self.config['data'] = value
+            self.config[self.name]['data'] = value
         return(self)
 
     def from_file(self, name, path):
@@ -245,8 +255,8 @@ class ConfigMap(Common):
         return(self)
 
     def dump(self):
-        self.config.update(self.commons)
-        return super().dump(self.config)
+        self.config[self.name].update(self.commons)
+        return super().dump(self.config[self.name])
 
     def json(self):
         print(self.config)
@@ -254,15 +264,32 @@ class ConfigMap(Common):
     def debug(self):
         print(self.dump())
 
+    def save(self, filename=None):
+        if not filename:
+            filename = self.name + '.yaml'
+        super().save(filename, self.dump())
+
 
 class Secret(ConfigMap):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name):
+        super().__init__(name)
         self.apiVersion()
         self.kind('Secret')
 
     def type(self, value):
         self.config['type'] = value
+
+    def key(self, path):
+        with open(path, 'r') as file:
+            text = file.read()
+            self.data({'tls.key': pss(b64encode(text.encode()).decode())})
+        return(self)
+
+    def cert(self, path):
+        with open(path, 'r') as file:
+            text = file.read()
+            self.data({'tls.crt': pss(b64encode(text.encode()).decode())})
+        return(self)
 
 
 class ServiceAccount(Common):
@@ -302,6 +329,7 @@ class Pod(Common):
         self.pod['metadata'] = {}
         self.pod['spec'] = {}
         self.pod['spec']['containers'] = []
+
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
@@ -418,10 +446,10 @@ class Deployment(Common):
 
     def __init__(self):
         super().__init__()
-        # self.apiVersion('apps/v1')
-        # self.kind('Deployment')
-        self.deployment['apiVersion'] = 'apps/v1'
-        self.deployment['kind'] = 'Deployment'
+        self.apiVersion('apps/v1')
+        self.kind('Deployment')
+        # self.deployment['apiVersion'] = 'apps/v1'
+        # self.deployment['kind'] = 'Deployment'
 
     class metadata(Metadata):
         def __init__(self):
@@ -430,7 +458,6 @@ class Deployment(Common):
 
         def __del__(self):
             Deployment.deployment['metadata'].update(self.metadata())
-            # print(Deployment.deployment)
 
     class spec:
         def __init__(self):
@@ -462,23 +489,35 @@ class Deployment(Common):
                     Deployment.deployment['spec']['template']['metadata'].update(
                         self.metadata())
 
-            class spec:
+            class spec(Spec):
                 def __init__(self):
-                    Deployment.deployment['spec']['template']['spec'] = {}
+                    if not 'spec' in Deployment.deployment['spec']['template']:
+                        Deployment.deployment['spec']['template']['spec'] = {}
 
                 class containers(Containers):
                     def __init__(self):
                         super().__init__()
                         Deployment.deployment['spec']['template']['spec']['containers'] = [
                         ]
-                        pass
 
                     def __del__(self):
                         Deployment.deployment['spec']['template']['spec']['containers'].append(
                             self.container)
 
+                class volumes(Volumes):
+                    def __init__(self):
+                        super().__init__()
+                        Deployment.deployment['spec']['template']['spec']['volumes'] = [
+                        ]
+
+                    def __del__(self):
+                        Deployment.deployment['spec']['template']['spec']['volumes'].append(
+                            self.volumes)
+
+                # def __del__(self):
+                    # print('debug', self)
     def dump(self):
-        # self.deployment.update(self.commons)
+        self.deployment.update(self.commons)
         return super().dump(self.deployment)
 
     def debug(self):
@@ -553,7 +592,9 @@ class Compose(Logging):
     def yaml(self):
         return('---\n'.join(self.compose))
 
-    def save(self, path):
+    def save(self, path=None):
+        if not path:
+            path = self.environment + '.yaml'
         path = os.path.expanduser(path)
         # if os.path.exists(path):
         # os.remove(path)
@@ -561,11 +602,11 @@ class Compose(Logging):
             file.write('---\n'.join(self.compose))
 
     def execute(self, command, text):
-        shell = """cat <<EOF | kubectl {command} -f -
+        shell = """cat <<'EOF' | kubectl {command} -f -
 {stdin}
 EOF""".format(command=command, stdin=text)
         self.logging.debug(shell)
-        print(shell)
+        # print(shell)
         os.system(shell)
 
     def create(self):
