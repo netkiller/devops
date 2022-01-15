@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from posixpath import split
 import sys
 import json
 from optparse import OptionParser, OptionGroup
@@ -250,8 +251,14 @@ class ConfigMap(Common):
             self.data({name: lss(text)})
         return(self)
 
-    def from_env_file(self, name, path):
-        self.from_file(name, path)
+    def from_env_file(self, path):
+        env = {}
+        with open(path, 'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                key,value = line.split('=')
+                env[key] = value.replace('\n','')
+        self.data(env)
         return(self)
 
     def dump(self):
