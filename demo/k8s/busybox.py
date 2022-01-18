@@ -3,7 +3,7 @@ sys.path.insert(0, '/Users/neo/workspace/devops')
 from netkiller.kubernetes import *
 
 print("=" * 40, "ConfigMap", "=" * 40)
-config = ConfigMap()
+config = ConfigMap('test')
 config.apiVersion('v1')
 config.metadata().name('test').namespace('default')
 config.data({'host':'localhost','port':'3306','user':'root','pass':'123456'})
@@ -36,9 +36,14 @@ print("=" * 40, "Pod", "=" * 40)
 # pod.spec().containers().name('test').image('busybox').command([ "/bin/sh","-c","cat /tmp/config/redis.conf" ]).volumeMounts([{'name':'config-volume','mountPath':'/tmp/config/redis.conf','subPath':'redis.conf'}])
 # pod.spec().volumes().name('config-volume').configMap({'name':'test'}) # , 'items':[{'key':'redis.conf','path':'keys'}]
 
+# pod = Pod()
+# pod.metadata().name('busybox')
+# pod.spec().containers().name('test').image('busybox').command([ "/bin/sh","-c","env" ]).env([{'name':'DBHOST','valueFrom':{'configMapKeyRef':{'name':'test','key':'host'}}}])
+
 pod = Pod()
 pod.metadata().name('busybox')
-pod.spec().containers().name('test').image('busybox').command([ "/bin/sh","-c","env" ]).env([{'name':'DBHOST','valueFrom':{'configMapKeyRef':{'name':'test','key':'host'}}}])
+pod.spec().containers().name('test').image('busybox').command([ "/bin/sh","-c","echo Helloworld!!!" ])
+
 
 # pod.debug()
 # pod.json()
@@ -48,9 +53,7 @@ compose = Compose('development')
 # compose.add(namespace)
 compose.add(config)
 compose.add(pod)
-# compose.add(service)
-# compose.add(deployment)
-# compose.debug()
+compose.debug()
 # compose.json()
 # compose.save('/tmp/test.yaml')
 compose.delete()

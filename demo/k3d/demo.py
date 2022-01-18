@@ -7,6 +7,9 @@ sys.path.insert(0, module)
 
 from netkiller.kubernetes import *
 
+
+# exit()
+
 namespace = Namespace()
 namespace.metadata.name('development')
 namespace.metadata.namespace('development')

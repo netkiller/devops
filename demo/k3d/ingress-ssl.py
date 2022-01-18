@@ -1,4 +1,3 @@
-from netkiller.kubernetes import *
 import os
 import sys
 
@@ -6,17 +5,18 @@ module = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # print(module)
 sys.path.insert(0, module)
+from netkiller.kubernetes import *
 
 namespace = Namespace()
 namespace.metadata().name('development')
 namespace.metadata().namespace('development')
-namespace.debug()
+# namespace.debug()
 
 secret = Secret('tls')
 secret.metadata().name('tls').namespace('development')
 secret.key('ingress.key').cert('ingress.crt')
 secret.type('kubernetes.io/tls')
-secret.debug()
+# secret.debug()
 
 service = Service()
 service.metadata().name('nginx')
