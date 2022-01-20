@@ -134,6 +134,10 @@ class Containers:
         self.container['resources'] = value
         return self
 
+    def args(self, value):
+        self.container['args'] = value
+        return self
+
 
 class Volumes(Common):
     volumes = {}
@@ -152,8 +156,9 @@ class Volumes(Common):
     def hostPath(self, value):
         self.volumes['hostPath'] = value
         return self
+
     def persistentVolumeClaim(self, claimName):
-        self.volumes['persistentVolumeClaim'] = {'claimName' : claimName}
+        self.volumes['persistentVolumeClaim'] = {'claimName': claimName}
         return self
 
 
@@ -346,29 +351,38 @@ class PersistentVolume(Common):
         def __init__(self):
             super().__init__()
             if not 'metadata' in PersistentVolume.persistentVolume[PersistentVolume.name]:
-                PersistentVolume.persistentVolume[PersistentVolume.name]['metadata'] = {}
+                PersistentVolume.persistentVolume[PersistentVolume.name]['metadata'] = {
+                }
 
         def __del__(self):
             PersistentVolume.persistentVolume[PersistentVolume.name]['metadata'].update(
                 self.metadata())
+
     class spec(Spec):
         def __init__(self):
             super().__init__()
             if not 'spec' in PersistentVolume.persistentVolume[PersistentVolume.name]:
-                PersistentVolume.persistentVolume[PersistentVolume.name]['spec'] = {}
+                PersistentVolume.persistentVolume[PersistentVolume.name]['spec'] = {
+                }
+
         def storageClassName(self, value):
             PersistentVolume.persistentVolume[PersistentVolume.name]['spec']['storageClassName'] = value
             return(self)
+
         def capacity(self, value):
             PersistentVolume.persistentVolume[PersistentVolume.name]['spec']['capacity'] = value
             return(self)
+
         def accessModes(self, value):
-            PersistentVolume.persistentVolume[PersistentVolume.name]['spec']['accessModes'] = []
+            PersistentVolume.persistentVolume[PersistentVolume.name]['spec']['accessModes'] = [
+            ]
             PersistentVolume.persistentVolume[PersistentVolume.name]['spec']['accessModes'] = value
             return(self)
+
         def hostPath(self, value):
             PersistentVolume.persistentVolume[PersistentVolume.name]['spec']['hostPath'] = value
             return(self)
+
     def dump(self):
         self.persistentVolume[self.name].update(self.commons)
         # self.pod['metadata'].update(self.metadata.metadata())
@@ -382,41 +396,55 @@ class PersistentVolume(Common):
     def debug(self):
         print(self.dump())
 
+
 class PersistentVolumeClaim(Common):
     persistentVolumeClaim = {}
+
     def __init__(self, name):
         super().__init__()
         self.apiVersion()
         self.kind('PersistentVolumeClaim')
         PersistentVolumeClaim.name = name
-        PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name] = {}
+        PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name] = {
+        }
+
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
             if not 'metadata' in PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]:
-                PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['metadata'] = {}
+                PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['metadata'] = {
+                }
 
         def __del__(self):
             PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['metadata'].update(
                 self.metadata())
+
     class spec(Spec):
         def __init__(self):
             super().__init__()
             if not 'spec' in PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]:
-                PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec'] = {}
+                PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec'] = {
+                }
+
         def storageClassName(self, value):
-            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec']['storageClassName'] = value
+            PersistentVolumeClaim.persistentVolumeClaim[
+                PersistentVolumeClaim.name]['spec']['storageClassName'] = value
             return(self)
+
         def accessModes(self, value):
-            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec']['accessModes'] = []
+            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec']['accessModes'] = [
+            ]
             PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec']['accessModes'] = value
             return(self)
+
         def hostPath(self, value):
             PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec']['hostPath'] = value
             return(self)
+
         def resources(self, value):
             PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec']['resources'] = value
             return(self)
+
     def dump(self):
         self.persistentVolumeClaim[self.name].update(self.commons)
         # self.pod['metadata'].update(self.metadata.metadata())
@@ -428,7 +456,8 @@ class PersistentVolumeClaim(Common):
         print(self.persistentVolume)
 
     def debug(self):
-        print(self.dump())    
+        print(self.dump())
+
 
 class Pod(Common):
     pod = {}
@@ -582,10 +611,12 @@ class Deployment(Common):
         def replicas(self, value):
             Deployment.deployment['spec']['replicas'] = value
             return self
+
         def serviceName(self, value):
             # self.spec['serviceName'] = value
             Deployment.deployment['spec']['serviceName'] = value
             return self
+
         class template():
             def __init__(self):
                 # super().__init__()
@@ -607,8 +638,13 @@ class Deployment(Common):
                 def __init__(self):
                     if not 'spec' in Deployment.deployment['spec']['template']:
                         Deployment.deployment['spec']['template']['spec'] = {}
+
                 def securityContext(self, value):
                     Deployment.deployment['spec']['template']['spec']['securityContext'] = value
+
+                def hostAliases(self, value):
+                    Deployment.deployment['spec']['template']['spec']['hostAliases'] = value
+
                 class initContainers(Containers):
                     def __init__(self):
                         super().__init__()
@@ -618,6 +654,7 @@ class Deployment(Common):
                     def __del__(self):
                         Deployment.deployment['spec']['template']['spec']['initContainers'].append(
                             self.container)
+
                 class containers(Containers):
                     def __init__(self):
                         super().__init__()
@@ -632,7 +669,8 @@ class Deployment(Common):
                     def __init__(self):
                         super().__init__()
                         if not 'volumes' in Deployment.deployment['spec']['template']['spec']:
-                            Deployment.deployment['spec']['template']['spec']['volumes'] = []
+                            Deployment.deployment['spec']['template']['spec']['volumes'] = [
+                            ]
 
                     def __del__(self):
                         Deployment.deployment['spec']['template']['spec']['volumes'].append(
@@ -699,12 +737,15 @@ class Ingress(Common):
     def json(self):
         print(self.ingress)
 
+
 class IngressRouteTCP(Ingress):
     ingress = {}
+
     def __init__(self):
         super().__init__()
         self.apiVersion('traefik.containo.us/v1alpha1')
         self.kind('IngressRouteTCP')
+
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
@@ -713,11 +754,14 @@ class IngressRouteTCP(Ingress):
 
         def __del__(self):
             IngressRouteTCP.ingress['metadata'].update(self.metadata())
+
     class spec:
         def entryPoints(self, value):
             IngressRouteTCP.ingress['entryPoints'] = value
+
         def routes(self, value):
             IngressRouteTCP.ingress['routes'] = value
+
 
 class Compose(Logging):
     def __init__(self, environment):
