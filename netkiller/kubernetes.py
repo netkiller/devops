@@ -103,6 +103,10 @@ class Containers:
     def command(self, value):
         self.container['command'] = []
         self.container['command'].extend(value)
+        # self.container['command'] = ""
+        # cmd = "[\"%s\"]" % '","'.join(value)
+        # self.container['command'] = cmd
+        # self.container['command'] = value 
         return self
 
     def args(self, value):
@@ -134,9 +138,9 @@ class Containers:
         self.container['resources'] = value
         return self
 
-    def args(self, value):
-        self.container['args'] = value
-        return self
+    # def args(self, value):
+    #     self.container['args'] = value
+    #     return self
 
 
 class Volumes(Common):
