@@ -45,3 +45,4 @@ backup.log
 lrsync.log
 dump.log
 demo/redis-master-slave.yaml
+demo/k8s/ensd

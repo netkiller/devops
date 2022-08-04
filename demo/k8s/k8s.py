@@ -6,10 +6,7 @@ sys.path.insert(0,module)
 
 from netkiller.kubernetes import *
 
-print("=" * 40, "Namespace", "=" * 40)
-namespace = Namespace()
-namespace.metadata.namespace('production')
-namespace.debug()
+
 
 # exit()
 
