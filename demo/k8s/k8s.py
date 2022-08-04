@@ -1,14 +1,3 @@
-import uuid
-class test:
-    aaa = uuid.uuid4().hex
-    def __init__(self):
-        # print(uuid.uuid4().hex)
-        print(self.aaa)
-        pass
-
-for i in range(10) :
-    aa = test()
-
 import os,sys
 
 module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -17,7 +6,10 @@ sys.path.insert(0,module)
 
 from netkiller.kubernetes import *
 
-
+print("=" * 40, "Namespace", "=" * 40)
+namespace = Namespace()
+namespace.metadata.namespace('production')
+namespace.debug()
 
 # exit()
 
@@ -63,7 +55,19 @@ pod.spec().containers().ports([{'containerPort':'6379'}])
 pod.spec().volumes().name('config-volume').configMap({'name':'special-config', 'items':[{'key':'cache','path':'/mnt/cache'}]})
 pod.debug()
 
-
+print("=" * 40, "Service", "=" * 40)
+service = Service()
+service.metadata().name('web')
+service.metadata().namespace('stage')
+service.spec().selector({'app': 'nginx'})
+service.spec().type('NodePort')
+service.spec().ports([{'name':'http','protocol':'TCP','port':'80','targetPort':'80'}])
+service.spec().externalIPs(['172.16.0.250'])
+service.spec().clusterIP('172.168.0.254')
+service.status().loadBalancer({
+    'ingress': [{'ip': '127.18.10.12'}]
+    })
+service.debug()
 
 print("=" * 40, "Service1", "=" * 40)
 service1 = Service()

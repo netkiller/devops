@@ -7,6 +7,7 @@ from optparse import OptionParser, OptionGroup
 import logging
 import logging.handlers
 from logging import basicConfig
+from numpy import array
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString as lss, PreservedScalarString as pss
 from io import StringIO
@@ -207,7 +208,10 @@ class Namespace(Common):
         super().__init__()
         self.apiVersion()
         self.kind('Namespace')
-        self.components = uuid.uuid4().hex
+        if not components :
+            self.components = uuid.uuid4().hex
+        else:
+            self.components = components
         Namespace.components  = self.components
         self.namespace[self.components] = {}
         self.namespace[self.components]['metadata'] = {}
@@ -219,7 +223,8 @@ class Namespace(Common):
                 # Namespace.namespace['metadata'] = {}
         def __del__(self):
             Namespace.namespace[Namespace.components]['metadata'].update(self.metadata())
-
+    def name(self):
+        return self.namespace[self.components]['metadata']['name']
     def dump(self):
         self.namespace[self.components].update(self.commons)
         return super().dump(self.namespace[self.components])
@@ -540,18 +545,16 @@ class Service(Common):
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
-            print(Service.components)
             if not 'metadata' in Service.service[Service.components]:
                 Service.service[Service.components]['metadata'] = {}
-
         def __del__(self):
-            print(Service.components)
             Service.service[Service.components]['metadata'].update(self.metadata())
 
     class spec:
         def __init__(self):
             if not 'spec' in Service.service[Service.components]:
                 Service.service[Service.components]['spec'] = {}
+                Service.service[Service.components]['spec']['ports'] = [] 
 
         def selector(self, value):
             Service.service[Service.components]['spec']['selector'] = value
@@ -562,7 +565,12 @@ class Service(Common):
             return self
 
         def ports(self, value):
-            Service.service[Service.components]['spec']['ports'] = value
+            if type(value) == dict :
+                Service.service[Service.components]['spec']['ports'].append(value)
+            elif type(value) == list :
+                Service.service[Service.components]['spec']['ports'] = value
+                # for v in value :
+                    # Service.service[Service.components]['spec']['ports'].append(v)
             return self
 
         def externalIPs(self, value):
