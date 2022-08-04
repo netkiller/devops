@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
+import os,uuid
 from posixpath import split
 import sys
 import json
@@ -200,29 +200,29 @@ class Spec:
 
 
 class Namespace(Common):
-    name = None
+    components = None
     namespace = {}
 
-    def __init__(self, name):
+    def __init__(self, components = None):
         super().__init__()
         self.apiVersion()
         self.kind('Namespace')
-        Namespace.name  = name
-        self.name = name
-        self.namespace[self.name] = {}
-        self.namespace[self.name]['metadata'] = {}
+        self.components = uuid.uuid4().hex
+        Namespace.components  = self.components
+        self.namespace[self.components] = {}
+        self.namespace[self.components]['metadata'] = {}
 
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
-            if not 'metadata' in Namespace.namespace:
-                Namespace.namespace['metadata'] = {}
+            # if not 'metadata' in Namespace.namespace:
+                # Namespace.namespace['metadata'] = {}
         def __del__(self):
-            Namespace.namespace[Namespace.name]['metadata'].update(self.metadata())
+            Namespace.namespace[Namespace.components]['metadata'].update(self.metadata())
 
     def dump(self):
-        self.namespace[self.name].update(self.commons)
-        return super().dump(self.namespace[self.name])
+        self.namespace[self.components].update(self.commons)
+        return super().dump(self.namespace[self.components])
 
     def debug(self):
         print(self.dump())
@@ -526,59 +526,65 @@ class Pod(Common):
 
 
 class Service(Common):
+    components = None
     service = {}
 
     def __init__(self):
         super().__init__()
         self.apiVersion()
         self.kind('Service')
+        self.components = uuid.uuid4().hex
+        self.service[self.components] = {}
+        Service.components = self.components
 
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
-            if not 'metadata' in Service.service:
-                Service.service['metadata'] = {}
+            print(Service.components)
+            if not 'metadata' in Service.service[Service.components]:
+                Service.service[Service.components]['metadata'] = {}
 
         def __del__(self):
-            Service.service['metadata'].update(self.metadata())
+            print(Service.components)
+            Service.service[Service.components]['metadata'].update(self.metadata())
 
     class spec:
         def __init__(self):
-            if not 'spec' in Service.service:
-                Service.service['spec'] = {}
+            if not 'spec' in Service.service[Service.components]:
+                Service.service[Service.components]['spec'] = {}
 
         def selector(self, value):
-            Service.service['spec']['selector'] = value
+            Service.service[Service.components]['spec']['selector'] = value
             return self
 
         def type(self, value):
-            Service.service['spec']['type'] = value
+            Service.service[Service.components]['spec']['type'] = value
             return self
 
         def ports(self, value):
-            Service.service['spec']['ports'] = value
+            Service.service[Service.components]['spec']['ports'] = value
             return self
 
         def externalIPs(self, value):
-            Service.service['spec']['externalIPs'] = value
+            Service.service[Service.components]['spec']['externalIPs'] = value
             return self
 
         def clusterIP(self, value):
-            Service.service['spec']['clusterIP'] = value
+            Service.service[Service.components]['spec']['clusterIP'] = value
             return self
 
     class status:
         def __init__(self):
-            if not 'status' in Service.service:
-                Service.service['status'] = {}
+            if not 'status' in Service.service[Service.components]:
+                Service.service[Service.components]['status'] = {}
 
         def loadBalancer(self, value):
-            Service.service['status']['loadBalancer'] = value
+            Service.service[Service.components]['status']['loadBalancer'] = value
             return self
 
     def dump(self):
-        self.service.update(self.commons)
-        return super().dump(self.service)
+        self.service[self.components].update(self.commons)
+        return super().dump(self.service[self.components])
 
     def debug(self):
         print(self.dump())
