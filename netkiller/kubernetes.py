@@ -19,6 +19,19 @@ class Logging():
 
         self.logging = logging.getLogger()
 
+class Define():
+    class restartPolicy():
+        Always = 'Always'
+    class strategy():
+        RollingUpdate = 'RollingUpdate'
+    class containers():
+        class imagePullPolicy():
+            IfNotPresent = 'IfNotPresent'
+    class dnsPolicy():
+        ClusterFirst = 'ClusterFirst'
+    class Service():
+        ClusterIP = 'ClusterIP'
+        
 
 class Common():
     commons = {}
@@ -104,10 +117,6 @@ class Containers:
     def command(self, value):
         self.container['command'] = []
         self.container['command'].extend(value)
-        # self.container['command'] = ""
-        # cmd = "[\"%s\"]" % '","'.join(value)
-        # self.container['command'] = cmd
-        # self.container['command'] = value 
         return self
 
     def args(self, value):
@@ -139,10 +148,12 @@ class Containers:
         self.container['resources'] = value
         return self
 
-    # def args(self, value):
-    #     self.container['args'] = value
-    #     return self
-
+    def livenessProbe(self, value):
+        self.container['livenessProbe'] = value
+        return self
+    def readinessProbe(self, value):
+        self.container['readinessProbe'] = value
+        return self
 
 class Volumes(Common):
     volumes = {}
@@ -599,107 +610,112 @@ class Service(Common):
 
 
 class Deployment(Common):
-    name = None
+    components = None
     deployment = {}
 
-    def __init__(self, name):
+    def __init__(self, components = None):
         super().__init__()
         self.apiVersion('apps/v1')
         self.kind('Deployment')
-        self.name = name
-        Deployment.name = name
-        self.deployment[self.name] = {}
-        self.deployment[self.name]['metadata'] = {}
+        if not components :
+            self.components = uuid.uuid4().hex
+        else:
+            self.components = components
+
+        Deployment.components = self.components
+        self.deployment[self.components] = {}
+        self.deployment[self.components]['metadata'] = {}
         # self.deployment['apiVersion'] = 'apps/v1'
         # self.deployment['kind'] = 'Deployment'
 
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
-            if not 'metadata' in Deployment.deployment[Deployment.name] :
-                Deployment.deployment[Deployment.name]['metadata'] = {}
+            if not 'metadata' in Deployment.deployment[Deployment.components] :
+                Deployment.deployment[Deployment.components]['metadata'] = {}
 
         def __del__(self):
-            Deployment.deployment[Deployment.name]['metadata'].update(self.metadata())
+            Deployment.deployment[Deployment.components]['metadata'].update(self.metadata())
 
     class spec(Spec):
         def __init__(self):
-            if not 'spec' in Deployment.deployment[Deployment.name]:
-                Deployment.deployment[Deployment.name]['spec'] = {}
+            if not 'spec' in Deployment.deployment[Deployment.components]:
+                Deployment.deployment[Deployment.components]['spec'] = {}
 
         def selector(self, value):
-            Deployment.deployment[Deployment.name]['spec']['selector'] = value
+            Deployment.deployment[Deployment.components]['spec']['selector'] = value
             return self
 
         def replicas(self, value):
-            Deployment.deployment[Deployment.name]['spec']['replicas'] = value
+            Deployment.deployment[Deployment.components]['spec']['replicas'] = value
             return self
 
         def serviceName(self, value):
             # self.spec['serviceName'] = value
-            Deployment.deployment[Deployment.name]['spec']['serviceName'] = value
+            Deployment.deployment[Deployment.components]['spec']['serviceName'] = value
             return self
 
         class template():
             def __init__(self):
                 # super().__init__()
-                if not 'template' in Deployment.deployment[Deployment.name]['spec']:
-                    Deployment.deployment[Deployment.name]['spec']['template'] = {}
+                if not 'template' in Deployment.deployment[Deployment.components]['spec']:
+                    Deployment.deployment[Deployment.components]['spec']['template'] = {}
 
             class metadata(Metadata):
                 def __init__(self):
                     super().__init__()
-                    Deployment.deployment[Deployment.name]['spec']['template']['metadata'] = {}
+                    Deployment.deployment[Deployment.components]['spec']['template']['metadata'] = {}
 
                 def __del__(self):
-                    Deployment.deployment[Deployment.name]['spec']['template']['metadata'].update(
+                    Deployment.deployment[Deployment.components]['spec']['template']['metadata'].update(
                         self.metadata())
 
             class spec(Spec):
                 def __init__(self):
-                    if not 'spec' in Deployment.deployment[Deployment.name]['spec']['template']:
-                        Deployment.deployment[Deployment.name]['spec']['template']['spec'] = {}
+                    if not 'spec' in Deployment.deployment[Deployment.components]['spec']['template']:
+                        Deployment.deployment[Deployment.components]['spec']['template']['spec'] = {}
 
                 def securityContext(self, value):
-                    Deployment.deployment[Deployment.name]['spec']['template']['spec']['securityContext'] = value
+                    Deployment.deployment[Deployment.components]['spec']['template']['spec']['securityContext'] = value
 
                 def hostAliases(self, value):
-                    Deployment.deployment[Deployment.name]['spec']['template']['spec']['hostAliases'] = value
+                    Deployment.deployment[Deployment.components]['spec']['template']['spec']['hostAliases'] = value
 
                 class initContainers(Containers):
                     def __init__(self):
                         super().__init__()
-                        Deployment.deployment[Deployment.name]['spec']['template']['spec']['initContainers'] = [
-                        ]
+                        Deployment.deployment[Deployment.components]['spec']['template']['spec']['initContainers'] = []
 
                     def __del__(self):
-                        Deployment.deployment[Deployment.name]['spec']['template']['spec']['initContainers'].append(
+                        Deployment.deployment[Deployment.components]['spec']['template']['spec']['initContainers'].append(
                             self.container)
 
                 class containers(Containers):
                     def __init__(self):
                         super().__init__()
-                        Deployment.deployment[Deployment.name]['spec']['template']['spec']['containers'] = [
-                        ]
+                        if not 'containers' in Deployment.deployment[Deployment.components]['spec']['template']['spec'] :
+                            Deployment.deployment[Deployment.components]['spec']['template']['spec']['containers'] = []
 
                     def __del__(self):
-                        Deployment.deployment[Deployment.name]['spec']['template']['spec']['containers'].append(
+                        Deployment.deployment[Deployment.components]['spec']['template']['spec']['containers'].append(
                             self.container)
                 def imagePullSecrets(self, secret):
-                    Deployment.deployment[Deployment.name]['spec']['template']['spec']['imagePullSecrets'] = secret
+                    Deployment.deployment[Deployment.components]['spec']['template']['spec']['imagePullSecrets'] = secret
                 def nodeSelector(self, group):
-                    Deployment.deployment[Deployment.name]['spec']['template']['spec']['nodeSelector'] = group
+                    Deployment.deployment[Deployment.components]['spec']['template']['spec']['nodeSelector'] = group
                 def restartPolicy(self, value):
-                    Deployment.deployment[Deployment.name]['spec']['template']['spec']['restartPolicy'] = value
+                    Deployment.deployment[Deployment.components]['spec']['template']['spec']['restartPolicy'] = value
+                def dnsPolicy(self, value):
+                    Deployment.deployment[Deployment.components]['spec']['template']['spec']['dnsPolicy'] = value
                 class volumes(Volumes):
                     def __init__(self):
                         super().__init__()
-                        if not 'volumes' in Deployment.deployment[Deployment.name]['spec']['template']['spec']:
-                            Deployment.deployment[Deployment.name]['spec']['template']['spec']['volumes'] = [
+                        if not 'volumes' in Deployment.deployment[Deployment.components]['spec']['template']['spec']:
+                            Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'] = [
                             ]
 
                     def __del__(self):
-                        Deployment.deployment[Deployment.name]['spec']['template']['spec']['volumes'].append(
+                        Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'].append(
                             self.volumes)
 
                 # def __del__(self):
@@ -707,22 +723,22 @@ class Deployment(Common):
     
         class strategy():
             def __init__(self):
-                Deployment.deployment[Deployment.name]['spec']['strategy'] = {}
+                Deployment.deployment[Deployment.components]['spec']['strategy'] = {}
 
             def type(self, name):
-                Deployment.deployment[Deployment.name]['spec']['strategy']['type'] = name
+                Deployment.deployment[Deployment.components]['spec']['strategy']['type'] = name
                 return self
             def rollingUpdate(self, maxSurge, maxUnavailable):
-                Deployment.deployment[Deployment.name]['spec']['strategy']['rollingUpdate'] = {}
-                Deployment.deployment[Deployment.name]['spec']['strategy']['rollingUpdate']['maxSurge'] = maxSurge
-                Deployment.deployment[Deployment.name]['spec']['strategy']['rollingUpdate']['maxUnavailable'] = maxUnavailable
+                Deployment.deployment[Deployment.components]['spec']['strategy']['rollingUpdate'] = {}
+                Deployment.deployment[Deployment.components]['spec']['strategy']['rollingUpdate']['maxSurge'] = maxSurge
+                Deployment.deployment[Deployment.components]['spec']['strategy']['rollingUpdate']['maxUnavailable'] = maxUnavailable
             # def __del__(self):
             #     Deployment.deployment['spec']['template']['spec']['containers'].append(
             #         self.container)
         
     def dump(self):
-        self.deployment[self.name].update(self.commons)
-        return super().dump(self.deployment[self.name])
+        self.deployment[self.components].update(self.commons)
+        return super().dump(self.deployment[self.components])
 
     def debug(self):
         print(self.dump())
