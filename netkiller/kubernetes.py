@@ -31,6 +31,9 @@ class Define():
         ClusterFirst = 'ClusterFirst'
     class Service():
         ClusterIP = 'ClusterIP'
+        LoadBalancer = 'LoadBalancer'
+        class externalTrafficPolicy:
+            Local = 'Local'
     class Ingress():
         class pathType():
             Prefix = 'Prefix'
@@ -588,6 +591,9 @@ class Service(Common):
         def clusterIP(self, value):
             Service.service[Service.components]['spec']['clusterIP'] = value
             return self
+        def externalTrafficPolicy(self, value):
+            Service.service[Service.components]['spec']['externalTrafficPolicy'] = value
+            return self
 
     class status:
         def __init__(self):
@@ -765,46 +771,53 @@ class StatefulSet(Deployment):
 
 
 class Ingress(Common):
+    components = None
     ingress = {}
 
-    def __init__(self):
+    def __init__(self, components = None):
         super().__init__()
-        self.apiVersion('networking.k8s.io/v1beta1')
+        self.apiVersion('networking.k8s.io/v1')
         self.kind('Ingress')
+        if not components :
+            self.components = uuid.uuid4().hex
+        else:
+            self.components = components
+        Ingress.components =  self.components
+        self.ingress[self.components] = {}
 
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
-            if not 'metadata' in Ingress.ingress:
-                Ingress.ingress['metadata'] = {}
+            if not 'metadata' in Ingress.ingress[Ingress.components]:
+                Ingress.ingress[Ingress.components]['metadata'] = {}
 
         def __del__(self):
-            Ingress.ingress['metadata'].update(self.metadata())
+            Ingress.ingress[Ingress.components]['metadata'].update(self.metadata())
 
     class spec:
         def __init__(self):
-            if not 'spec' in Ingress.ingress:
-                Ingress.ingress['spec'] = {}
+            if not 'spec' in Ingress.ingress[Ingress.components]:
+                Ingress.ingress[Ingress.components]['spec'] = {}
 
         def rules(self, value):
-            if not 'rules' in Ingress.ingress['spec']:
-                Ingress.ingress['spec']['rules'] = []
-            Ingress.ingress['spec']['rules'].extend(value)
+            if not 'rules' in Ingress.ingress[Ingress.components]['spec']:
+                Ingress.ingress[Ingress.components]['spec']['rules'] = []
+            Ingress.ingress[Ingress.components]['spec']['rules'].extend(value)
 
         def tls(self, value):
-            if not 'tls' in Ingress.ingress['spec']:
-                Ingress.ingress['spec']['tls'] = []
-            Ingress.ingress['spec']['tls'].extend(value)
+            if not 'tls' in Ingress.ingress[Ingress.components]['spec']:
+                Ingress.ingress[Ingress.components]['spec']['tls'] = []
+            Ingress.ingress[Ingress.components]['spec']['tls'].extend(value)
 
     def dump(self):
-        self.ingress.update(self.commons)
-        return super().dump(self.ingress)
+        self.ingress[self.components].update(self.commons)
+        return super().dump(self.ingress[self.components])
 
     def debug(self):
         print(self.dump())
 
     def json(self):
-        print(self.ingress)
+        print(self.ingress[self.components])
 
 
 class IngressRouteTCP(Ingress):
