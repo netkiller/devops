@@ -31,6 +31,10 @@ class Define():
         ClusterFirst = 'ClusterFirst'
     class Service():
         ClusterIP = 'ClusterIP'
+    class Ingress():
+        class pathType():
+            Prefix = 'Prefix'
+            ImplementationSpecific = 'ImplementationSpecific'
         
 
 class Common():
@@ -73,31 +77,22 @@ class Metadata:
 
     def name(self, value):
         self.__metadata['name'] = value
-        # Common.commons['metadata']['name'] = value
         return self
 
     def namespace(self, value):
         self.__metadata['namespace'] = value
-        # Common.commons['metadata']['namespace'] = value
         return self
 
     def labels(self, value):
         self.__metadata['labels'] = value
-        # Common.commons['metadata']['labels'] = value
         return self
 
     def annotations(self, value):
         self.__metadata['annotations'] = value
-        # Common.commons['metadata']['annotations'] = value
         return self
-    # def __del__(self):
-        # Common.commons.update(self.metadatas)
 
     def metadata(self):
         return(self.__metadata)
-        # Common.commons['metadata'] = {}
-        # print(self.commons)
-
 
 class Containers:
     container = {}
@@ -141,6 +136,7 @@ class Containers:
         return self
 
     def env(self, value):
+        self.container['env'] = []
         self.container['env'] = value
         return self
 
@@ -245,33 +241,35 @@ class Namespace(Common):
 
 
 class ConfigMap(Common):
-    name = ''
+    components = ''
     config = {}
 
-    def __init__(self, name):
+    def __init__(self, components = None):
         super().__init__()
         self.apiVersion()
         self.kind('ConfigMap')
-
-        ConfigMap.name = name
-        self.name = name
-        ConfigMap.config[self.name] = {}
-        self.config[self.name]['metadata'] = {}
+        if not components :
+            self.components = uuid.uuid4().hex
+        else:
+            self.components = components
+        ConfigMap.components = self.components
+        ConfigMap.config[self.components] = {}
+        self.config[self.components]['metadata'] = {}
 
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
-            # ConfigMap.config[ConfigMap.name]['metadata'] = {}
+            # ConfigMap.config[ConfigMap.components]['metadata'] = {}
 
         def __del__(self):
-            ConfigMap.config[ConfigMap.name]['metadata'].update(
+            ConfigMap.config[ConfigMap.components]['metadata'].update(
                 self.metadata())
 
     def data(self, value):
-        if 'data' in self.config[self.name]:
-            self.config[self.name]['data'].update(value)
+        if 'data' in self.config[self.components]:
+            self.config[self.components]['data'].update(value)
         else:
-            self.config[self.name]['data'] = value
+            self.config[self.components]['data'] = value
         return(self)
 
     def from_file(self, name, path):
@@ -291,20 +289,19 @@ class ConfigMap(Common):
         return(self)
 
     def dump(self):
-        self.config[self.name].update(self.commons)
-        return super().dump(self.config[self.name])
+        self.config[self.components].update(self.commons)
+        return super().dump(self.config[self.components])
 
     def json(self):
-        print(self.config[self.name])
+        print(self.config[self.components])
 
     def debug(self):
         print(self.dump())
 
     def save(self, filename=None):
         if not filename:
-            filename = self.name + '.yaml'
+            filename = self.components + '.yaml'
         super().save(filename, self.dump())
-
 
 class Secret(ConfigMap):
     def __init__(self, name):
@@ -645,7 +642,14 @@ class Deployment(Common):
         def selector(self, value):
             Deployment.deployment[Deployment.components]['spec']['selector'] = value
             return self
-
+        def progressDeadlineSeconds(self, value):
+            if type(value) == int :
+                Deployment.deployment[Deployment.components]['spec']['progressDeadlineSeconds'] = value
+            return self
+        def revisionHistoryLimit(self, value):
+            if type(value) == int :
+                Deployment.deployment[Deployment.components]['spec']['revisionHistoryLimit'] = value
+            return self
         def replicas(self, value):
             Deployment.deployment[Deployment.components]['spec']['replicas'] = value
             return self
@@ -674,7 +678,13 @@ class Deployment(Common):
                 def __init__(self):
                     if not 'spec' in Deployment.deployment[Deployment.components]['spec']['template']:
                         Deployment.deployment[Deployment.components]['spec']['template']['spec'] = {}
-
+                class affinity():
+                    def __init__(self):
+                        if not 'affinity' in Deployment.deployment[Deployment.components]['spec']['template']['spec']:
+                            Deployment.deployment[Deployment.components]['spec']['template']['spec']['affinity'] = {}
+                            Deployment.deployment[Deployment.components]['spec']['template']['spec']['affinity']['nodeAffinity'] = {}
+                    def nodeAffinity(self, value):
+                        Deployment.deployment[Deployment.components]['spec']['template']['spec']['affinity']['nodeAffinity'] = value    
                 def securityContext(self, value):
                     Deployment.deployment[Deployment.components]['spec']['template']['spec']['securityContext'] = value
 
@@ -691,7 +701,7 @@ class Deployment(Common):
                             self.container)
 
                 class containers(Containers):
-                    def __init__(self):
+                    def __init__(self, name = None):
                         super().__init__()
                         if not 'containers' in Deployment.deployment[Deployment.components]['spec']['template']['spec'] :
                             Deployment.deployment[Deployment.components]['spec']['template']['spec']['containers'] = []
@@ -707,16 +717,17 @@ class Deployment(Common):
                     Deployment.deployment[Deployment.components]['spec']['template']['spec']['restartPolicy'] = value
                 def dnsPolicy(self, value):
                     Deployment.deployment[Deployment.components]['spec']['template']['spec']['dnsPolicy'] = value
-                class volumes(Volumes):
-                    def __init__(self):
-                        super().__init__()
-                        if not 'volumes' in Deployment.deployment[Deployment.components]['spec']['template']['spec']:
-                            Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'] = [
-                            ]
+                def volumes(self, value):
+                    Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'] = value
+                # class volumes(Volumes):
+                    # def __init__(self):
+                    #     super().__init__()
+                    #     if not 'volumes' in Deployment.deployment[Deployment.components]['spec']['template']['spec']:
+                    #         Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'] = []
 
-                    def __del__(self):
-                        Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'].append(
-                            self.volumes)
+                    # def __del__(self):
+                    #     Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'].append(
+                    #         self.volumes)
 
                 # def __del__(self):
                     # print('debug', self)
@@ -879,6 +890,8 @@ class Kubernetes(Logging):
         self.parser = OptionParser("usage: %prog [options] <command>")
         self.parser.add_option("-e", "--environment", dest="environment",
                                help="environment", metavar="development|testing|production")
+        self.parser.add_option("", "--config", dest="config",
+                               help="~/.kube/config", metavar="~/.kube/config")                       
         self.parser.add_option('-l', '--list', dest='list',
                                action='store_true', help='print service of environment')
 
