@@ -304,7 +304,7 @@ class ConfigMap(Common):
         super().save(filename, self.dump())
 
 class Secret(ConfigMap):
-    def __init__(self, name):
+    def __init__(self, name = None):
         super().__init__(name)
         self.apiVersion()
         self.kind('Secret')
