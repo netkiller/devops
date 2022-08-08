@@ -899,6 +899,10 @@ class Kubernetes(Logging):
     def __init__(self):
         super().__init__()
         self.kubernetes = {}
+        # self.kubernetes['namespace'] = []
+        # self.kubernetes['config'] = []
+        # self.kubernetes['workload'] = []
+        self.namespaces = []
         self.workspace = '/tmp'
 
         self.parser = OptionParser("usage: %prog [options] <command>")
@@ -912,6 +916,8 @@ class Kubernetes(Logging):
         group = OptionGroup(self.parser, "Cluster Management Commands")
         group.add_option('-g', '--get', dest='get',
                          action='store_true', help='Display one or many resources')
+        # group.add_option('-s', '--set', dest='set',
+        #                  action='store_true', help='Display one or many resources')
         group.add_option('-c', '--create', dest='create', action='store_true',
                          help='Create a resource from a file or from stdin')
         group.add_option('-d', '--delete', dest='delete', action='store_true',
@@ -961,6 +967,11 @@ class Kubernetes(Logging):
         print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
         exit()
 
+    def namespace(self, ns):
+        if type(ns) == str :
+            self.namespaces.append(ns)
+        else:
+            self.namespaces = ns
     def compose(self, compose):
         self.kubernetes[compose.workload] = compose
         self.logging.info("kubernetes : %s" % (compose.workload))
@@ -968,7 +979,9 @@ class Kubernetes(Logging):
     def workload(self, compose):
         self.kubernetes[compose.workload] = compose
         self.logging.info("kubernetes : %s" % (compose.workload))
-
+    def configmap(self, config):
+        self.kubernetes['config'] = compose
+        self.logging.info("kubernetes : %s" % (compose.workload))
     def save(self, env):
         if env in self.kubernetes.keys():
             path = os.path.expanduser(self.workspace + '/' + env + '.yaml')
@@ -1026,7 +1039,7 @@ class Kubernetes(Logging):
             self.execute(cmd)
         exit()
 
-    def namespace(self):
+    def kubeNamespace(self):
         cmd = "get namespace"
         self.logging.info(cmd)
         self.execute(cmd)
@@ -1063,7 +1076,7 @@ class Kubernetes(Logging):
             self.version()
 
         if self.options.namespace:
-            self.namespace()
+            self.kubeNamespace()
         elif self.options.service:
             self.service()
 

@@ -1,9 +1,12 @@
 #-*- coding: utf-8 -*-
-import os, sys
+import os, sys,logging
 class Git():
 	cmd = []
 	def __init__(self, workspace = None, logger = None):
-		self.logger = logger
+		if logger :
+			self.logger = logger
+		else:
+			self.logger = logging.getLogger()
 		self.workspace = os.path.expanduser(workspace)
 		if os.path.exists(self.workspace) :
 			os.chdir(self.workspace)
@@ -18,9 +21,9 @@ class Git():
 			self.opt = opt
 	def clone(self, uri, project = None):
 		if project :
-			self.cmd.append('clone '+ uri +' '+ project)
+			self.cmd.append('clone '+ self.opt +' '+ uri +' '+ project)
 		else:
-			self.cmd.append('clone '+ uri)
+			self.cmd.append('clone '+ self.opt +' '+ uri)
 		return(self)
 	def clean(self, param=''):
 		#git clean -df
