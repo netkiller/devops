@@ -34,6 +34,7 @@ class Define():
         LoadBalancer = 'LoadBalancer'
         class externalTrafficPolicy:
             Local = 'Local'
+            Cluster = 'Cluster'
     class Ingress():
         class pathType():
             Prefix = 'Prefix'
@@ -846,10 +847,10 @@ class IngressRouteTCP(Ingress):
 
 
 class Compose(Logging):
-    def __init__(self, environment):
+    def __init__(self, workload):
         super().__init__()
         self.compose = []
-        self.environment = environment
+        self.workload = workload
     # def __del__(self):
         # Kubernetes.composes.update(self.metadata)
         # print(self.compose)
@@ -869,7 +870,7 @@ class Compose(Logging):
 
     def save(self, path=None):
         if not path:
-            path = self.environment + '.yaml'
+            path = self.workload + '.yaml'
         path = os.path.expanduser(path)
         # if os.path.exists(path):
         # os.remove(path)
@@ -906,7 +907,7 @@ class Kubernetes(Logging):
         self.parser.add_option("", "--config", dest="config",
                                help="~/.kube/config", metavar="~/.kube/config")                       
         self.parser.add_option('-l', '--list', dest='list',
-                               action='store_true', help='print service of environment')
+                               action='store_true', help='print service of workloads')
 
         group = OptionGroup(self.parser, "Cluster Management Commands")
         group.add_option('-g', '--get', dest='get',
@@ -961,8 +962,12 @@ class Kubernetes(Logging):
         exit()
 
     def compose(self, compose):
-        self.kubernetes[compose.environment] = compose
-        self.logging.info("kubernetes : %s" % (compose.environment))
+        self.kubernetes[compose.workload] = compose
+        self.logging.info("kubernetes : %s" % (compose.workload))
+
+    def workload(self, compose):
+        self.kubernetes[compose.workload] = compose
+        self.logging.info("kubernetes : %s" % (compose.workload))
 
     def save(self, env):
         if env in self.kubernetes.keys():
