@@ -550,7 +550,7 @@ class Composes(Common):
 
     def __command(self, cmd):
         command = []
-        command.append('docker-compose')
+        command.append('docker compose')
         if self.projectName:
             command.append('--project-name %s' % self.projectName)
         if self.envFile:
