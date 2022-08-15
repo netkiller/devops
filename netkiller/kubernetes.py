@@ -7,7 +7,6 @@ from optparse import OptionParser, OptionGroup
 import logging
 import logging.handlers
 from logging import basicConfig
-from numpy import array
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString as lss, PreservedScalarString as pss
 from io import StringIO
@@ -345,7 +344,7 @@ class ServiceAccount(Common):
             ServiceAccount.account['metadata'] = {}
 
         def __del__(self):
-            ServiceAccount.account['metadata'].update(self.metadata)
+            ServiceAccount.account['metadata'].update(self.metadata())
 
     def dump(self):
         self.account.update(self.commons)
@@ -847,10 +846,11 @@ class IngressRouteTCP(Ingress):
 
 
 class Compose(Logging):
-    def __init__(self, workload):
+    def __init__(self, name):
         super().__init__()
         self.compose = []
-        self.workload = workload
+        self.name = name
+        self.namespaces = []
     # def __del__(self):
         # Kubernetes.composes.update(self.metadata)
         # print(self.compose)
@@ -858,6 +858,18 @@ class Compose(Logging):
     def add(self, object):
         self.compose.append(object.dump())
         return(self)
+    def namespace(self, ns):
+        if type(ns) == str :
+            self.namespaces.append(ns)
+        else:
+            self.namespaces = ns
+    # def workload(self, compose):
+    #     self.compose[compose.workload] = compose
+    #     self.logging.info("kubernetes : %s" % (compose.workload))
+
+    # def configmap(self, config):
+    #     self.compose['config'] = config
+    #     self.logging.info("kubernetes : %s" % (compose.workload))
 
     def debug(self):
         print(self.yaml())
@@ -896,19 +908,17 @@ EOF""".format(command=command, stdin=text)
 
 
 class Kubernetes(Logging):
-    def __init__(self):
+    def __init__(self, kubeconfig = None):
         super().__init__()
         self.kubernetes = {}
-        # self.kubernetes['namespace'] = []
-        # self.kubernetes['config'] = []
-        # self.kubernetes['workload'] = []
-        self.namespaces = []
         self.workspace = '/tmp'
+        if kubeconfig :
+            self.kubeconfig(kubeconfig) 
 
         self.parser = OptionParser("usage: %prog [options] <command>")
         self.parser.add_option("-e", "--environment", dest="environment",
                                help="environment", metavar="development|testing|production")
-        self.parser.add_option("", "--config", dest="config",
+        self.parser.add_option("", "--kubeconfig", dest="kubeconfig",
                                help="~/.kube/config", metavar="~/.kube/config")                       
         self.parser.add_option('-l', '--list', dest='list',
                                action='store_true', help='print service of workloads')
@@ -967,21 +977,10 @@ class Kubernetes(Logging):
         print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
         exit()
 
-    def namespace(self, ns):
-        if type(ns) == str :
-            self.namespaces.append(ns)
-        else:
-            self.namespaces = ns
     def compose(self, compose):
-        self.kubernetes[compose.workload] = compose
-        self.logging.info("kubernetes : %s" % (compose.workload))
+        self.kubernetes[compose.name] = compose
+        self.logging.info("kubernetes : %s" % (compose.name))
 
-    def workload(self, compose):
-        self.kubernetes[compose.workload] = compose
-        self.logging.info("kubernetes : %s" % (compose.workload))
-    def configmap(self, config):
-        self.kubernetes['config'] = compose
-        self.logging.info("kubernetes : %s" % (compose.workload))
     def save(self, env):
         if env in self.kubernetes.keys():
             path = os.path.expanduser(self.workspace + '/' + env + '.yaml')
@@ -994,8 +993,8 @@ class Kubernetes(Logging):
                 return None
 
     def yaml(self):
-        print(self.composes)
-        print('---\n'.join(self.composes))
+        for name, compose in self.kubernetes.items() :
+            print(compose.yaml())
 
     def debug(self):
         self.logging.debug(self.kubernetes)
@@ -1063,8 +1062,12 @@ class Kubernetes(Logging):
     def list(self):
         for item in self.kubernetes:
             print(item)
-
+    def kubeconfig(self, kubeconfig):
+        os.environ['KUBECONFIG']=kubeconfig
     def main(self):
+
+        if self.options.kubeconfig :
+            self.kubeconfig(self.options.kubeconfig)
 
         if self.options.list:
             self.list()

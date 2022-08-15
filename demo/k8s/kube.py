@@ -1,7 +1,9 @@
 import os,sys
 
-module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0,module)
+# module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# print(module)
+# sys.path.insert(0,module)
+sys.path.insert(0,'/Users/neo/workspace/devops')
 
 from netkiller.kubernetes import *
 
@@ -10,7 +12,7 @@ test = Namespace()
 # meta = test.metadata()
 # meta.namespace('test')
 # test.metadata().name('test').namespace('test')
-test.metadata.namespace('test')
+test.metadata().namespace('test')
 # print(test.metadata.metadata())
 # namespace.test('hello')
 # test.debug()
@@ -18,7 +20,7 @@ test.metadata.namespace('test')
 # exit()
 
 namespace = Namespace()
-namespace.metadata.name('production').namespace('production')
+namespace.metadata().name('production').namespace('production')
 # namespace.metadata().namespace('production')
 # namespace.test('hello')
 # namespace.debug()
@@ -26,8 +28,8 @@ namespace.metadata.name('production').namespace('production')
 # exit()
 
 staging = Namespace()
-staging.metadata.name('staging')
-staging.metadata.namespace('staging')
+staging.metadata().name('staging')
+staging.metadata().namespace('staging')
 # staging.test('world')
 # staging.debug()
 
@@ -35,8 +37,8 @@ staging.metadata.namespace('staging')
 # exit()
 
 testing = Namespace()
-testing.metadata.name('testing')
-testing.metadata.namespace('testing')
+testing.metadata().name('testing')
+testing.metadata().namespace('testing')
 # testing.debug()
 
 # namespace.debug()
@@ -45,7 +47,7 @@ testing.metadata.namespace('testing')
 
 print("=" * 40, "ServiceAccount", "=" * 40)
 account = ServiceAccount()
-account.metadata.name('search').namespace('testing').labels({'app':'elasticsearch'})
+account.metadata().name('search').namespace('testing').labels({'app':'elasticsearch'})
 # account.debug()
 
 print("=" * 40, "ConfigMap", "=" * 40)
@@ -60,9 +62,9 @@ config.data({'db.host':'localhost','db.port':'3306','db.user':'root','db.pass':'
 print("=" * 40, "Pod", "=" * 40)
 pod = Pod()
 pod.apiVersion()
-pod.metadata.name('counter')
+# pod.metadata().name('counter')
 # pod.metadata.namespace('development')
-pod.spec.restartPolicy('Always')
+# pod.spec.restartPolicy('Always')
 # pod.spec.hostAliases([{'ip1':'127.0.0.1','hostname1':['www.netkiller.cn','db.netkiller.cn']}])
 # pod.spec.securityContext({'sysctls': ['name: net.core.somaxconn','value: "1024"'], 'privileged': 'true'})
 # pod.spec.env([{'name':'HOST','valueFrom':{'configMapKeyRef':{'name': 'db-config','key': 'db.host'}}}])
@@ -71,7 +73,7 @@ pod.spec.restartPolicy('Always')
 # pod.spec().containers.image('busybox:latest')
 # pod.spec().containers.args(["echo 'Helloworld!!!'"])
 
-pod.spec.containers.name('count').image('busybox:alpine').args(["echo 'Helloworld!!!'"])
+# pod.spec.containers.name('count').image('busybox:alpine').args(["echo 'Helloworld!!!'"])
 # pod.spec.containers.name('nginx').image('nginx:latest')
 # spec = container = pod.spec()
 
