@@ -313,7 +313,7 @@ class Secret(ConfigMap):
         self.kind('Secret')
 
     def type(self, value):
-        self.config['type'] = value
+        self.config[self.components]['type'] = value
 
     def key(self, path):
         with open(path, 'r') as file:
@@ -863,14 +863,14 @@ class Compose(Logging):
             self.namespaces.append(ns)
         else:
             self.namespaces = ns
-    # def workload(self, compose):
-    #     self.compose[compose.workload] = compose
+    def workload(self, compose):
+        self.compose.append(compose.dump())
     #     self.logging.info("kubernetes : %s" % (compose.workload))
-
-    # def configmap(self, config):
-    #     self.compose['config'] = config
+        return(self)
+    def configmap(self, config):
+        self.compose.append(config.dump())
     #     self.logging.info("kubernetes : %s" % (compose.workload))
-
+        return(self)
     def debug(self):
         print(self.yaml())
 
@@ -924,23 +924,20 @@ class Kubernetes(Logging):
                                action='store_true', help='print service of workloads')
 
         group = OptionGroup(self.parser, "Cluster Management Commands")
-        group.add_option('-g', '--get', dest='get',
-                         action='store_true', help='Display one or many resources')
-        # group.add_option('-s', '--set', dest='set',
-        #                  action='store_true', help='Display one or many resources')
+        group.add_option('-g', '--get', dest='get', action='store_true', help='Display one or many resources')
+        group.add_option('-s', '--set', dest='set', metavar="latest", help='latest or other tag.')
         group.add_option('-c', '--create', dest='create', action='store_true',
                          help='Create a resource from a file or from stdin')
         group.add_option('-d', '--delete', dest='delete', action='store_true',
                          help='Delete resources by filenames, stdin, resources and names, or by resources and label selector')
         group.add_option('-r', '--replace', dest='replace', action='store_true',
                          help='Replace a resource by filename or stdin')
+        # group.add_option('-s', '--set', dest='set', action='store_true', help='Display service')                 
         self.parser.add_option_group(group)
 
         group = OptionGroup(self.parser, "Namespace")
         group.add_option('-n', '--namespace', dest='namespace',
                          action='store_true', help='Display namespace')
-        group.add_option('-s', '--service', dest='service',
-                         action='store_true', help='Display service')
         self.parser.add_option_group(group)
 
         group = OptionGroup(self.parser, "Others")
@@ -948,8 +945,7 @@ class Kubernetes(Logging):
                          help='logs file.', default='debug.log')
         group.add_option('-y', '--yaml', dest='yaml',
                          action='store_true', help='show yaml compose')
-        group.add_option('', '--export', dest='export',
-                         action='store_true', help='export docker compose')
+        group.add_option('', '--export', dest='export', metavar="~/.kube/config",help='export yaml files')
         # group.add_option('-d','--daemon', dest='daemon', action='store_true', help='run as daemon')
         group.add_option("", "--debug", action="store_true",
                          dest="debug", help="debug mode")
@@ -981,21 +977,34 @@ class Kubernetes(Logging):
         self.kubernetes[compose.name] = compose
         self.logging.info("kubernetes : %s" % (compose.name))
 
-    def save(self, env):
-        if env in self.kubernetes.keys():
-            path = os.path.expanduser(self.workspace + '/' + env + '.yaml')
-            self.kubernetes[env].save(path)
+    def save(self, item):
+        if item in self.kubernetes.keys():
+            path = os.path.expanduser(self.workspace + '/' + item + '.yaml')
+            print(path)
             if os.path.exists(path):
-                # os.remove(path)
-                self.logging.info('save as %s' % path)
-                return path
-            else:
-                return None
+                os.remove(path)
+            self.logging.info('save as %s' % path)
+            self.kubernetes[item].save(path)
+            return path
+        return None
 
     def yaml(self):
         for name, compose in self.kubernetes.items() :
             print(compose.yaml())
-
+    def export(self, path, workloads = None):
+        if workloads :
+            for workload in workloads:
+                if workload in self.kubernetes :
+                    file = path+ '/' + workload + '.yaml'
+                    if not os.path.exists(path) :
+                        os.mkdir(path)
+                    self.kubernetes[workload].save(file)
+                    msg = "export {0} {1}".format(workload, file)
+                    self.logging.info(msg)
+                    print(msg)
+        else:
+            for name, compose in self.kubernetes.items() :
+                self.export(path, [name])
     def debug(self):
         self.logging.debug(self.kubernetes)
 
@@ -1071,36 +1080,49 @@ class Kubernetes(Logging):
 
         if self.options.list:
             self.list()
+            return
         elif self.options.get:
             self.get(' '.join(self.args))
+        elif self.options.set :
+            self.set()
         elif self.options.yaml:
             self.yaml()
+            return
         elif self.options.version:
             self.version()
 
-        if self.options.namespace:
-            self.kubeNamespace()
-        elif self.options.service:
-            self.service()
+        # if self.options.namespace:
+        #     self.kubeNamespace()
 
         elif self.options.create:
-            if self.options.environment:
-                self.create(self.options.environment)
+            if self.args:
+                if self.args[0] in self.kubernetes.keys() :
+                    self.create(self.args[0])
+                else:
+                    self.logging.error("The {0} isn't found!".format(self.args[0]))
+                    self.list()
             else:
                 for env in self.kubernetes.keys():
                     self.create(env)
         elif self.options.delete:
-            if self.options.environment:
-                self.delete(self.options.environment)
+            if self.args:
+                if self.args[0] in self.kubernetes.keys() :
+                    self.delete(self.args[0])
+                else:
+                    self.logging.error("The {0} isn't found!".format(self.args[0]))
+                    self.list()
             else:
                 for env in self.kubernetes.keys():
                     self.delete(env)
         elif self.options.replace:
-            if self.options.environment:
-                self.replace(self.options.environment)
+            if self.args:
+                if self.args[0] in self.kubernetes.keys() :
+                    self.replace(self.args[0])
             else:
                 for env in self.kubernetes.keys():
                     self.replace(env)
+        elif self.options.export:
+            self.export(self.options.export, self.args)
         else:
             if not self.args:
                 self.usage()

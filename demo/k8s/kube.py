@@ -127,10 +127,14 @@ compose.add(deployment)
 compose.yaml()
 # compose.save('/tmp/test.yaml')
 
+
+
 print("=" * 40, "Kubernetes", "=" * 40)
 
-kubernetes = Kubernetes()
+kubernetes = Kubernetes('/Volumes/Data/kubeconfig')
 kubernetes.compose(compose)
+kubernetes.compose(Compose('testing'))
+kubernetes.compose(Compose('production'))
 # kubernetes.debug()
 # print(kubernetes.dump())
 kubernetes.main()
