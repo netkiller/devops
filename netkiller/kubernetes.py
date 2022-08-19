@@ -148,10 +148,12 @@ class Containers:
         return self
 
     def livenessProbe(self, value):
-        self.container['livenessProbe'] = value
+        if value :
+            self.container['livenessProbe'] = value
         return self
     def readinessProbe(self, value):
-        self.container['readinessProbe'] = value
+        if value :
+            self.container['readinessProbe'] = value
         return self
 
 class Volumes(Common):
@@ -988,9 +990,13 @@ class Kubernetes(Logging):
             return path
         return None
 
-    def yaml(self):
-        for name, compose in self.kubernetes.items() :
+    def yaml(self, project):
+        if project :
+            compose = self.kubernetes[project]
             print(compose.yaml())
+        else:
+            for name, compose in self.kubernetes.items() :
+                print(compose.yaml())
     def export(self, path, workloads = None):
         if workloads :
             for workload in workloads:
@@ -1086,7 +1092,11 @@ class Kubernetes(Logging):
         elif self.options.set :
             self.set()
         elif self.options.yaml:
-            self.yaml()
+            if self.args :
+                project = self.args[0]
+            else:
+                project = None
+            self.yaml(project)
             return
         elif self.options.version:
             self.version()

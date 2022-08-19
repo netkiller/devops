@@ -90,9 +90,10 @@ class Git():
 			self.logger.debug('git '+ line)
 			self.logger.debug(rev)
 			if rev == 256 :
-				exit(0)
+				return rev
 		self.cmd = []
 		print("-")
+		return 0
 
 class GitBranch(Git):
 	def __init__(self,workspace = None, logger = None):
