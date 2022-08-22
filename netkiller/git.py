@@ -39,6 +39,9 @@ class Git():
 	def commit(self, msg = '', param=''):
 		self.cmd.append('commit '+param+' -m "'+msg+'"')
 		return(self)
+	def checkout(self, branch):
+		self.cmd.append('checkout {0}'.format(branch))
+		return(self)
 	def status(self):
 		self.cmd.append('status')
 		return(self)
@@ -50,6 +53,9 @@ class Git():
 			# os.chdir(self.workspace)
 		self.cmd.append('pull --progress')
 		return(self)
+	def fetch(self):
+		self.cmd.append('fetch')
+		return(self)	
 	def push(self):
 		self.cmd.append('push --progress')
 		return(self)
@@ -91,8 +97,9 @@ class Git():
 			self.logger.debug(rev)
 			if rev == 256 :
 				return rev
+			print("-")
 		self.cmd = []
-		print("-")
+		
 		return 0
 
 class GitBranch(Git):

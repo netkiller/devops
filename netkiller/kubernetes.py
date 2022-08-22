@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from email.mime import image
 import os,uuid
 from posixpath import split
 import sys
@@ -139,12 +140,15 @@ class Containers:
         return self
 
     def env(self, value):
-        self.container['env'] = []
-        self.container['env'] = value
+        if value :
+            if not 'env' in self.container :
+                self.container['env'] = []
+            self.container['env'] = value
         return self
 
-    def resources(self, value):
-        self.container['resources'] = value
+    def resources(self, value = None):
+        if value :
+            self.container['resources'] = value
         return self
 
     def livenessProbe(self, value):
@@ -676,7 +680,8 @@ class Deployment(Common):
             class metadata(Metadata):
                 def __init__(self):
                     super().__init__()
-                    Deployment.deployment[Deployment.components]['spec']['template']['metadata'] = {}
+                    if not 'metadata' in Deployment.deployment[Deployment.components]['spec']['template'] :
+                        Deployment.deployment[Deployment.components]['spec']['template']['metadata'] = {}
 
                 def __del__(self):
                     Deployment.deployment[Deployment.components]['spec']['template']['metadata'].update(
@@ -925,22 +930,24 @@ class Kubernetes(Logging):
         self.parser.add_option('-l', '--list', dest='list',
                                action='store_true', help='print service of workloads')
 
+        group = OptionGroup(self.parser, "Namespace")
+        group.add_option('-n', '--namespace', dest='namespace', metavar='default', help='Set namespace')
+        self.parser.add_option_group(group)
+
         group = OptionGroup(self.parser, "Cluster Management Commands")
         group.add_option('-g', '--get', dest='get', action='store_true', help='Display one or many resources')
-        group.add_option('-s', '--set', dest='set', metavar="latest", help='latest or other tag.')
+        group.add_option('-s', '--set', dest='set', action='store_true', help='Display service')                 
         group.add_option('-c', '--create', dest='create', action='store_true',
                          help='Create a resource from a file or from stdin')
         group.add_option('-d', '--delete', dest='delete', action='store_true',
                          help='Delete resources by filenames, stdin, resources and names, or by resources and label selector')
         group.add_option('-r', '--replace', dest='replace', action='store_true',
                          help='Replace a resource by filename or stdin')
-        # group.add_option('-s', '--set', dest='set', action='store_true', help='Display service')                 
+        group.add_option('-u', '--upgrade', dest='upgrade', metavar="latest", help='upgrade version of image.')
+        
         self.parser.add_option_group(group)
 
-        group = OptionGroup(self.parser, "Namespace")
-        group.add_option('-n', '--namespace', dest='namespace',
-                         action='store_true', help='Display namespace')
-        self.parser.add_option_group(group)
+        
 
         group = OptionGroup(self.parser, "Others")
         group.add_option('', '--logfile', dest='logfile',
@@ -1053,10 +1060,17 @@ class Kubernetes(Logging):
             self.execute(cmd)
         exit()
 
-    def kubeNamespace(self):
-        cmd = "get namespace"
-        self.logging.info(cmd)
+    def upgrade(self, namespace, project, image):
+        cmd = "set image deployment/{project} {project}={image} -n {namespace}".format(namespace=namespace, project=project, image=image)
+        self.logging.info("namespace={namespace}, {project}={image}".format(namespace=namespace, project=project, image=image))
+        self.logging.debug('upgrade %s ' % cmd)
         self.execute(cmd)
+        exit()
+
+    # def kubeNamespace(self):
+    #     cmd = "get namespace"
+    #     self.logging.info(cmd)
+    #     self.execute(cmd)
 
     def service(self):
         cmd = "get service"
@@ -1131,6 +1145,16 @@ class Kubernetes(Logging):
             else:
                 for env in self.kubernetes.keys():
                     self.replace(env)
+        elif self.options.upgrade:
+            namespace = 'default'
+            if self.options.namespace :
+                namespace = self.options.namespace
+            if self.args:
+                project = self.args[0]
+                image = self.options.upgrade
+                self.upgrade(namespace,project,image)
+            else:
+                self.usage()
         elif self.options.export:
             self.export(self.options.export, self.args)
         else:

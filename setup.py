@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
 	name="netkiller-devops",
-	version="0.6.0",
+	version="0.6.1",
 	author="Neo Chen",
 	author_email="netkiller@msn.com",
 	description="DevOps of useful deployment and automation",
@@ -36,6 +36,7 @@ setup(
 		'bin/gitsync',
 		'bin/lrsync',
 		'bin/randpasswd',
+		'bin/randtext',
 		'bin/matrixpasswd',
 		'bin/wechat',
 		'bin/voice',

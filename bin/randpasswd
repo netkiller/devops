@@ -1,1 +1,2 @@
 cat /dev/urandom | tr -dc [:alnum:] | head -c 32
+echo

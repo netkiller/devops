@@ -1,0 +1,2 @@
+cat /dev/urandom | tr -dc  [:graph:] | fold -w32 | head -n 10
+echo
