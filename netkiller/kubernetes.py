@@ -947,8 +947,6 @@ class Kubernetes(Logging):
         
         self.parser.add_option_group(group)
 
-        
-
         group = OptionGroup(self.parser, "Others")
         group.add_option('', '--logfile', dest='logfile',
                          help='logs file.', default='debug.log')
@@ -989,7 +987,6 @@ class Kubernetes(Logging):
     def save(self, item):
         if item in self.kubernetes.keys():
             path = os.path.expanduser(self.workspace + '/' + item + '.yaml')
-            print(path)
             if os.path.exists(path):
                 os.remove(path)
             self.logging.info('save as %s' % path)
