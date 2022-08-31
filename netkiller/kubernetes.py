@@ -39,7 +39,10 @@ class Define():
         class pathType():
             Prefix = 'Prefix'
             ImplementationSpecific = 'ImplementationSpecific'
-        
+    class PersistentVolume():
+        class accessModes():
+            ReadWriteOnce = 'ReadWriteOnce'
+
 
 class Common():
     commons = {}
@@ -362,58 +365,66 @@ class ServiceAccount(Common):
 
 
 class PersistentVolume(Common):
-    name = ''
+
+    components = ''
     persistentVolume = {}
 
-    def __init__(self, name):
+    def __init__(self, components = None):
         super().__init__()
         self.apiVersion()
         self.kind('PersistentVolume')
-        PersistentVolume.name = name
-        PersistentVolume.persistentVolume[PersistentVolume.name] = {}
+        if not components :
+            self.components = uuid.uuid4().hex
+        else:
+            self.components = components
+        PersistentVolume.components = self.components
+        PersistentVolume.persistentVolume[PersistentVolume.components] = {}
 
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
-            if not 'metadata' in PersistentVolume.persistentVolume[PersistentVolume.name]:
-                PersistentVolume.persistentVolume[PersistentVolume.name]['metadata'] = {
+            if not 'metadata' in PersistentVolume.persistentVolume[PersistentVolume.components]:
+                PersistentVolume.persistentVolume[PersistentVolume.components]['metadata'] = {
                 }
 
         def __del__(self):
-            PersistentVolume.persistentVolume[PersistentVolume.name]['metadata'].update(
+            PersistentVolume.persistentVolume[PersistentVolume.components]['metadata'].update(
                 self.metadata())
 
     class spec(Spec):
         def __init__(self):
             super().__init__()
-            if not 'spec' in PersistentVolume.persistentVolume[PersistentVolume.name]:
-                PersistentVolume.persistentVolume[PersistentVolume.name]['spec'] = {
-                }
-
+            if not 'spec' in PersistentVolume.persistentVolume[PersistentVolume.components]:
+                PersistentVolume.persistentVolume[PersistentVolume.components]['spec'] = {}
         def storageClassName(self, value):
-            PersistentVolume.persistentVolume[PersistentVolume.name]['spec']['storageClassName'] = value
+            PersistentVolume.persistentVolume[PersistentVolume.components]['spec']['storageClassName'] = value
             return(self)
-
         def capacity(self, value):
-            PersistentVolume.persistentVolume[PersistentVolume.name]['spec']['capacity'] = value
+            PersistentVolume.persistentVolume[PersistentVolume.components]['spec']['capacity'] = value
             return(self)
-
         def accessModes(self, value):
-            PersistentVolume.persistentVolume[PersistentVolume.name]['spec']['accessModes'] = [
-            ]
-            PersistentVolume.persistentVolume[PersistentVolume.name]['spec']['accessModes'] = value
+            PersistentVolume.persistentVolume[PersistentVolume.components]['spec']['accessModes'] = []
+            PersistentVolume.persistentVolume[PersistentVolume.components]['spec']['accessModes'] = value
             return(self)
-
+        def persistentVolumeReclaimPolicy(self, value):
+            PersistentVolume.persistentVolume[PersistentVolume.components]['spec']['persistentVolumeReclaimPolicy'] = value
+            return(self)
+        def local(self, value):
+            PersistentVolume.persistentVolume[PersistentVolume.components]['spec']['local'] = {'path':value}
+            return(self)
         def hostPath(self, value):
-            PersistentVolume.persistentVolume[PersistentVolume.name]['spec']['hostPath'] = value
+            PersistentVolume.persistentVolume[PersistentVolume.components]['spec']['hostPath'] = value
+            return(self)
+        def nodeAffinity(self, value):
+            PersistentVolume.persistentVolume[PersistentVolume.components]['spec']['nodeAffinity'] = value
             return(self)
 
     def dump(self):
-        self.persistentVolume[self.name].update(self.commons)
+        self.persistentVolume[self.components].update(self.commons)
         # self.pod['metadata'].update(self.metadata.metadata())
         # self.persistentVolume['spec'].update(self.spec.spec)
         # self.pod['spec']['containers'].append(self.spec.containers.container)
-        return super().dump(self.persistentVolume[self.name])
+        return super().dump(self.persistentVolume[self.components])
 
     def json(self):
         print(self.persistentVolume)
@@ -423,59 +434,67 @@ class PersistentVolume(Common):
 
 
 class PersistentVolumeClaim(Common):
+    components = ''
     persistentVolumeClaim = {}
 
-    def __init__(self, name):
+    def __init__(self, components = None):
         super().__init__()
         self.apiVersion()
         self.kind('PersistentVolumeClaim')
-        PersistentVolumeClaim.name = name
-        PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name] = {
+        if not components :
+            self.components = uuid.uuid4().hex
+        else:
+            self.components = components
+        PersistentVolumeClaim.components = self.components
+        PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.components] = {
         }
 
     class metadata(Metadata):
         def __init__(self):
             super().__init__()
-            if not 'metadata' in PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]:
-                PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['metadata'] = {
+            if not 'metadata' in PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.components]:
+                PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.components]['metadata'] = {
                 }
 
         def __del__(self):
-            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['metadata'].update(
+            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.components]['metadata'].update(
                 self.metadata())
 
     class spec(Spec):
         def __init__(self):
             super().__init__()
-            if not 'spec' in PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]:
-                PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec'] = {
+            if not 'spec' in PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.components]:
+                PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.components]['spec'] = {
                 }
 
         def storageClassName(self, value):
             PersistentVolumeClaim.persistentVolumeClaim[
-                PersistentVolumeClaim.name]['spec']['storageClassName'] = value
+                PersistentVolumeClaim.components]['spec']['storageClassName'] = value
             return(self)
 
         def accessModes(self, value):
-            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec']['accessModes'] = [
+            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.components]['spec']['accessModes'] = [
             ]
-            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec']['accessModes'] = value
+            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.components]['spec']['accessModes'] = value
             return(self)
 
         def hostPath(self, value):
-            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec']['hostPath'] = value
+            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.components]['spec']['hostPath'] = value
             return(self)
 
         def resources(self, value):
-            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.name]['spec']['resources'] = value
+            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.components]['spec']['resources'] = value
+            return(self)
+        def selector(self, value):
+            PersistentVolumeClaim.persistentVolumeClaim[PersistentVolumeClaim.components]['spec']['selector'] = value
             return(self)
 
     def dump(self):
-        self.persistentVolumeClaim[self.name].update(self.commons)
+        self.persistentVolumeClaim[self.components].update(self.commons)
         # self.pod['metadata'].update(self.metadata.metadata())
         # self.persistentVolume['spec'].update(self.spec.spec)
         # self.pod['spec']['containers'].append(self.spec.containers.container)
-        return super().dump(self.persistentVolumeClaim[self.name])
+        return super().dump(self.persistentVolumeClaim[self.components])
 
     def json(self):
         print(self.persistentVolume)

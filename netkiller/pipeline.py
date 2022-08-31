@@ -1,33 +1,87 @@
-import os
+import os,sys
+from datetime import datetime
+sys.path.insert(0, '/Users/neo/workspace/devops')
+
+from netkiller.kubernetes import *
+from netkiller.git import *
+# import enum
+# from enum import unique
+# @unique
 class Pipeline:
-    def __init__(self, workspace):
-        self.workspace = workspace
-        self.pipelines = {}
-        pass
-    def start(self):
-        os.chdir(self.workspace)
-        self.pipelines['start'] = []
-        return self
-    def init(self):
-        self.pipelines['init'] = []
-        return self
-    def checkout(self):
-        self.pipelines['checkout'] = []
-        return self
-    def build(self):
-        self.pipelines['build'] = []
-        return self
-    def package(self):
-        self.pipelines['package'] = []
-        return self
-    def test(self):
-        self.pipelines['test'] = []
-        return self
-    def deploy(self):
-        self.pipelines['deploy'] = []
-        return self
-    def startup(self):
-        self.pipelines['startup'] = []
-        return self
-    def end(self):
-        self.pipelines['end'] = []
+	Maven = 'maven'
+	Npm = 'npm'
+	Cnpm = 'cnpm'
+	Yarn = 'yarn'
+	Gradle = 'gradle'
+	def __init__(self, workspace):
+		self.workspace = workspace
+		self.pipelines = {}
+		os.chdir(self.workspace)
+		pass
+	def begin(self, project):
+		self.project = project
+		# os.chdir(project)
+		self.pipelines['begin'] = ['echo begin '+project]
+		return self
+	def env(self, key,value):
+		os.putenv(key,value)
+		return self
+	def init(self):
+		self.pipelines['init'] = []
+		return self
+	def checkout(self, url, branch):
+		# self.pipelines['checkout'] = []
+		git = Git(self.workspace)
+		if os.path.exists(self.project)	:
+			os.chdir(self.project)
+			git.fetch().checkout(branch).pull().execute()
+		else:
+			git.option('--branch ' +branch)
+			git.clone(url, self.project).execute()
+			os.chdir(self.project)
+		return self
+	def build(self, script):
+		# if compiler == self.Maven :
+		#     self.pipelines['build'] = ['maven clean package']
+		# elif compiler == self.Npm :
+		#     self.pipelines['build'] = ['npm install']
+		if script :
+			self.pipelines['build'] = script
+		return self
+	def package(self, script):
+		self.pipelines['package'] = script
+		return self
+	def test(self, script):
+		self.pipelines['test'] = script
+		return self
+	def dockerfile(self, registry = None, tag=None):
+		if registry :
+			image = registry+'/'+self.project
+		else:
+			image = self.project
+
+		if tag :
+			tag = image+':'+ tag
+		else:
+			tag = image+':'+ datetime.datetime.now().strftime('%Y%m%d-%H%M')
+		
+		self.pipelines['dockerfile']=[]
+		self.pipelines['dockerfile'].append('docker build -t '+tag+' .')
+		self.pipelines['dockerfile'].append('docker tag '+tag+' '+image)
+		self.pipelines['dockerfile'].append('docker push '+tag)
+		self.pipelines['dockerfile'].append('docker push '+image)
+		return self
+	def deploy(self, script):
+		self.pipelines['deploy'] = script
+		return self
+	def startup(self, script):
+		self.pipelines['startup'] = script
+		return self
+	def end(self):
+		print(self.pipelines)
+		self.pipelines['end'] = ['echo end ' + self.project]		
+		for stage in ['begin','build','dockerfile','end'] :
+			for cmd in self.pipelines.get(stage) :
+				print(cmd)
+				os.system(cmd)
+

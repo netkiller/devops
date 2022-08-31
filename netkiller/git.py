@@ -81,7 +81,9 @@ class Git():
 		os.chdir(self.workspace)
 		self.cmd.append('tag ' + tagname)
 		return(self)
-	
+	def reset(self):
+		self.cmd.append('reset HEAD .')
+		return(self)
 	def command(self, cmd, argument):
 		self.cmd.append('%s %s' %(cmd, argument))
 	def debug(self):
