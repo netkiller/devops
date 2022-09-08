@@ -162,6 +162,14 @@ class Containers:
 		if value :
 			self.container['readinessProbe'] = value
 		return self
+	def securityContext(self, value):
+		if value :
+			self.container['securityContext'] = value
+		return self
+	def command(self, value):
+		if value :
+			self.container['command'] = value
+		return self
 
 class Volumes(Common):
 	volumes = {}
@@ -725,7 +733,17 @@ class Deployment(Common):
 			# self.spec['serviceName'] = value
 			Deployment.deployment[Deployment.components]['spec']['serviceName'] = value
 			return self
-
+		def volumeClaimTemplates(self, value):
+			Deployment.deployment[Deployment.components]['spec']['volumeClaimTemplates'] = value
+			return self
+		# class volumeClaimTemplates(PersistentVolumeClaim):
+		# 	def __init__(self, name):
+		# 		self.name = name
+		# 		super().__init__(name)
+		# 		if not 'volumeClaimTemplates' in Deployment.deployment[Deployment.components]['spec']:
+		# 			Deployment.deployment[Deployment.components]['spec']['volumeClaimTemplates'] = []
+		# 	def __del__(self):
+		# 		Deployment.deployment[Deployment.components]['spec']['volumeClaimTemplates'] = self.persistentVolumeClaim[self.name]
 		class template():
 			def __init__(self):
 				# super().__init__()
