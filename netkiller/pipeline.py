@@ -4,9 +4,6 @@ sys.path.insert(0, '/Users/neo/workspace/devops')
 
 from netkiller.kubernetes import *
 from netkiller.git import *
-# import enum
-# from enum import unique
-# @unique
 class Pipeline:
 	Maven = 'maven'
 	Npm = 'npm'
@@ -21,7 +18,7 @@ class Pipeline:
 	def begin(self, project):
 		self.project = project
 		# os.chdir(project)
-		self.pipelines['begin'] = ['echo begin '+project]
+		self.pipelines['begin'] = ['pwd']
 		return self
 	def env(self, key,value):
 		os.putenv(key,value)
@@ -63,7 +60,7 @@ class Pipeline:
 		if tag :
 			tag = image+':'+ tag
 		else:
-			tag = image+':'+ datetime.datetime.now().strftime('%Y%m%d-%H%M')
+			tag = image+':'+ datetime.now().strftime('%Y%m%d-%H%M')
 		
 		self.pipelines['dockerfile']=[]
 		self.pipelines['dockerfile'].append('docker build -t '+tag+' .')
@@ -78,10 +75,11 @@ class Pipeline:
 		self.pipelines['startup'] = script
 		return self
 	def end(self):
-		print(self.pipelines)
-		self.pipelines['end'] = ['echo end ' + self.project]		
+		# print(self.pipelines)
+		# self.pipelines['end'] = ['echo end ' + self.project]
 		for stage in ['begin','build','dockerfile','end'] :
 			for cmd in self.pipelines.get(stage) :
 				print(cmd)
 				os.system(cmd)
+		return self.pipelines
 

@@ -990,6 +990,7 @@ EOF""".format(command=command, stdin=text)
 class Kubernetes(Logging):
 	def __init__(self, kubeconfig = None):
 		super().__init__()
+		self.environments = {}
 		self.kubernetes = {}
 		self.workspace = '/tmp'
 		if kubeconfig :
@@ -1056,7 +1057,14 @@ class Kubernetes(Logging):
 	def compose(self, compose):
 		self.kubernetes[compose.name] = compose
 		self.logging.info("kubernetes : %s" % (compose.name))
-
+		return self
+	def environment(self, name, kubeconfig = None):
+		if type(name) == dict :
+			self.environments = name
+		else:	
+			self.environments[name] = kubeconfig
+		# self.logging.info("kubeconfig : %s => %s" % (name,kubeconfig))
+		return self
 	def save(self, item):
 		if item in self.kubernetes.keys():
 			path = os.path.expanduser(self.workspace + '/' + item + '.yaml')
@@ -1110,7 +1118,7 @@ class Kubernetes(Logging):
 				command="create", yamlfile=path)
 			self.logging.info('create %s' % path)
 			self.execute(cmd)
-		exit()
+		# exit()
 
 	def delete(self, env):
 		path = self.save(env)
@@ -1119,7 +1127,7 @@ class Kubernetes(Logging):
 				command="delete", yamlfile=path)
 			self.logging.info('delete %s ' % path)
 			self.execute(cmd)
-		exit()
+		# exit()
 
 	def replace(self, env):
 		path = self.save(env)
@@ -1128,14 +1136,14 @@ class Kubernetes(Logging):
 				command="replace", yamlfile=path)
 			self.logging.info('replace %s ' % path)
 			self.execute(cmd)
-		exit()
+		# exit()
 
 	def upgrade(self, namespace, project, image):
 		cmd = "set image deployment/{project} {project}={image} -n {namespace}".format(namespace=namespace, project=project, image=image)
 		self.logging.info("namespace={namespace}, {project}={image}".format(namespace=namespace, project=project, image=image))
 		self.logging.debug('upgrade %s ' % cmd)
 		self.execute(cmd)
-		exit()
+		# exit()
 
 	# def kubeNamespace(self):
 	#     cmd = "get namespace"
@@ -1163,10 +1171,18 @@ class Kubernetes(Logging):
 			print(item)
 	def kubeconfig(self, kubeconfig):
 		os.environ['KUBECONFIG']=kubeconfig
+		self.logging.info('KUBECONFIG=%s ' % kubeconfig)
 	def main(self):
 
 		if self.options.kubeconfig :
 			self.kubeconfig(self.options.kubeconfig)
+		elif self.options.environment and self.options.environment in self.environments:
+			self.kubeconfig(self.environments[self.options.environment])
+		else:
+			# print( "" )
+			for key,value in self.environments.items():
+				print( "%s => %s" % (key,value) )
+			# return
 
 		if self.options.list:
 			self.list()
@@ -1197,6 +1213,7 @@ class Kubernetes(Logging):
 					self.list()
 			else:
 				for env in self.kubernetes.keys():
+					# print(env)
 					self.create(env)
 		elif self.options.delete:
 			if self.args:
