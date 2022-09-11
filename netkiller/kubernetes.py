@@ -928,23 +928,14 @@ class IngressRouteTCP(Ingress):
 
 
 class Compose(Logging):
-	def __init__(self, name):
+	def __init__(self, environment, kubeconfig = None):
 		super().__init__()
 		self.compose = []
-		self.name = name
-		self.namespaces = []
-	# def __del__(self):
-		# Kubernetes.composes.update(self.metadata)
-		# print(self.compose)
-
+		self.environment = environment
+		self.kubeconfig = kubeconfig
 	def add(self, object):
 		self.compose.append(object.dump())
 		return(self)
-	def namespace(self, ns):
-		if type(ns) == str :
-			self.namespaces.append(ns)
-		else:
-			self.namespaces = ns
 	def workload(self, compose):
 		self.compose.append(compose.dump())
 	#     self.logging.info("kubernetes : %s" % (compose.workload))
@@ -1057,8 +1048,10 @@ class Kubernetes(Logging):
 		exit()
 
 	def compose(self, compose):
-		self.kubernetes[compose.name] = compose
-		self.logging.info("kubernetes : %s" % (compose.name))
+		self.kubernetes[compose.environment] = compose
+		if compose.kubeconfig :
+			self.environments[compose.environment] = compose.kubeconfig
+		self.logging.info("kubernetes : %s" % (compose.environment))
 		return self
 	def environment(self, name, kubeconfig = None):
 		if type(name) == dict :
