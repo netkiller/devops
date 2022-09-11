@@ -797,14 +797,17 @@ class Deployment(Common):
 							self.container)
 				def imagePullSecrets(self, secret):
 					Deployment.deployment[Deployment.components]['spec']['template']['spec']['imagePullSecrets'] = secret
-				def nodeSelector(self, group):
-					Deployment.deployment[Deployment.components]['spec']['template']['spec']['nodeSelector'] = group
+				def nodeSelector(self, value):
+					Deployment.deployment[Deployment.components]['spec']['template']['spec']['nodeSelector'] = value
+				def nodeName(self, value):
+					Deployment.deployment[Deployment.components]['spec']['template']['spec']['nodeName'] = value
 				def restartPolicy(self, value):
 					Deployment.deployment[Deployment.components]['spec']['template']['spec']['restartPolicy'] = value
 				def dnsPolicy(self, value):
 					Deployment.deployment[Deployment.components]['spec']['template']['spec']['dnsPolicy'] = value
 				def volumes(self, value):
 					Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'] = value
+				
 				# class volumes(Volumes):
 					# def __init__(self):
 					#     super().__init__()
@@ -815,8 +818,7 @@ class Deployment(Common):
 					#     Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'].append(
 					#         self.volumes)
 
-				# def __del__(self):
-					# print('debug', self)
+				
 	
 		class strategy():
 			def __init__(self):

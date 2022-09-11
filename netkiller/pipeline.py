@@ -1,4 +1,5 @@
 import os,sys
+import subprocess
 from datetime import datetime
 sys.path.insert(0, '/Users/neo/workspace/devops')
 
@@ -75,11 +76,17 @@ class Pipeline:
 		self.pipelines['startup'] = script
 		return self
 	def end(self):
-		# print(self.pipelines)
-		# self.pipelines['end'] = ['echo end ' + self.project]
-		for stage in ['begin','build','dockerfile','end'] :
-			for cmd in self.pipelines.get(stage) :
-				print(cmd)
-				os.system(cmd)
+		print(self.pipelines)
+		self.pipelines['end'] = []
+		for stage in ['init','build','dockerfile','deploy','startup','end'] :
+			if stage in self.pipelines.keys() :
+				for command in self.pipelines[stage] :
+					# print(command)
+					# for cmd in commands :
+					rev = subprocess.call(command,shell=True)					
+					print("command %s, %s" % (command, rev))
+					# if rev != 0 :
+						# raise Exception("{} 执行失败".format(command))
+
 		return self.pipelines
 
