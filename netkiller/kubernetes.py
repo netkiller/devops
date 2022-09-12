@@ -127,7 +127,8 @@ class Containers:
 		return self
 
 	def volumeMounts(self, value):
-		self.container['volumeMounts'] = value
+		if value :
+			self.container['volumeMounts'] = value
 		return self
 
 	def imagePullPolicy(self, value):
@@ -736,14 +737,6 @@ class Deployment(Common):
 		def volumeClaimTemplates(self, value):
 			Deployment.deployment[Deployment.components]['spec']['volumeClaimTemplates'] = value
 			return self
-		# class volumeClaimTemplates(PersistentVolumeClaim):
-		# 	def __init__(self, name):
-		# 		self.name = name
-		# 		super().__init__(name)
-		# 		if not 'volumeClaimTemplates' in Deployment.deployment[Deployment.components]['spec']:
-		# 			Deployment.deployment[Deployment.components]['spec']['volumeClaimTemplates'] = []
-		# 	def __del__(self):
-		# 		Deployment.deployment[Deployment.components]['spec']['volumeClaimTemplates'] = self.persistentVolumeClaim[self.name]
 		class template():
 			def __init__(self):
 				# super().__init__()
@@ -807,19 +800,13 @@ class Deployment(Common):
 					Deployment.deployment[Deployment.components]['spec']['template']['spec']['dnsPolicy'] = value
 				def volumes(self, value):
 					Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'] = value
-				
+				def tolerations(self,value):
+					Deployment.deployment[Deployment.components]['spec']['template']['spec']['tolerations'] = value
 				# class volumes(Volumes):
 					# def __init__(self):
 					#     super().__init__()
 					#     if not 'volumes' in Deployment.deployment[Deployment.components]['spec']['template']['spec']:
 					#         Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'] = []
-
-					# def __del__(self):
-					#     Deployment.deployment[Deployment.components]['spec']['template']['spec']['volumes'].append(
-					#         self.volumes)
-
-				
-	
 		class strategy():
 			def __init__(self):
 				Deployment.deployment[Deployment.components]['spec']['strategy'] = {}
