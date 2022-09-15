@@ -27,11 +27,15 @@ class Define():
 	class containers():
 		class imagePullPolicy():
 			IfNotPresent = 'IfNotPresent'
+			Always = 'Always'
+			Never ='Never'
 	class dnsPolicy():
 		ClusterFirst = 'ClusterFirst'
 	class Service():
 		ClusterIP = 'ClusterIP'
 		LoadBalancer = 'LoadBalancer'
+		ExternalName = 'ExternalName'
+		NodePort = 'NodePort'
 		class externalTrafficPolicy:
 			Local = 'Local'
 			Cluster = 'Cluster'
@@ -653,7 +657,9 @@ class Service(Common):
 				# for v in value :
 					# Service.service[Service.components]['spec']['ports'].append(v)
 			return self
-
+		def externalName(self, value):
+			Service.service[Service.components]['spec']['externalName'] = value
+			return self
 		def externalIPs(self, value):
 			Service.service[Service.components]['spec']['externalIPs'] = value
 			return self
