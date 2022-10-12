@@ -75,9 +75,9 @@ class Pipeline:
 	def startup(self, script):
 		self.pipelines['startup'] = script
 		return self
-	def end(self):
-		print(self.pipelines)
-		self.pipelines['end'] = []
+	def end(self,script = None):
+		if script :
+			self.pipelines['end'] = script
 		for stage in ['init','build','dockerfile','deploy','startup','end'] :
 			if stage in self.pipelines.keys() :
 				for command in self.pipelines[stage] :
@@ -87,6 +87,8 @@ class Pipeline:
 					print("command %s, %s" % (command, rev))
 					# if rev != 0 :
 						# raise Exception("{} 执行失败".format(command))
+		return self
 
-		return self.pipelines
-
+	def debug(self):
+		print(self.pipelines)
+		return self
