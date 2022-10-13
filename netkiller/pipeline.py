@@ -42,12 +42,12 @@ class Pipeline:
             git = Git(self.workspace)
             git.option('--branch ' + branch)
             git.clone(url, self.project).execute()
+            os.chdir(self.project)
         os.system('pwd')
         self.pipelines['checkout'] = ['ls']
         return self
-
     def build(self, script):
-        # os.chdir(self.project)
+        # 
         # if compiler == self.Maven :
         #     self.pipelines['build'] = ['maven clean package']
         # elif compiler == self.Npm :
