@@ -94,7 +94,7 @@ class Pipeline:
     def end(self, script=None):
         if script:
             self.pipelines['end'] = script
-        for stage in ['init', 'checkout', 'build', 'dockerfile', 'deploy', 'startup', 'end']:
+        for stage in ['begin','init', 'checkout', 'build', 'dockerfile', 'deploy', 'startup', 'end']:
             if stage in self.pipelines.keys():
                 for command in self.pipelines[stage]:
                     rev = subprocess.call(command, shell=True)
@@ -104,5 +104,6 @@ class Pipeline:
         return self
 
     def debug(self):
+        self.isDebug = True
         print(self.pipelines)
         return self
