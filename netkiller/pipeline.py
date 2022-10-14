@@ -43,8 +43,7 @@ class Pipeline:
             git.option('--branch ' + branch)
             git.clone(url, self.project).execute()
             os.chdir(self.project)
-        os.system('pwd')
-        self.pipelines['checkout'] = ['ls']
+        self.pipelines['checkout'] = ['pwd','ls']
         return self
     def build(self, script):
         # 
@@ -64,7 +63,8 @@ class Pipeline:
         self.pipelines['test'] = script
         return self
 
-    def dockerfile(self, registry=None, tag=None):
+    def dockerfile(self, registry=None, tag=None, dir=None):
+        self.pipelines['dockerfile'] = []
         if registry:
             image = registry+'/'+self.project
         else:
@@ -75,7 +75,9 @@ class Pipeline:
         else:
             tag = image+':' + datetime.now().strftime('%Y%m%d-%H%M')
 
-        self.pipelines['dockerfile'] = []
+        if dir :
+            os.chdir(dir)
+            
         self.pipelines['dockerfile'].append('docker build -t '+tag+' .')
         self.pipelines['dockerfile'].append('docker tag '+tag+' '+image)
         self.pipelines['dockerfile'].append('docker push '+tag)
