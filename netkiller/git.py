@@ -1,8 +1,8 @@
 #-*- coding: utf-8 -*-
 import os, sys,logging
 class Git():
-	cmd = []
 	def __init__(self, workspace = None, logger = None):
+		self.cmd = []
 		if logger :
 			self.logger = logger
 		else:
@@ -96,10 +96,10 @@ class Git():
 		for line in self.cmd:
 			rev = os.system('git '+ line)
 			self.logger.debug('git '+ line)
-			self.logger.debug(rev)
+			# self.logger.debug(rev)
 			if rev == 256 :
 				return rev
-			print("-")
+			# print("-")
 		self.cmd = []
 		
 		return 0

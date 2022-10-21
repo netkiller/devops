@@ -978,7 +978,7 @@ class Kubernetes(Logging):
 		super().__init__()
 		self.environments = {}
 		self.kubernetes = {}
-		self.workspace = '/tmp'
+		self.workspace = '~/.netkiller'
 		if kubeconfig :
 			self.kubeconfig(kubeconfig) 
 
@@ -1009,7 +1009,7 @@ class Kubernetes(Logging):
 
 		group = OptionGroup(self.parser, "Others")
 		group.add_option('', '--logfile', dest='logfile',
-						 help='logs file.', default='debug.log')
+						 help='logs file.', default='~/.netkiller/debug.log')
 		group.add_option('-y', '--yaml', dest='yaml',
 						 action='store_true', help='show yaml compose')
 		group.add_option('', '--export', dest='export', metavar="~/.kube/config",help='export yaml files')
@@ -1051,11 +1051,18 @@ class Kubernetes(Logging):
 			self.environments = name
 		else:	
 			self.environments[name] = kubeconfig
-		# self.logging.info("kubeconfig : %s => %s" % (name,kubeconfig))
+		self.logging.info("kubeconfig : %s => %s" % (name,kubeconfig))
 		return self
 	def save(self, item):
+		directory = self.workspace
+		if self.options.environment:
+			directory = self.workspace + '/' + self.options.environment
+
+		if not os.path.exists(path):
+			os.mkdir(directory)
+
 		if item in self.kubernetes.keys():
-			path = os.path.expanduser(self.workspace + '/' + item + '.yaml')
+			path = os.path.expanduser(directory + '/' + item + '.yaml')
 			if os.path.exists(path):
 				os.remove(path)
 			self.logging.info('save as %s' % path)
@@ -1131,12 +1138,6 @@ class Kubernetes(Logging):
 		self.logging.info("namespace={namespace}, {project}={image}".format(namespace=namespace, project=project, image=image))
 		self.logging.debug('upgrade %s ' % cmd)
 		self.execute(cmd)
-		# exit()
-
-	# def kubeNamespace(self):
-	#     cmd = "get namespace"
-	#     self.logging.info(cmd)
-	#     self.execute(cmd)
 
 	def service(self):
 		cmd = "get service"
@@ -1167,10 +1168,8 @@ class Kubernetes(Logging):
 		elif self.options.environment and self.options.environment in self.environments:
 			self.kubeconfig(self.environments[self.options.environment])
 		else:
-			# print( "" )
 			for key,value in self.environments.items():
 				print( "%s => %s" % (key,value) )
-			# return
 
 		if self.options.list:
 			self.list()
