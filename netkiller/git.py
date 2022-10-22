@@ -14,7 +14,6 @@ class Git():
 		else:
 			self.logger.info("directory doesn't exist %s" % self.workspace)
 			exit(0)
-		self.logger.info('project directory %s' % os.getcwd())
 		
 	def option(self, opt):
 		if opt:
@@ -93,6 +92,7 @@ class Git():
 			self.logger.debug(cmd)
 		return(cmd)
 	def execute(self):
+		self.logger.info('execute directory %s' % os.getcwd())
 		for line in self.cmd:
 			rev = os.system('git '+ line)
 			self.logger.debug('git '+ line)

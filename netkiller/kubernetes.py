@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from email.mime import image
 import os,uuid
+from pickle import TRUE
 from posixpath import split
 import sys
 import json
@@ -950,8 +951,9 @@ class Compose(Logging):
 		if not path:
 			path = self.workload + '.yaml'
 		path = os.path.expanduser(path)
-		# if os.path.exists(path):
-		# os.remove(path)
+		directory = os.path.dirname(path)
+		if not os.path.exists(directory):
+			os.makedirs(directory,exist_ok=True)
 		with open(path, 'w') as file:
 			file.write('---\n'.join(self.compose))
 
@@ -1009,7 +1011,7 @@ class Kubernetes(Logging):
 
 		group = OptionGroup(self.parser, "Others")
 		group.add_option('', '--logfile', dest='logfile',
-						 help='logs file.', default='~/.netkiller/debug.log')
+						 help='logs file.', default='debug.log')
 		group.add_option('-y', '--yaml', dest='yaml',
 						 action='store_true', help='show yaml compose')
 		group.add_option('', '--export', dest='export', metavar="~/.kube/config",help='export yaml files')
@@ -1058,8 +1060,8 @@ class Kubernetes(Logging):
 		if self.options.environment:
 			directory = self.workspace + '/' + self.options.environment
 
-		if not os.path.exists(path):
-			os.mkdir(directory)
+		if not os.path.exists(directory):
+			os.makedirs(directory)
 
 		if item in self.kubernetes.keys():
 			path = os.path.expanduser(directory + '/' + item + '.yaml')

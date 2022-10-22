@@ -47,7 +47,7 @@ class Pipeline:
     def checkout(self, url, branch):
         self.logging.info("%s = %s" % (url,branch))
         if os.path.exists(self.project):
-            git = Git(os.path.join(self.workspace+self.project), self.logging)
+            git = Git(os.path.join(self.workspace,self.project), self.logging)
             git.fetch().checkout(branch).pull().execute()
         else:
             git = Git(self.workspace, self.logging)
@@ -97,6 +97,7 @@ class Pipeline:
         self.pipelines['dockerfile'].append('docker push '+tag)
         self.pipelines['dockerfile'].append('docker push '+image)
         self.pipelines['dockerfile'].append('docker image rm '+tag)
+        self.pipelines['dockerfile'].append('docker image rm '+image)
         self.logging.info("dockerfile: %s" % self.pipelines['dockerfile'])
         return self
 
@@ -121,7 +122,11 @@ class Pipeline:
                 if stage in self.pipelines.keys():
                     for command in self.pipelines[stage]:
                         rev = subprocess.call(command, shell=True)
-                        self.logging.info("command: %s, %s" % (rev, command))
+                        if rev == 0 :
+                            status = 'done'
+                        else:
+                            status = 'error'
+                        self.logging.info("command: %s, %s, status: %s" % (rev, command,status))
                         # if rev != 0 :
                         # raise Exception("{} 执行失败".format(command))
         except KeyboardInterrupt as e:
