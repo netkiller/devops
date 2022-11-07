@@ -846,6 +846,11 @@ class StatefulSet(Deployment):
 		self.kind('StatefulSet')
 
 
+class DaemonSet(Deployment):
+	def __init__(self):
+		super().__init__()
+		self.kind('DaemonSet')
+
 class Ingress(Common):
 	components = None
 	ingress = {}
