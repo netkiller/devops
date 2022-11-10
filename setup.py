@@ -54,7 +54,7 @@ setup(
 			'etc/notification.ini',
 			'etc/dump.ini.sample',
 			'etc/mongo.ini.sample',
-			'etc/logviewer.ini.sample',
+			'etc/logviewer.ini',
 		]),
 		('libexec/devops', [
 			'shell/backup/backup.mysql.sh',

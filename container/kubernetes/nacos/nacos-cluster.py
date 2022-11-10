@@ -6,12 +6,19 @@ namespace = 'default'
 config = ConfigMap('nacos')
 config.apiVersion('v1')
 config.metadata().name('nacos').namespace(namespace)
+# config.data({
+#     'mysql.host': "rm-bp1gna9an26441wsb.mysql.rds.aliyuncs.com",
+#     'mysql.port': "3306",
+#     'mysql.dbname': "nacos",
+#     'mysql.user': "grey",
+#     'mysql.password': "A6Diyai1"
+# })
 config.data({
-    'mysql.host': "rm-bp1gna9an26441wsb.mysql.rds.aliyuncs.com",
+    'mysql.host': "172.18.200.5",
     'mysql.port': "3306",
     'mysql.dbname': "nacos",
-    'mysql.user': "grey",
-    'mysql.password': "A6Diyai1"
+    'mysql.user': "nacos",
+    'mysql.password': "nacos"
 })
 # config.debug()
 
@@ -52,9 +59,9 @@ statefulSet.spec().template().spec().containers().name('nacos').imagePullPolicy(
         {'name': 'TZ', 'value': 'Asia/Shanghai'},
         {'name': 'LANG', 'value': 'en_US.UTF-8'},
         {'name': 'NACOS_REPLICAS', 'value': '1'},
-
+        {'name': 'NACOS_AUTH_ENABLE', 'value': 'true'},
         # {'name': 'SPRING_DATASOURCE_PLATFORM', 'value': 'mysql'},
-        # {'name': 'MYSQL_SERVICE_HOST', 'value': 'mysql-0.mysql.default.svc.cluster.local'},
+        
         {'name': 'MYSQL_SERVICE_HOST', 'valueFrom':{'configMapKeyRef':{'name': 'nacos','key': 'mysql.host'}}},
         {'name': 'MYSQL_SERVICE_PORT', 'valueFrom':{'configMapKeyRef':{'name': 'nacos','key': 'mysql.port'}}},
         {'name': 'MYSQL_SERVICE_DB_NAME', 'valueFrom':{'configMapKeyRef':{'name': 'nacos','key': 'mysql.dbname'}}},
@@ -93,8 +100,9 @@ ingress.apiVersion('networking.k8s.io/v1')
 ingress.metadata().name('nacos')
 ingress.metadata().namespace(namespace)
 # ingress.metadata().annotations({'kubernetes.io/ingress.class': 'nginx'})
-ingress.spec().rules([{
-    'host': 'pre.ejiayou.com',
+ingress.spec().rules([
+{
+    'host': 'nacos.netkiller.cn',
     'http':{
         'paths': [{
             'pathType': Define.Ingress.pathType.Prefix,
@@ -104,11 +112,27 @@ ingress.spec().rules([{
                     'name':'nacos', 
                     'port':{'number': 8848}
                 }
-            }}]
-}}])
+            }}]}
+},{
+    'host': 'test.ejiayou.com',
+    'http':{
+        'paths': [{
+            'pathType': Define.Ingress.pathType.Prefix,
+            'path': '/nacos', 
+            'backend':{
+                'service':{
+                    'name':'nacos', 
+                    'port':{'number': 8848}
+                }
+            }}]}
+}
+])
 # ingress.debug()
 
-kubernetes = Kubernetes('/Volumes/Data/kubeconfig')
+kubeconfig =  os.path.expanduser('~/workspace/ops/ensd/k3s.yaml')
+# kubeconfig =  os.path.expanduser('~/tmp/ops/ensd/k3d-test.yaml')
+# kubeconfig = '/Volumes/Data/kubeconfig'
+kubernetes = Kubernetes(kubeconfig)
 compose = Compose('nacos')
 compose.add(config)
 compose.add(statefulSet)
