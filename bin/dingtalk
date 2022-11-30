@@ -1,0 +1,77 @@
+#! /usr/bin/env python3
+# -*- coding: UTF-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+##############################################
+
+try:
+    import requests
+    import os
+    import sys
+    import logging
+    import logging.handlers
+    import json
+    from optparse import OptionParser, OptionGroup
+except ImportError as err:
+    print("Error: %s" % (err))
+
+
+class Dingtalk():
+
+    def __init__(self):
+        usage = "usage: %prog [options] message"
+        self.parser = OptionParser(usage)
+        self.parser.add_option(
+            "-t", "--token", dest="token", help="access_token", default='', metavar="")
+        self.parser.add_option('-l', '--logfile', dest='logfile', help='logs file.',
+                               default='/var/log/dingtalk.log', metavar='/var/log/dingtalk.log')
+
+        self.parser.add_option(
+            "-d", "--debug", action="store_true", dest="debug", help="debug mode")
+
+        (options, args) = self.parser.parse_args()
+
+        if options.logfile:
+            logging.basicConfig(level=logging.NOTSET, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
+                                filename=options.logfile, filemode='a')
+
+        self.logging = logging.getLogger()
+
+        if options.debug:
+            print("="*50)
+            print(options, args)
+            print("="*50)
+
+        if options.token:
+            self.token = options.token
+
+        if args:
+            message = ' '.join(args)
+            self.send(message)
+
+        else:
+            self.usage()
+
+    def send(self, message):
+        url = "https://oapi.dingtalk.com/robot/send?access_token={token}".format(
+            token=self.token)
+        header = {'Content-Type': 'application/json'}
+        data = json.dumps({
+            "msgtype": "text",
+            "text": {
+                "content": message
+            }
+        })
+        self.logging.info(data)
+        res = requests.post(url, data=data, headers=header)
+        self.logging.info(res.json())
+
+    def usage(self):
+        self.parser.print_help()
+        print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
+        exit()
+
+
+if __name__ == '__main__':
+    dingtalk = Dingtalk()
