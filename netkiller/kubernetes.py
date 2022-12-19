@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
-from email.mime import image
-import os,uuid
-from pickle import TRUE
-from posixpath import split
-import sys
-import json
-from optparse import OptionParser, OptionGroup
-import logging
-import logging.handlers
-from logging import basicConfig
-from ruamel.yaml import YAML
-from ruamel.yaml.scalarstring import LiteralScalarString as lss, PreservedScalarString as pss
-from io import StringIO
-from base64 import b64encode
+try:
+	from email.mime import image
+	import os,uuid
+	from pickle import TRUE
+	from posixpath import split
+	import sys
+	import json
+	from optparse import OptionParser, OptionGroup
+	import logging
+	import logging.handlers
+	from logging import basicConfig
+	from ruamel.yaml import YAML
+	from ruamel.yaml.scalarstring import LiteralScalarString as lss, PreservedScalarString as pss
+	from io import StringIO
+	from base64 import b64encode
 
+except ModuleNotFoundError as err:
+	print(err)
 
 class Logging():
 	def __init__(self):
@@ -160,11 +163,11 @@ class Containers:
 			self.container['resources'] = value
 		return self
 
-	def livenessProbe(self, value):
+	def livenessProbe(self, value = None):
 		if value :
 			self.container['livenessProbe'] = value
 		return self
-	def readinessProbe(self, value):
+	def readinessProbe(self, value = None):
 		if value :
 			self.container['readinessProbe'] = value
 		return self
