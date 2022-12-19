@@ -12,15 +12,7 @@ namespace = 'default'
 # config.data({
 #     'sonarqube.conf':
 #     pss('''\
-#     pidfile /var/lib/sonarqube/sonarqube.pid
-#     dir /data
-#     port 9000
-#     bind 0.0.0.0
-#     appendonly yes
-#     protected-mode yes
-#     requirepass passw0rd
-#     maxmemory 2mb
-#     maxmemory-policy allkeys-lru  
+
 # ''')
 # })
 
@@ -132,9 +124,7 @@ statefulSet.spec().template().spec().containers(
         'subPath' : 'extensions'
     },
 ]).securityContext({'privileged': True})
-       
-# .args(['--appendonly yes','--requirepass sonarqubepass2021'])
-# .command(["sh -c sonarqube-server /usr/local/etc/sonarqube.conf"])
+
 statefulSet.spec().template().spec().volumes([
     {
     'name': 'sonarqube',
@@ -153,25 +143,25 @@ statefulSet.spec().volumeClaimTemplates([{
 	'metadata':{'name': 'sonarqube'},
     'spec':{
       'accessModes': [ "ReadWriteOnce" ],
-      'storageClassName': "local-path",
+    #   'storageClassName': "local-path",
+      'storageClassName': "longhorn",
       'resources':{'requests':{'storage': '2Gi'}}
 	}
 },{
 	'metadata':{'name': 'postgresql'},
     'spec':{
       'accessModes': [ "ReadWriteOnce" ],
-      'storageClassName': "local-path",
+    #   'storageClassName': "local-path",
+      'storageClassName': "longhorn-storage",
       'resources':{'requests':{'storage': '2Gi'}}
 	}
 }
 ])
 
-
 ingress = Ingress()
 ingress.apiVersion('networking.k8s.io/v1')
 ingress.metadata().name('sonarqube')
 ingress.metadata().namespace(namespace)
-# ingress.metadata().annotations({'kubernetes.io/ingress.class': 'nginx'})
 ingress.spec().rules([
 {
     'host': 'sonarqube.netkiller.cn',
@@ -185,24 +175,11 @@ ingress.spec().rules([
                     'port':{'number': 80}
                 }
             }}]}
-},{
-    'http':{
-        'paths': [{
-            'pathType': Define.Ingress.pathType.Prefix,
-            'path': '/sonarqube', 
-            'backend':{
-                'service':{
-                    'name':'sonarqube', 
-                    'port':{'number': 80}
-                }
-            }}]}
 }
-
 ])
 
 compose = Compose('development')
 
-# compose.add(persistentVolumeClaim)
 compose.add(service)
 compose.add(statefulSet)
 compose.add(ingress)
