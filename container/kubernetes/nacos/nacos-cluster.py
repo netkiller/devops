@@ -113,18 +113,6 @@ ingress.spec().rules([
                     'port':{'number': 8848}
                 }
             }}]}
-},{
-    'host': 'test.ejiayou.com',
-    'http':{
-        'paths': [{
-            'pathType': Define.Ingress.pathType.Prefix,
-            'path': '/nacos', 
-            'backend':{
-                'service':{
-                    'name':'nacos', 
-                    'port':{'number': 8848}
-                }
-            }}]}
 }
 ])
 # ingress.debug()
