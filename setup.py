@@ -43,7 +43,8 @@ setup(
 		'bin/sqldump',
 		'bin/mdump',
 		'bin/logviewer',
-		'bin/merge'
+		'bin/merge',
+		'bin/dingtalk'
 	],
 	data_files = [
 		('etc', ['etc/deployment.cfg']),
