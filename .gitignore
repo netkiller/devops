@@ -47,3 +47,5 @@ dump.log
 demo/redis-master-slave.yaml
 demo/k8s/ensd
 3
+*.pdf
+*.gv
