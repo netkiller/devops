@@ -1,0 +1,109 @@
+#! /usr/bin/env python3
+# -*- coding: UTF-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+##############################################
+try:
+    import os
+    import sys
+    import subprocess
+    from simple_term_menu import TerminalMenu
+    from prompt_toolkit.shortcuts import input_dialog
+    from configparser import ConfigParser, NoSectionError
+    from optparse import OptionParser, OptionGroup
+except ImportError as err:
+    print("Error: %s" % (err))
+
+
+class Logviewer():
+    def __init__(self):
+        usage = "%prog [options] message\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>"
+        self.parser = OptionParser(usage)
+        self.parser.add_option('-c',
+                               "--kubeconfig",
+                               dest="kubeconfig",
+                               help="kubeconfig file",
+                               default=None,
+                               metavar="~/.kube/config")
+        self.parser.add_option('-d',
+                               '--debug',
+                               action='store_true',
+                               dest="debug",
+                               help="debug mode")
+
+        (self.options, self.args) = self.parser.parse_args()
+
+        if self.options.kubeconfig:
+            os.environ['KUBECONFIG'] = self.options.kubeconfig
+
+        while True:
+            self.tui()
+
+    def tui(self):
+        try:
+            namespaces = self.namespace()
+            namespace_menu = TerminalMenu(namespaces, clear_screen=True)
+            menu_index = namespace_menu.show()
+            while True:
+                # print(f"You have selected: {namespaces[menu_index]}!")
+                namespace = namespaces[menu_index]
+                deployments = self.deployment(namespace)
+                deployments_menu = TerminalMenu(deployments, clear_screen=True)
+                submenu_index = deployments_menu.show()
+                deployment = deployments[submenu_index].split(' ')[0]
+                while True:
+                    pods = self.pod(namespace, deployment)
+                    pods_menu = TerminalMenu(pods, clear_screen=True)
+                    subsubmenu_index = pods_menu.show()
+                    pod = pods[subsubmenu_index].split(' ')[0]
+                    self.logs(namespace, pod)
+        except Exception as e:
+            print(e)
+
+    def usage(self):
+        self.parser.print_help()
+        exit()
+
+    def namespace(self):
+        screen = os.popen(
+            "kubectl get namespace | grep -v 'NAME' | cut -d ' ' -f1")
+        namespaces = []
+        for tmp in screen.readlines():
+            namespaces.append(tmp.strip())
+        return namespaces
+
+    def deployment(self, namespace='default'):
+        screen = os.popen(
+            "kubectl get deployment -n {namespace} -o wide".format(namespace=namespace))
+        deployments = []
+        for tmp in screen.readlines():
+            deployments.append(tmp.strip())
+        return deployments
+
+    def pod(self, namespace='default', deployment=None):
+        grep = ''
+        if deployment:
+            grep = " | grep {deployment}".format(deployment=deployment)
+        screen = os.popen(
+            "kubectl get pods -n {namespace} -o wide {grep}".format(namespace=namespace, grep=grep))
+        pods = []
+        for tmp in screen.readlines():
+            pods.append(tmp.strip())
+        return pods
+
+    def logs(self, namespace='default', pod=None):
+        text = input_dialog(title='关键字搜索', text='请输入正则表达式:').run()
+        grep = ''
+        if text:
+            grep = ' | egrep --color "%s"' % text
+
+        screen = os.system("kubectl logs -f --tail=200 -n {namespace} {pod} {grep}".format(
+            namespace=namespace, pod=pod, grep=grep))
+        return screen
+
+if __name__ == '__main__':
+    try:
+        viewer = Logviewer()
+    except KeyboardInterrupt:
+        print("Crtlgg+C Pressed. Shutting down.")
