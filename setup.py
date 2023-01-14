@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
 	name="netkiller-devops",
-	version="0.6.5",
+	version="0.6.6",
 	author="Neo Chen",
 	author_email="netkiller@msn.com",
 	description="DevOps of useful deployment and automation",
@@ -43,6 +43,8 @@ setup(
 		'bin/sqldump',
 		'bin/mdump',
 		'bin/logviewer',
+		'bin/logviewer.docker',
+		'bin/logviewer.kubectl',
 		'bin/merge',
 		'bin/dingtalk'
 	],
