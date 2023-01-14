@@ -6,12 +6,9 @@
 ##############################################
 try:
     import os
-    import sys
-    import subprocess
     from simple_term_menu import TerminalMenu
     from prompt_toolkit.shortcuts import input_dialog
-    from configparser import ConfigParser, NoSectionError
-    from optparse import OptionParser, OptionGroup
+    from optparse import OptionParser
 except ImportError as err:
     print("Error: %s" % (err))
 
@@ -26,13 +23,30 @@ class Logviewer():
                                help="kubeconfig file",
                                default=None,
                                metavar="~/.kube/config")
-        self.parser.add_option('-d',
-                               '--debug',
-                               action='store_true',
-                               dest="debug",
-                               help="debug mode")
+        self.parser.add_option('-i',
+                               '--install',
+                               dest="install",
+                               help="install logviewer")
+
+        self.parser.add_option('-a',
+                               '--adduser',
+                               dest="adduser",
+                               help="add user for log view")
 
         (self.options, self.args) = self.parser.parse_args()
+
+        if self.options.install:
+            os.system(
+                "usermod -s /usr/local/bin/logviewer.kubectl {user}".format(user=self.options.install))
+            os.system(
+                "grep {user} /etc/passwd".format(user=self.options.install))
+            exit()
+        if self.options.adduser:
+            os.system(
+                "adduser -s /usr/local/bin/logviewer.kubectl {user}".format(user=self.options.adduser))
+            os.system(
+                "grep {user} /etc/passwd".format(user=self.options.adduser))
+            exit()
 
         if self.options.kubeconfig:
             os.environ['KUBECONFIG'] = self.options.kubeconfig
@@ -43,10 +57,10 @@ class Logviewer():
     def tui(self):
         try:
             namespaces = self.namespace()
-            namespace_menu = TerminalMenu(namespaces, clear_screen=True)
+            namespace_menu = TerminalMenu(
+                namespaces, clear_screen=True, title="Namespace - Press Q or Esc to quit, '/' to search keyword.")
             menu_index = namespace_menu.show()
             while True:
-                # print(f"You have selected: {namespaces[menu_index]}!")
                 namespace = namespaces[menu_index]
                 deployments = self.deployment(namespace)
                 deployments_menu = TerminalMenu(deployments, clear_screen=True)
@@ -59,7 +73,7 @@ class Logviewer():
                     pod = pods[subsubmenu_index].split(' ')[0]
                     self.logs(namespace, pod)
         except Exception as e:
-            print(e)
+            pass
 
     def usage(self):
         self.parser.print_help()
@@ -102,8 +116,9 @@ class Logviewer():
             namespace=namespace, pod=pod, grep=grep))
         return screen
 
+
 if __name__ == '__main__':
     try:
         viewer = Logviewer()
     except KeyboardInterrupt:
-        print("Crtlgg+C Pressed. Shutting down.")
+        print("Crtl+C Pressed. Shutting down.")
