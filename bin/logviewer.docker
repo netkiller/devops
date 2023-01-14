@@ -4,14 +4,11 @@
 # Home	: http://netkiller.github.io
 # Author: Neo <netkiller@msn.com>
 ##############################################
-from re import split
-
 try:
-    import os, sys
+    import os
     from simple_term_menu import TerminalMenu
     from prompt_toolkit.shortcuts import input_dialog
-    from configparser import ConfigParser, NoSectionError
-    from optparse import OptionParser, OptionGroup
+    from optparse import OptionParser
 except ImportError as err:
     print("Error: %s" % (err))
 
@@ -26,7 +23,21 @@ class Logviewer():
                                help="config file",
                                default='/usr/local/etc/logviewer.ini',
                                metavar="/usr/local/etc/logviewer.ini")
-        # self.parser.add_option('-l','--logfile', dest='logfile', help='logs file.', default='/var/log/logviewer.log', metavar='/var/log/logviewer.log')
+        self.parser.add_option('',
+                               "--host",
+                               dest="host",
+                               help="docker host",
+                               default=None,
+                               metavar="ssh://root@www.netkiller.cn")
+        self.parser.add_option('-i',
+                               '--install',
+                               dest="install",
+                               help="install logviewer")
+
+        self.parser.add_option('-a',
+                               '--adduser',
+                               dest="adduser",
+                               help="add user for log view")
         self.parser.add_option('-d',
                                '--debug',
                                action='store_true',
@@ -35,62 +46,53 @@ class Logviewer():
 
         (self.options, self.args) = self.parser.parse_args()
 
+        if self.options.install:
+            os.system(
+                "usermod -s /usr/local/bin/logviewer.kubectl {user}".format(user=self.options.install))
+            os.system(
+                "grep {user} /etc/passwd".format(user=self.options.install))
+            exit()
+        if self.options.adduser:
+            os.system(
+                "adduser -s /usr/local/bin/logviewer.kubectl {user}".format(user=self.options.adduser))
+            os.system(
+                "grep {user} /etc/passwd".format(user=self.options.adduser))
+            exit()
+
         if self.options.debug:
             print("=" * 50)
             print(self.options, self.args)
             print("=" * 50)
+
+        if self.options.host:
+            os.environ['DOCKER_HOST'] = self.options.host
+
         while True:
             self.tui()
 
     def tui(self):
-        self.config = ConfigParser()
-        self.config.read(self.options.config)
-
+        containers = self.container()
         try:
-            options = list(dict(self.config.items()).keys())
-            terminal_menu = TerminalMenu(options)
-            menu_entry_index = terminal_menu.show()
-            print(f"You have selected: {options[menu_entry_index]}!")
-            
-            items = dict(self.config.items(options[menu_entry_index]))	
-            self.view(items)
-
-        except NoSectionError as err:
-            print(err)
-            exit()
+            menu = TerminalMenu(containers, preview_command="docker logs --tail=10 {}",
+                                preview_size=0.2, clear_screen=True, title="清选择容器查看日志，输入 Q 或 ESC 退出，输入 / 可查找")
+            menu_index = menu.show()
+            self.logs(containers[menu_index])
         except Exception as e:
             print(e)
             exit()
 
-    def view(self, items):
-        logs = []
-        logs = list(items.keys())
-        terminal_menu = TerminalMenu(logs,
-                                     #preview_command="docker logs --tail=5 {}",
-                                     preview_size=0.75,
-                                     clear_screen=True)
-        menu_entry_index = terminal_menu.show()
-        logfile = logs[menu_entry_index]
+    def container(self):
+        screen = os.popen(
+            "docker container ls --format='{{.Names}}'")
+        containers = []
+        for tmp in screen.readlines():
+            containers.append(tmp.strip())
+        return (containers)
 
-        self.tail(logfile)
-
-    def lists(self, logdir):
-        filelists = []
-        for root, dirs, files in os.walk(logdir):
-            for file in files:
-                ext = os.path.splitext(file)[1]
-                if ext in ['.gz','.bz2','.bin','.zip'] :
-                    continue
-                file = os.path.join(root, file)
-                filelists.append(file)
-            # for dir in dirs:
-            # all_dirs.append(os.path.join(root,dir))
-        return (filelists)
-
-    def tail(self, file):
+    def logs(self, container):
         cmd = []
         cmd.append('docker logs -f --tail=500 ')
-        cmd.append(file)
+        cmd.append(container)
         text = input_dialog(title='关键字搜索',
                             text='请输入正则表达式:').run()
         if text:
@@ -98,12 +100,10 @@ class Logviewer():
             cmd.append('grep --color "%s"' % text)
 
         command = ' '.join(cmd)
-        # print(command)
         os.system(command)
 
     def usage(self):
         self.parser.print_help()
-        # print("")
         exit()
 
 
