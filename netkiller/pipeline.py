@@ -9,6 +9,9 @@ import logging.handlers
 from logging import basicConfig
 sys.path.insert(0, '/Users/neo/workspace/devops')
 
+class Stage:
+    def __init__(self) -> None:
+        pass
 
 class Pipeline:
     Maven = 'maven'

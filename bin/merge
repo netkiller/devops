@@ -145,6 +145,7 @@ class Merge():
 		
 		if self.options.source and self.options.target :
 			self.merge(self.options.source, self.options.target)
+
 		if self.options.testing :
 			self.merge('development', 'testing')
 		elif self.options.staging :
