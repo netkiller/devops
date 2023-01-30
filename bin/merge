@@ -33,7 +33,7 @@ class Merge():
 		self.parser.add_option('-d', '--debug', dest='debug', action='store_true', help="debug")
 
 		group = OptionGroup(self.parser, "Repository")
-		group.add_option('-c','--clone', dest='clone', help='clone branch', default=None, metavar='')
+		group.add_option('-c','--clone', dest='clone', help='clone branch', default=None, metavar='https://git.netkiller.cn | git@git.netkiller.cn:exmaple.git')
 		group.add_option('-r','--reset', dest='reset', help='Reset current HEAD to the specified state', default=None, metavar='8547cb94')
 		group.add_option('-b','--checkout', dest='checkout', help='checkout branch', default=None, metavar='master')
 		self.parser.add_option_group(group)
@@ -145,6 +145,7 @@ class Merge():
 		
 		if self.options.source and self.options.target :
 			self.merge(self.options.source, self.options.target)
+			self.checkout(self.options.source)
 
 		if self.options.testing :
 			self.merge('development', 'testing')
