@@ -15,7 +15,7 @@ except ImportError as err:
 
 class Logviewer():
     def __init__(self):
-        usage = "%prog [options] message\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>\nHelp: https://github.com/netkiller/devops/blob/master/doc/logviewer.md"
+        usage = "%prog [options] message\nHomepage: https://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>\nHelp: https://github.com/netkiller/devops/blob/master/doc/logviewer.md"
         self.parser = OptionParser(usage)
         self.parser.add_option('-c',
                                "--config",
@@ -73,8 +73,11 @@ class Logviewer():
     def tui(self):
         containers = self.container()
         try:
-            menu = TerminalMenu(containers, preview_command="docker logs --tail=10 {}",
-                                preview_size=0.2, clear_screen=True, title="清选择容器查看日志，输入 Q 或 ESC 退出，输入 / 可查找")
+            menu = TerminalMenu(containers, 
+                                # preview_command="docker logs --tail=10 {}",
+                                # preview_size=0.2, 
+                                clear_screen=True, 
+                                title="清选择容器查看日志，输入 Q 或 ESC 退出，输入 / 可查找")
             menu_index = menu.show()
             self.logs(containers[menu_index])
         except Exception as e:

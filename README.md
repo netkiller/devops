@@ -8,7 +8,7 @@ Install
 ### Ubuntu
 
 	$ cd /usr/local/src/
-	$ git clone https://github.com/oscm/devops.git
+	$ git clone https://github.com/netkiller/devops.git
 	$ cd devops
 	$ python3 setup.py sdist
 	$ python3 setup.py install
@@ -16,7 +16,7 @@ Install
 ### CentOS
 
 	$ cd /usr/local/src/
-	$ git clone https://github.com/oscm/devops.git
+	$ git clone https://github.com/netkiller/devops.git
 	$ cd devops
 	$ python3 setup.py sdist
 	$ python3 setup.py install --prefix=/srv/devops
@@ -39,16 +39,16 @@ Install
 	
 Deployment
 ----------
-[Software deployment tools](https://github.com/oscm/devops/blob/master/doc/deployment.md).	
+[Software deployment tools](https://github.com/netkiller/devops/blob/master/doc/deployment.md).	
 
 Backup
 ------
-[Data backup tools](https://github.com/oscm/devops/blob/master/doc/backup.md).	
-[Database backup](https://github.com/oscm/devops/blob/master/doc/database.md).	
+[Data backup tools](https://github.com/netkiller/devops/blob/master/doc/backup.md).	
+[Database backup](https://github.com/netkiller/devops/blob/master/doc/database.md).	
 
 OS Configuration file versioning
 -----
-[osconf](https://github.com/oscm/devops/blob/master/doc/osconf.md).	
+[osconf](https://github.com/netkiller/devops/blob/master/doc/osconf.md).	
 
 
 # Donations
@@ -59,5 +59,5 @@ https://www.paypal.me/netkiller
 
 Wechat (微信) / Alipay (支付宝) 打赏:
 
-http://www.netkiller.cn/home/donations.html
+https://www.netkiller.cn/home/donations.html
 

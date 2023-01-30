@@ -129,7 +129,7 @@ class Dump(MySQLDump):
 	def usage(self):
 		print("Netkiller database backup")
 		self.parser.print_help()
-		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
+		print("\nHomepage: https://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
 		exit()
 
 	def list(self):

@@ -22,7 +22,7 @@
     -s, --stdin           stdin
     --debug               debug mode
 
-    Homepage: http://www.netkiller.cn	Author: Neo <netkiller@msn.com>
+    Homepage: https://www.netkiller.cn	Author: Neo <netkiller@msn.com>
 
 ## 配置企业微信
 

@@ -18,7 +18,7 @@ except ImportError as err:
 
 class Logviewer():
     def __init__(self):
-        usage = "%prog [options] message\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>\nHelp: https://github.com/netkiller/devops/blob/master/doc/logviewer.md"
+        usage = "%prog [options] message\nHomepage: https://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>\nHelp: https://github.com/netkiller/devops/blob/master/doc/logviewer.md"
         self.parser = OptionParser(usage)
         self.parser.add_option('-c',
                                "--config",

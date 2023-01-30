@@ -63,7 +63,7 @@ class Lrsync():
 	def usage(self):
 		print("Push local file to remote")
 		self.parser.print_help()
-		print("\nHomepage: http://netkiller.github.com\tAuthor: Neo <netkiller@msn.com>")
+		print("\nHomepage: https://netkiller.github.com\tAuthor: Neo <netkiller@msn.com>")
 	def main(self):
 		rev = 0
 		if not self.args:
