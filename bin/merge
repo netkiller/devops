@@ -70,9 +70,10 @@ class Merge():
 		self.logger = getLogger(__name__)
 		
 	def usage(self):
-		print("Netkiller git administrator")
+		print("Netkiller git merge tools")
 		self.parser.print_help()
 		print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
+		print("Help https://github.com/netkiller/devops/blob/master/doc/merge.md")
 		exit()
 	def branch(self, name):
 		git = GitBranch(self.project,self.logger)
@@ -101,6 +102,7 @@ class Merge():
 		git.list()
 		git.debug()
 		git.execute()
+
 	def clone(self,url):
 		git = Git(self.workspace, self.logger)
 		git.clone(url)
@@ -131,30 +133,42 @@ class Merge():
 		if self.options.clone :	
 			self.clone(self.options.clone)
 			exit()
+
 		if self.options.checkout :
 			self.checkout(self.options.checkout)
+			exit()
+
 		if self.options.reset :
 			self.reset(self.options.reset)
+			exit()
 		
 		if self.options.branch :
 			self.branch(self.options.branch)
+			exit()
 		elif self.options.feature :
 			self.feature(self.options.feature)
+			exit()
 		elif self.options.hotfix :
 			self.hotfix(self.options.hotfix)
+			exit()
 		
 		if self.options.source and self.options.target :
 			self.merge(self.options.source, self.options.target)
 			self.checkout(self.options.source)
+			exit()
 
 		if self.options.testing :
 			self.merge('development', 'testing')
+			exit()
 		elif self.options.staging :
 			self.merge('testing', 'staging')
+			exit()
 		elif self.options.production :
 			self.merge('staging', 'master')
-			pass
+			exit()
 		self.logger.info('-' * 50)
+
+		self.usage()
 
 if __name__ == '__main__':
 	try:

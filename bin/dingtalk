@@ -70,6 +70,7 @@ class Dingtalk():
     def usage(self):
         self.parser.print_help()
         print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
+        print("Help: https://github.com/netkiller/devops/blob/master/doc/dingtalk.md")
         exit()
 
 
