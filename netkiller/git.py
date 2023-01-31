@@ -167,8 +167,11 @@ class GitCheckout(Git):
 class GitReset(Git):
 	def __init__(self,workspace = None, logger = None):
 		super().__init__(workspace, logger)
-	def hard(self, ver):
-		self.command('reset', '--hard %s --' % ver)
+	def hard(self, ver = None):
+		if ver :
+			self.command('reset', '--hard %s --' % ver)
+		else:
+			self.command('reset', '--hard')
 		return(self)
 	def mixed(self, ver):
 		self.command('reset', '--mixed %s --' % ver)
