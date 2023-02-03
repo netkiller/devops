@@ -21,7 +21,6 @@ class Wechat():
 		usage = "usage: %prog [options] message"
 		self.parser = OptionParser(usage)
 		self.parser.add_option("-c", "--config", dest="config", help="config file", default='/usr/local/etc/wechat.ini', metavar="/usr/local/etc/wechat.ini")
-		# self.parser.add_option('-l','--logfile', dest='logfile', help='logs file.', default='/var/log/wechat.log', metavar='/var/log/wechat.log')
 		self.parser.add_option('-e','--corporate', dest='corporate', help='corporate', default='default',metavar='default')
 		self.parser.add_option('-t','--totag', dest='totag', help='tag', default='1',metavar='"1|2|3"')
 		self.parser.add_option('-s', "--stdin", action="store_true", dest="stdin", help="stdin")
@@ -36,13 +35,6 @@ class Wechat():
 		self.corpid = conf.get('corpid')
 		self.secret = conf.get('secret')
 		self.agentid = conf.get('agentid')
-
-		# if options.logfile :
-			# self.logfile = options.logfile	
-		# 	logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',
-		# 	filename=options.logfile,filemode='a')
-
-		# self.logging = logging.getLogger()
 
 		if options.debug:
 			print("="*50)

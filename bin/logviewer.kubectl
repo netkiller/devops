@@ -6,6 +6,7 @@
 ##############################################
 try:
     import os
+    import logging
     from simple_term_menu import TerminalMenu
     from prompt_toolkit.shortcuts import input_dialog
     from optparse import OptionParser
@@ -32,8 +33,15 @@ class Logviewer():
                                '--adduser',
                                dest="adduser",
                                help="add user for log view")
+        self.parser.add_option('-l','--logfile', dest='logfile', help='logs file.', default='/var/log/logviewer.log', metavar='/var/log/logviewer.log')
 
         (self.options, self.args) = self.parser.parse_args()
+
+        if self.options.logfile :
+            logging.basicConfig(level=logging.NOTSET,format='%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S',
+			filename=self.options.logfile,filemode='a')
+
+        self.logging = logging.getLogger()
 
         if self.options.install:
             os.system(
@@ -51,8 +59,7 @@ class Logviewer():
         if self.options.kubeconfig:
             os.environ['KUBECONFIG'] = self.options.kubeconfig
 
-        while True:
-            self.tui()
+        self.tui()
 
     def tui(self):
         try:
@@ -71,9 +78,9 @@ class Logviewer():
                     pods_menu = TerminalMenu(pods, clear_screen=True)
                     subsubmenu_index = pods_menu.show()
                     pod = pods[subsubmenu_index].split(' ')[0]
-                    self.logs(namespace, pod)
+                    self.logs(namespace, deployment, pod)
         except Exception as e:
-            pass
+            self.logging.error(e)
 
     def usage(self):
         self.parser.print_help()
@@ -106,16 +113,22 @@ class Logviewer():
             pods.append(tmp.strip())
         return pods
 
-    def logs(self, namespace='default', pod=None):
+    def logs(self, namespace='default', deployment = None, pod = None):
         text = input_dialog(title='关键字搜索', text='请输入正则表达式:').run()
         grep = ''
         if text:
             grep = ' | egrep --color "%s"' % text
 
-        screen = os.system("kubectl logs -f --tail=200 -n {namespace} {pod} {grep}".format(
-            namespace=namespace, pod=pod, grep=grep))
-        return screen
+        if deployment: 
+            deployment = "-c {deployment}".format(deployment=deployment)
+        else:
+            deployment = ''
 
+        command = "kubectl logs -f --tail=200 -n {namespace} {pod} {deployment} {grep}".format(
+            namespace=namespace, deployment=deployment, pod=pod, grep=grep)
+        self.logging.debug(command)
+        screen = os.system(command)
+        return screen
 
 if __name__ == '__main__':
     try:
