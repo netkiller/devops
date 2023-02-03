@@ -11,24 +11,24 @@ import re
 import requests
 import json
 
+zentao='https://zentao.netkiller.cn'
 
-def zentao(type, id):
-    title = ''
+def title(type, id):
+    value = ''
     if type == 'BUG':
-        url = 'http://zentao.ejiayou.com/zentao/bug-view-'+str(id)+'.json'
+        url = zentao + '/zentao/bug-view-'+str(id)+'.json'
     else:
-        url = 'http://zentao.ejiayou.com/zentao/task-view-'+str(id)+'.json'
+        url = zentao + '/zentao/task-view-'+str(id)+'.json'
 
     request = requests.get(url)
     # print(request.text)
     # print(json.loads(request.content.decode()))
     json_string = request.json()
-    # print(json)
+
     if json_string['status'] == 'success':
-        # print(json_string['data'])
         data = json.loads(json_string['data'])
-        title = data['title']
-    return (title)
+        value = data['title']
+    return (value)
 
 
 def numbers(msg):
@@ -45,25 +45,24 @@ if len(sys.argv) == 2:
     ids = numbers(msg)
     if msg.find('BUG') >= 0:
         # message,group = re.subn(re.compile(r"(BUG)\s+(\d+)"), r'\1 http://zentao.ejiayou.com/zentao/bug-view-\2.html', msg)
-        # message, group = re.subn(re.compile(r"(\d+)"), r'http://zentao.ejiayou.com/zentao/bug-view-\1.html', msg)
+        # message, group = re.subn(re.compile(r"(\d+)"), rzentao + '/zentao/bug-view-\1.html', msg)
         for id in ids:
-            title = zentao('BUG', id)
             msg = msg.replace(
-                id, "http://zentao.ejiayou.com/zentao/bug-view-{id}.html  ({title})".format(id=id, title=title))
+                id, zentao + "/zentao/bug-view-{id}.html  ({title})".format(id=id, title=title('BUG', id)))
 
     elif msg.find('TASK') >= 0:
 
         for id in ids:
-            title = zentao('TASK', id)
             msg = msg.replace(
-                id, "http://zentao.ejiayou.com/zentao/task-view-{id}.html  ({title})".format(id=id, title=title))
-        # message, group = re.subn(re.compile(r"(\d+)"), r'http://zentao.ejiayou.com/zentao/task-view-\1.html' + ' (' + title + ')', msg)
+                id, zentao + "/zentao/task-view-{id}.html  ({title})".format(id=id, title=title('TASK', id)))
+        # message, group = re.subn(re.compile(r"(\d+)"), rzentao + '/zentao/task-view-\1.html' + ' (' + title + ')', msg)
     else:
         print("提交格式错误，请以BUG或TASK开头，然后填写该任务或BUG号码，多个编号使用空格分割，清参考：")
         print("BUG 1024 2048 4096")
         print("TASK 1024 2048 4096")
         print("BUG 1024 2048 4096 多个关联修复，已经解决")
         exit(1)
+        
     file = open(filename, 'w')
     file.write(msg)
     file.flush()
