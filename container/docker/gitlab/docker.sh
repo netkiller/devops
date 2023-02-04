@@ -1,11 +1,14 @@
 docker pull gitlab/gitlab-ce
 
-sudo docker run --detach \
+--rm --detach \
 --hostname gitlab.netkiller.cn \
---publish 443:443 --publish 80:80 --publish 22:22 \
---name gitlab \
 --restart always \
---volume ~/gitlab/config:/etc/gitlab \
---volume ~/gitlab/logs:/var/log/gitlab \
---volume ~/gitlab/data:/var/opt/gitlab \
+ --publish 22:22
+
+docker container rm gitlab
+docker run --name gitlab --rm \
+--publish 443:443 --publish 80:80 \
+--volume /opt/gitlab/config:/etc/gitlab \
+--volume /opt/gitlab/logs:/var/log/gitlab \
+--volume /opt/gitlab/data:/var/opt/gitlab \
 gitlab/gitlab-ce:latest

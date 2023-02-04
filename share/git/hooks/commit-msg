@@ -3,7 +3,7 @@
 ##############################################
 # Home	: https://www.netkiller.cn
 # Author: Neo <netkiller@msn.com>
-# Doc.  : http://netkiller.github.io
+# Doc.  : https://github.com/netkiller/devops/tree/master/doc
 ##############################################
 
 import sys
@@ -11,10 +11,11 @@ import re
 import requests
 import json
 
-zentao='https://zentao.netkiller.cn'
+zentao = 'https://zentao.netkiller.cn'
+
 
 def title(type, id):
-    value = ''
+    value = None
     if type == 'BUG':
         url = zentao + '/zentao/bug-view-'+str(id)+'.json'
     else:
@@ -23,48 +24,70 @@ def title(type, id):
     request = requests.get(url)
     # print(request.text)
     # print(json.loads(request.content.decode()))
-    json_string = request.json()
 
-    if json_string['status'] == 'success':
-        data = json.loads(json_string['data'])
-        value = data['title']
+    try:
+        json_string = request.json()
+        if json_string['status'] == 'success':
+            data = json.loads(json_string['data'])
+            value = data['title']
+    except requests.exceptions.JSONDecodeError:
+        value = None
+
     return (value)
 
 
 def numbers(msg):
-    ids = ids = re.findall(re.compile(r"(\d+)"), msg)
+    ids = ids = re.findall(re.compile(r"\d+"), msg)
     return ids
+
+
+def format(msg):
+    message = ''
+    if msg.find('BUG') >= 0:
+        # message,group = re.subn(re.compile(r"(BUG)\s+(\d+)"), r'\1 http://zentao.ejiayou.com/zentao/bug-view-\2.html', msg)
+        # message, group = re.subn(re.compile(r"(\d+)"), rzentao + '/zentao/bug-view-\1.html', msg)
+        ids = numbers(msg)
+        for id in ids:
+            bug = title('BUG', id)
+            if bug:
+                # msg = msg.replace( id, "[{title}]({zentao}/zentao/bug-view-{id}.html)\n".format(id=id, title=bug, zentao=zentao))
+                message += "[{title}]({zentao}/zentao/bug-view-{id}.html)\n".format(
+                    id=id, title=bug, zentao=zentao)
+            else:
+                message += "[BUG #{id}]\n".format(id=id)
+
+    elif msg.find('TASK') >= 0:
+        ids = numbers(msg)
+        for id in ids:
+            task = title('TASK', id)
+            if task:
+                # msg = msg.replace(                   id, "[{title}]("+zentao + "/zentao/task-view-{id}.html)".format(id=id, title=task))
+                message += "[{title}]({zentao}/zentao/task-view-{id}.html)\n".format(
+                    id=id, title=task, zentao=zentao)
+            else:
+                message += "[TASK #{id}]\n".format(id=id)
+        # message, group = re.subn(re.compile(r"(\d+)"), rzentao + '/zentao/task-view-\1.html' + ' (' + title + ')', msg)
+    else:
+        message += msg
+    #     print("提交格式错误，请以BUG或TASK开头，然后填写该任务或BUG号码，多个编号使用空格分割，清参考：")
+    #     print("BUG 1024 2048 4096")
+    #     print("TASK 1024 2048 4096")
+    #     print("BUG 1024 2048 4096 多个关联修复，已经解决")
+    #     exit(1)
+    return message
 
 
 if len(sys.argv) == 2:
     filename = sys.argv[1]
     file = open(filename, 'r+')
-    msg = file.read()
+    lines = file.readlines()
     file.close()
 
-    ids = numbers(msg)
-    if msg.find('BUG') >= 0:
-        # message,group = re.subn(re.compile(r"(BUG)\s+(\d+)"), r'\1 http://zentao.ejiayou.com/zentao/bug-view-\2.html', msg)
-        # message, group = re.subn(re.compile(r"(\d+)"), rzentao + '/zentao/bug-view-\1.html', msg)
-        for id in ids:
-            msg = msg.replace(
-                id, zentao + "/zentao/bug-view-{id}.html  ({title})".format(id=id, title=title('BUG', id)))
-
-    elif msg.find('TASK') >= 0:
-
-        for id in ids:
-            msg = msg.replace(
-                id, zentao + "/zentao/task-view-{id}.html  ({title})".format(id=id, title=title('TASK', id)))
-        # message, group = re.subn(re.compile(r"(\d+)"), rzentao + '/zentao/task-view-\1.html' + ' (' + title + ')', msg)
-    else:
-        print("提交格式错误，请以BUG或TASK开头，然后填写该任务或BUG号码，多个编号使用空格分割，清参考：")
-        print("BUG 1024 2048 4096")
-        print("TASK 1024 2048 4096")
-        print("BUG 1024 2048 4096 多个关联修复，已经解决")
-        exit(1)
-        
+    message = ''
+    for line in lines:
+        message += format(line)
     file = open(filename, 'w')
-    file.write(msg)
+    file.write(message)
     file.flush()
     file.close()
     exit(0)
