@@ -69,24 +69,33 @@ def format(msg):
         # message, group = re.subn(re.compile(r"(\d+)"), rzentao + '/zentao/task-view-\1.html' + ' (' + title + ')', msg)
     else:
         message += msg
-    #     print("提交格式错误，请以BUG或TASK开头，然后填写该任务或BUG号码，多个编号使用空格分割，清参考：")
-    #     print("BUG 1024 2048 4096")
-    #     print("TASK 1024 2048 4096")
-    #     print("BUG 1024 2048 4096 多个关联修复，已经解决")
-    #     exit(1)
+
     return message
+
+
+def check(msg):
+    lists = re.findall(re.compile(r"(BUG|TASK)"), msg)
+    if not lists:
+        print("提交格式错误，请以BUG或TASK开头，然后填写该任务或BUG号码，多个编号使用空格分割，清参考：")
+        print("BUG 1024 2048 4096")
+        print("TASK 1024 2048 4096")
+        print("多个关联修复，已经解决")
+        exit(1)
 
 
 if len(sys.argv) == 2:
     filename = sys.argv[1]
-    file = open(filename, 'r+')
+    file = open(filename, 'r', encoding='utf-8')
+    check(file.read())
+    file.seek(0)
     lines = file.readlines()
     file.close()
 
     message = ''
     for line in lines:
         message += format(line)
-    file = open(filename, 'w')
+
+    file = open(filename, 'w', encoding='utf-8')
     file.write(message)
     file.flush()
     file.close()
