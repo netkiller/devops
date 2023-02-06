@@ -11,6 +11,8 @@
 ## 配置模版目录
 
 ```bash
+    test -d ~/workspace/template/hooks && exit
+    pip3 install requests
     mkdir -p ~/workspace/template/hooks
     curl -s https://raw.githubusercontent.com/netkiller/devops/master/share/git/hooks/commit-msg -o ~/workspace/template/hooks/commit-msg
     git config --global init.templatedir ~/workspace/template/
@@ -28,14 +30,13 @@
     Window 11 也可以使用 Winget 安装
 
     winget install python
-
-    安装完成之后安装依赖包
-
-    pip3 install requests
         
 1. 已存在项目安装 Script
 
+    安装完成之后安装依赖包
+
     ```powershell
+    pip3 install requests
     powershell curl -o .git/hooks/commit-msg https://raw.githubusercontent.com/netkiller/devops/master/share/git/hooks/commit-msg 
     ```
 
