@@ -68,13 +68,13 @@ def format(msg):
                 message += "[TASK #{id}]\n".format(id=id)
         # message, group = re.subn(re.compile(r"(\d+)"), rzentao + '/zentao/task-view-\1.html' + ' (' + title + ')', msg)
     else:
-        message += msg
+        message += message += re.sub(r'(TMP|MSG)\s', "", msg)
 
     return message
 
 
 def check(msg):
-    lists = re.findall(re.compile(r"(BUG|TASK)"), msg)
+    lists = re.findall(re.compile(r"(BUG|TASK|TMP|MSG)"), msg)
     if not lists:
         print("提交格式错误，请以BUG或TASK开头，然后填写该任务或BUG号码，多个编号使用空格分割，清参考：")
         print("BUG 1024 2048 4096")
