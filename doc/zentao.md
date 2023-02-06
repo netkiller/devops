@@ -44,7 +44,8 @@
     ```powershell
     mkdir c:\workspace\template\hooks
     powershell curl -o c:\workspace\template\hooks\commit-msg https://raw.githubusercontent.com/netkiller/devops/master/share/git/hooks/commit-msg 
-    git config --global init.templatedir c:\template
+    git config --global init.templatedir c:\workspace\template
+    git config -l
     ```
 
 ## 使用方法
