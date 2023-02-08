@@ -857,7 +857,7 @@ class Docker(Common):
         print("Python controls the docker manager.")
         self.parser.print_help()
         print(
-            "\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>"
+            "\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>\nHelp: https://github.com/netkiller/devops/blob/master/doc/docker.md"
         )
         exit()
 
