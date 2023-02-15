@@ -18,8 +18,10 @@ def title(type, id):
     value = None
     if type == 'BUG':
         url = zentao + '/zentao/bug-view-'+str(id)+'.json'
+    elif type == 'TASK':
+        url = zentao + '/zentao/task-view-' + str(id) + '.json'
     else:
-        url = zentao + '/zentao/task-view-'+str(id)+'.json'
+        url = zentao + '/zentao/doc-view-' + str(id) + '.json'
 
     request = requests.get(url)
     # print(request.text)
@@ -67,6 +69,15 @@ def format(msg):
             else:
                 message += "[TASK #{id}]\n".format(id=id)
         # message, group = re.subn(re.compile(r"(\d+)"), rzentao + '/zentao/task-view-\1.html' + ' (' + title + ')', msg)
+    elif msg.find('DOC') >= 0:
+        ids = numbers(msg)
+        for id in ids:
+            task = title('DOC', id)
+            if task:
+                message += "[{title}]({zentao}/zentao/doc-view-{id}.html)\n".format(
+                    id=id, title=task, zentao=zentao)
+            else:
+                message += "[DOC #{id}]\n".format(id=id)
     else:
         message += message += re.sub(r'(TMP|MSG)\s', "", msg)
 
@@ -74,7 +85,7 @@ def format(msg):
 
 
 def check(msg):
-    lists = re.findall(re.compile(r"(BUG|TASK|TMP|MSG|Merge)"), msg)
+    lists = re.findall(re.compile(r"(BUG|TASK|DOC|TMP|MSG|Merge)"), msg)
     if not lists:
         print("提交格式错误，请以BUG或TASK开头，然后填写该任务或BUG号码，多个编号使用空格分割，清参考：")
         print("BUG 1024 2048 4096")
