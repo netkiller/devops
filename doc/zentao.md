@@ -37,33 +37,33 @@
 
     ```powershell
     pip3 install requests
-    powershell curl -o .git/hooks/commit-msg https://raw.githubusercontent.com/netkiller/devops/master/share/git/hooks/commit-msg 
+    powershell curl -o .git/hooks/commit-msg https://raw.githubusercontent.com/netkiller/devops/master/share/git/zentao/hooks/commit-msg 
     ```
 
 1. 设置模板
 
     ```powershell
     mkdir c:\workspace\template\hooks
-    powershell curl -o c:\workspace\template\hooks\commit-msg https://raw.githubusercontent.com/netkiller/devops/master/share/git/hooks/commit-msg 
+    powershell curl -o c:\workspace\template\hooks\commit-msg https://raw.githubusercontent.com/netkiller/devops/master/share/git/zentao/hooks/commit-msg 
     git config --global init.templatedir c:\workspace\template
     git config -l
     ```
 
 ## 使用方法
 
-    代码提交时，提交信息这样写：
+代码提交时，提交信息这样写：
 
 ```
 BUG 1234
 ```
 
-    如果本次提交代码修复了多个 BUG 这样写：
+如果本次提交代码修复了多个 BUG 这样写：
 
 ```
 BUG 123 456 789
 ```
 
-    如果是需求，这样写：
+如果是需求，这样写：
 
 ```    
 TASK 123
@@ -92,4 +92,11 @@ STORY 11 22 33
 
 ```
 FEEDBACK 11 22 33
+```
+
+临时提交，不关联BUG和TASK，使用 TMP 或 MSG
+
+```
+TMP 添加忽略文件
+MSG 随便写点啥
 ```
