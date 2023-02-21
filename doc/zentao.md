@@ -15,6 +15,7 @@
     pip3 install requests
     mkdir -p ~/workspace/template/hooks
     curl -s https://raw.githubusercontent.com/netkiller/devops/master/share/git/hooks/commit-msg -o ~/workspace/template/hooks/commit-msg
+    chmod +x ~/workspace/template/hooks/commit-msg
     git config --global init.templatedir ~/workspace/template/
 ```
 
