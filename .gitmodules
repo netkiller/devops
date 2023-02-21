@@ -1,3 +1,6 @@
 [submodule "shell"]
 	path = shell
 	url = https://github.com/oscm/shell.git
+[submodule "container"]
+	path = container
+	url = git@github.com:netkiller/container.git
