@@ -1,8 +1,0 @@
-[
-    {
-      "targets": [ "node-exporter:9100" ],
-      "labels": {
-        "job": "node-exporter"
-      }
-    }
-  ]
