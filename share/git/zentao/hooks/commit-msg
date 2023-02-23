@@ -49,10 +49,12 @@ def numbers(msg):
 
 def format(msg):
     message = ''
-    if msg.find('BUG') >= 0:
+    if re.match('BUG', msg):
         # message,group = re.subn(re.compile(r"(BUG)\s+(\d+)"), r'\1 http://zentao.ejiayou.com/zentao/bug-view-\2.html', msg)
         # message, group = re.subn(re.compile(r"(\d+)"), rzentao + '/zentao/bug-view-\1.html', msg)
         ids = numbers(msg)
+        if not ids:
+            message += msg
         for id in ids:
             bug = title('BUG', id)
             if bug:
@@ -62,8 +64,10 @@ def format(msg):
             else:
                 message += "[BUG #{id}]\n".format(id=id)
 
-    elif msg.find('TASK') >= 0:
+    elif re.match('TASK', msg):
         ids = numbers(msg)
+        if not ids:
+            message += msg
         for id in ids:
             task = title('TASK', id)
             if task:
@@ -73,17 +77,10 @@ def format(msg):
             else:
                 message += "[TASK #{id}]\n".format(id=id)
         # message, group = re.subn(re.compile(r"(\d+)"), rzentao + '/zentao/task-view-\1.html' + ' (' + title + ')', msg)
-    elif msg.find('DOC') >= 0:
+    elif re.match('DOC', msg):
         ids = numbers(msg)
-        for id in ids:
-            task = title('DOC', id)
-            if task:
-                message += "[{title}]({zentao}/zentao/doc-view-{id}.html)\n".format(
-                    id=id, title=task, zentao=zentao)
-            else:
-                message += "[DOC #{id}]\n".format(id=id)
-    elif msg.find('DOC') >= 0:
-        ids = numbers(msg)
+        if not ids:
+            message += msg
         for id in ids:
             doc = title('DOC', id)
             if doc:
@@ -91,8 +88,10 @@ def format(msg):
                     id=id, title=doc, zentao=zentao)
             else:
                 message += "[DOC #{id}]\n".format(id=id)
-    elif msg.find('STORY') >= 0:
+    elif re.match('STORY', msg):
         ids = numbers(msg)
+        if not ids:
+            message += msg
         for id in ids:
             story = title('STORY', id)
             if story:
@@ -100,8 +99,10 @@ def format(msg):
                     id=id, title=story, zentao=zentao)
             else:
                 message += "[STORY #{id}]\n".format(id=id)
-    elif msg.find('FEEDBACK') >= 0:
+    elif re.match('FEEDBACK', msg):
         ids = numbers(msg)
+        if not ids:
+            message += msg
         for id in ids:
             feedback = title('FEEDBACK', id)
             if feedback:
@@ -110,19 +111,22 @@ def format(msg):
             else:
                 message += "[FEEDBACK #{id}]\n".format(id=id)
     else:
-        message += message += re.sub(r'(TMP|MSG)\s', "", msg)
+        message += re.sub(r'(TMP|MSG)\s', "", msg)
 
     return message
 
 
 def check(msg):
-    lists = re.findall(re.compile(r"(BUG|TASK|DOC|TMP|STORY|FEEDBACK|MSG|Merge)"), msg)
+    lists = re.findall(re.compile(
+        r"(BUG|TASK|DOC|TMP|STORY|FEEDBACK|MSG|Merge)"), msg)
     if not lists:
-        print("提交格式错误，请以BUG或TASK开头，然后填写该任务或BUG号码，多个编号使用空格分割，清参考：")
+        print("提交格式错误，请以BUG或TASK开头，然后填写该任务或BUG号码，多个编号使用空格分割，清参考帮助文档：")
+        print("https://github.com/netkiller/devops/blob/master/doc/zentao.md")
         print("BUG 1024 2048 4096")
         print("TASK 1024 2048 4096")
         print("DOC 11 22 33")
-        print("https://github.com/netkiller/devops/blob/master/doc/zentao.md")
+        print("STORY 1024 2048 4096")
+        print("FEEDBACK 1024 2048 4096")
         exit(1)
 
 
