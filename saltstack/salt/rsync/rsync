@@ -1,0 +1,48 @@
+#! /bin/bash
+#
+# chkconfig:   2345 50 50
+# description: The rsync daemon
+#pidfile: /var/run/rsyncd.pid
+
+# source function library
+ . /etc/rc.d/init.d/functions
+
+if [ -f /etc/sysconfig/rsync ]; then
+    . /etc/sysconfig/rsync
+fi
+
+PROG='/usr/bin/rsync'
+BASE=${0##*/}
+
+# The config file must contain following line:
+#  pid file = /var/run/rsync.pid
+OPTIONS="--daemon"
+
+case "$1" in
+  start)
+    echo -n $"Starting $BASE: "
+    daemon $PROG $OPTIONS
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$BASE
+    echo
+    ;;
+  stop)
+    echo -n $"Shutting down $BASE: "
+    killproc $PROG
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$BASE
+    echo
+    ;;
+  restart|force-reload)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    status $PROG
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|status|force-reload}" >&2
+    exit 1
+    ;;
+esac

@@ -1,0 +1,3 @@
+php-cli:
+  pkg:
+    - installed
