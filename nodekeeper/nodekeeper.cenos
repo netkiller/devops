@@ -1,0 +1,106 @@
+#!/bin/bash
+# Home: http://netkiller.sf.net
+# Author: Neo Chan<openunix@163.com>
+#
+# chkconfig: 35 88 88
+# description: 
+### BEGIN INIT INFO
+# Provides:
+NAME=nodekeeper
+BASEDIR=/srv/$NAME
+PROG=$BASEDIR/bin/$NAME
+DAEMON=Yes
+HOST=$(ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'|head -n 1)
+PORT=7800
+CONFIG=$BASEDIR/etc/$NAME.cfg
+LOGFILE=$BASEDIR/log/$NAME.log
+PIDFILE=$BASEDIR/run/$NAME.pid
+
+### END INIT INFO
+OPTIONS="--daemon --host $HOST --port $PORT --config=$CONFIG --pidfile=$PIDFILE --logfile=$LOGFILE"
+# Source function library.
+. /etc/init.d/functions
+
+# Source config
+if [ -f /etc/default/$NAME ] ; then
+	. /etc/default/$NAME
+fi
+
+
+RETVAL=0
+
+start() {
+#	[ -x $CONFIG ] || exit 5
+#	[ -z $PORT ] || exit 5
+
+
+	if [ -z "$UMASK" ] ; then
+	      UMASK=077;
+	fi
+	umask $UMASK
+
+ 	echo -n $"Starting system : $NAME"
+	daemon $PROG $OPTIONS
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/$NAME
+	return $RETVAL
+}	
+stop() {
+	echo -n $"Shutting down kernel $NAME: "
+	killproc $PROG
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$NAME
+	return $RETVAL
+}
+
+restart() {
+	stop
+	start
+}
+rhstatus(){	
+	status $PROG
+}	
+reload()  {
+    RETVAL=1
+    pidfile=`cat $PIDFILE 2>/dev/null`
+    echo -n "Reloading syslogd..."
+    if [ -n "${pidfile}" ] && [ -e /proc/"${pidfile}" ]; then
+	kill -HUP "$pidfile";
+	RETVAL=$?
+    fi
+    if [ $RETVAL -ne 0 ]; then
+	failure
+    else
+	success
+    fi
+    echo
+    return $RETVAL
+}
+case "$1" in
+  start)
+  	start
+	;;
+  stop)
+  	stop
+	;;
+  status)
+  	rhstatus
+	;;
+  restart)
+  	restart
+	;;
+  reload)
+	reload
+	;;
+  condrestart)
+  	[ -f /var/lock/subsys/nodeadmin ] && restart || :
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart|condrestart}"
+	exit 2
+esac
+
+exit $?
+

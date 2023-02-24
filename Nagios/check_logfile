@@ -1,0 +1,146 @@
+#! /bin/sh
+#
+# Log file pattern detector plugin for Nagios
+# Written by Neo Chen (netkiller@msn.com)
+# Last Modified: 03-13-2015
+# Website: http://netkiller.github.io
+#
+# Description:
+#
+# This plugin will scan a string in the logfile
+
+GREP="/bin/egrep"
+DIFF="/bin/diff"
+TAIL="/bin/tail"
+CAT="/bin/cat"
+TOUCH="/bin/touch"
+
+PROGNAME=`/bin/basename $0`
+PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
+REVISION="2.0.3"
+
+. $PROGPATH/utils.sh
+
+print_usage() {
+    echo "Usage: $PROGNAME -F logfile -q query"
+    echo "Usage: $PROGNAME --help"
+    echo "Usage: $PROGNAME --version"
+}
+
+print_help() {
+    print_revision $PROGNAME $REVISION
+    echo ""
+    print_usage
+    echo ""
+    echo "Logfile pattern detector plugin for Nagios"
+    echo ""
+    support
+}
+
+# Make sure the correct number of command line
+# arguments have been supplied
+
+if [ $# -lt 2 ]; then
+    print_usage
+    exit $STATE_UNKNOWN
+fi
+
+# Grab the command line arguments
+
+#logfile=$1
+#query=$2
+exitstatus=$STATE_WARNING #default
+while test -n "$1"; do
+    case "$1" in
+        --help)
+            print_help
+            exit $STATE_OK
+            ;;
+        -h)
+            print_help
+            exit $STATE_OK
+            ;;
+        --version)
+            print_revision $PROGNAME $REVISION
+            exit $STATE_OK
+            ;;
+        -V)
+            print_revision $PROGNAME $REVISION
+            exit $STATE_OK
+            ;;
+        --filename)
+            logfile=$2
+            shift
+            ;;
+        -F)
+            logfile=$2
+            shift
+            ;;
+        --query)
+            query=$2
+            shift
+            ;;
+        -q)
+            query=$2
+            shift
+            ;;
+        -x)
+            exitstatus=$2
+            shift
+            ;;
+        --exitstatus)
+            exitstatus=$2
+            shift
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            print_usage
+            exit $STATE_UNKNOWN
+            ;;
+    esac
+    shift
+done
+
+# If the source log file doesn't exist, exit
+
+if [ ! -e $logfile ]; then
+    echo "Log check error: Log file $logfile does not exist!"
+    exit $STATE_UNKNOWN
+elif [ ! -r $logfile ] ; then
+    echo "Log check error: Log file $logfile is not readable!"
+    exit $STATE_UNKNOWN
+fi
+
+postion_file=/var/tmp/$(echo $logfile | md5sum | cut -d ' ' -f1)
+if [ ! -e $postion_file ]; then
+	line_number_begin=1
+else
+	line_number_begin=$(cat $postion_file)
+	line_number_begin=$[$line_number_begin + 1]
+fi 
+line_number_end=$(wc -l $logfile | cut -d' ' -f1)
+
+output=$(sed -n $line_number_begin',$p' $logfile)
+# Count the number of matching log entries we have
+count=$(echo $output| $GREP -c "$query")
+
+echo ${line_number_end} > ${postion_file}
+
+# Debug 
+# echo ${postion_file}
+# echo $line_number_begin
+# echo $line_number_end
+# echo $output
+# echo $count
+
+# Get the last matching entry in the diff file
+
+if [ "$count" = "0" ]; then # no matches, exit with no error
+    echo "Logfile check ok - 0 pattern matches found"
+    exitstatus=$STATE_OK
+else # Print total matche count and the last entry we found
+    echo "Logfile check - $count pattern matches found - $query"
+    exitstatus=$STATE_CRITICAL
+fi
+
+exit $exitstatus

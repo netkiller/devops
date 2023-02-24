@@ -1,0 +1,300 @@
+#!/usr/bin/env python3
+#/bin/env python3
+#-*- coding: utf-8 -*-
+##############################################
+# Home  : http://netkiller.sf.net
+# Author: Neo <openunix@163.com>
+##############################################
+
+import asyncore, asynchat, socket, threading
+import subprocess, os, sys, getopt, configparser, logging
+import string, re
+from multiprocessing import Process
+
+#class Channel(asyncore.dispatcher):
+#    def __init__(self, sock):
+#        asyncore.dispatcher.__init__(self, sock)
+#        self.buffer = ""
+#
+#    def handle_read(self):
+#       self.buffer += self.recv(8192)
+#
+#    def handle_write(self):
+#        sent = self.send(self.buffer)
+#        self.buffer = self.buffer[sent:]
+#
+#    def handle_close(self):
+#        self.close()
+
+class Backend(asyncore.dispatcher):
+    queue = []
+    def __init__(self, host, port,config):
+        asyncore.dispatcher.__init__(self)
+
+        self.host = host
+        self.port = port
+        self.config = config
+
+        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.bind((host,port))
+        self.listen(10)
+
+        try:
+            cfg = Protocol(config['protocol'], self.host)
+            #self.protocols = cfg.items(self.host)
+            self.protocols = cfg.all()
+            self.sections = cfg.sections()
+        except configparser.NoSectionError as err:
+            print("Error: %s %s" %(err, config['protocol']))
+            sys.exit(2)
+        try:
+            logging.basicConfig(level=logging.NOTSET,
+                    format='%(asctime)s %(levelname)-8s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    filename=config['logfile'],
+                    filemode='a')
+            self.logging = logging.getLogger()
+            #self.logging.debug('Test')
+        except AttributeError as err:
+            print("Error: %s %s" %(err, config['logfile']))
+            sys.exit(2)
+
+    def handle_accept (self):
+        conn, addr = self.accept()
+        self.queue.append(addr)
+        request_handler(conn, self)
+    def handle_connect(self):
+        pass
+    def handle_expt(self):
+        self.close()
+    def handle_close(self):
+        self.close()
+
+class request_handler(asynchat.async_chat):
+
+    def __init__(self, sock, resource):
+        asynchat.async_chat.__init__(self, sock=sock)
+        self.sessions = resource
+        self.buffer = b''
+        self.set_terminator(b"\r\n")
+        self.logging 	= resource.logging
+        self.protocols 	= resource.protocols
+        self.sections 	= resource.sections
+        self.host 	= self.sessions.host
+
+        #welcome = bytes("Development and deployment administration platform for cluster \r\n", 'ascii')
+        #self.push(welcome)
+        #self.prompt = bytes(">", 'ascii')
+        #self.push(self.prompt)
+
+    def handle_connect(self):
+        # connection succeeded
+        #self.logging.info('')
+        pass
+
+    def handle_expt(self):
+        # connection failed
+        self.close()
+
+    def collect_incoming_data(self, data):
+        """Buffer the data"""
+        #self.buffer.append(data)
+        self.buffer = data
+
+    def found_terminator(self):
+        #self.push('Did you say "%s" ?\r\n' % self.buffer)
+        #self.push(self.buffer)
+        #self.set_terminator(None) # browsers sometimes over-send
+        try:
+            buffer = bytes.decode(self.buffer)
+        except UnicodeDecodeError:
+            print("\r\nError: ",err)
+            buffer = ''
+        try:
+            execute = re.split(' ', buffer)
+            command = execute[0]
+            parameter = ' '.join( execute[1:])
+            response = b''
+            screen = ''
+            if self.buffer == b'quit' or self.buffer == b'exit' :
+                self.push(b'shutdown!!!\r\n')
+                self.close_when_done()
+            elif self.buffer == b'help' or self.buffer == b'?':
+                screen = "Help may be requested at any point in a command by entering a question mark '?' or 'help'. the help list will be showing the available options.\r\n"
+            
+                for cmd,v in self.protocols :
+                    screen += cmd + "\r\n"
+            elif self.buffer == b'sections' :
+                for sect in self.sections :
+                    screen += sect + "\r\n"
+            elif self.buffer == b'help.html' :
+                for cmd,v in self.protocols :
+                    screen += '<a href="?host='+self.host+'&cmd='+cmd+'">'+ cmd +'</a><br />' + "\r\n"
+            elif self.buffer == b'enable':
+                self.prompt = b'#'
+            elif self.buffer == b'end' or self.buffer == b'^z':
+                self.prompt = b'>'
+    #        elif self.buffer == b'deploy test' :
+    #            self.push(b"Starting deploy apache ...\r\n")
+    #            os.system("rsync -e ssh -auz --stats /www/* root@192.168.3.46:/www")
+    #            self.push(b"Starting deploy resin ...\r\n")
+    #            os.system("rsync -e ssh -auz --stats /www/* root@192.168.3.47:/www")
+    #            self.push(b"Restarting resin ...\r\n")
+    #            os.system('ssh root@192.168.3.47 "source /etc/profile && '+RESIN_SCRIPT+' restart"')
+    #            #screen = subprocess.getoutput("ssh root@192.168.3.47 "+RESIN_SCRIPT+" restart")
+    #            self.logging.info('Deploy 124 -> 46,47')
+            else:
+                proto = dict(self.protocols)
+                if command in proto :
+                    run = proto[command] + ' ' + parameter
+                    screen = subprocess.getoutput(run)
+    
+            if screen :
+                response = bytes(screen + "\r\n",'utf8')
+                self.push(response)
+                self.logging.info(bytes.decode(self.buffer))
+            self.buffer = b''
+            #self.push(self.prompt)
+            #self.handle_request()
+            self.close_when_done()
+        except :
+            self.close_when_done()
+            sys.exit(2)
+
+class Protocol():
+    config = None
+    agreement = None
+    def __init__(self,cfg = 'protocol.cfg',sections = ''):
+        self.config = configparser.SafeConfigParser()
+        self.config.read(cfg)
+        #self.agreement = self.config.items('common')
+    def sections(self):
+        return self.config.sections()
+    def items(self, sections):
+        self.agreement = self.config.items(sections)
+        return self.agreement
+    def dicts(self):
+        return dict(self.agreement)
+    def all(self):
+        self.agreement = []
+        for section in self.config.sections():
+            self.agreement += self.config.items(section)
+        return self.agreement
+
+
+def main():
+    daemon = False
+    host = 'localhost'
+    port = 7800
+    pidfile = ''
+    logfile = ''
+    cfgfile = ''
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "h:p:d?v", [ "daemon","host=","port=", 'help',"h=","p=", "basedir=", "pidfile=", "config=", "protocol=", "logfile="])
+
+        if not opts :
+            usage()
+            sys.exit()
+        for o, a in opts :
+            if o in ('-?', '--help') :
+                usage()
+                sys.exit()
+            elif o in ("-v", "--verbose"):
+                usage()
+                sys.exit()
+            elif o in ("-d", "--daemon"):
+                daemon = True
+            elif o in ("-h", "--host"):
+                host = a
+            elif o in ("-p", "--port"):
+                port = int(a)
+            elif o in ("--basedir"):
+                BASEDIR = a
+            elif o in ("--pidfile"):
+                pidfile = a
+            elif o in ("--config"):
+                cfgfile = a
+            elif o in ("--protocol"):
+                protocol = a		
+            elif o in ("--logfile"):
+                logfile = a
+            else:
+                assert False, "unhandled option"
+    except getopt.GetoptError as err:
+        # print help information and exit:
+        usage()
+        sys.exit(2)
+
+#    except configparser.KeyError as err:
+#        print("\r\nError: ",err)
+#        sys.exit(2)
+
+
+    try:
+
+        if daemon :
+            pid = os.fork()
+            if pid > 0:
+                #exit first parent
+                sys.exit(0)
+        myself = str(sys.argv[0].split('/')[-1:][0])
+        #pidfile = os.getpid()
+        if not pidfile :
+            pidfile = '/var/run/'+myself+'.pid'
+        file = open(pidfile,'w')
+        file.write(str(os.getpid()))
+        file.close()
+        if not cfgfile :
+            cfgfile = ''+myself+'.cfg'
+        if not logfile :
+            logfile = '/var/log/'+myself+'.log'
+        config = dict({'cfgfile':cfgfile, 'pidfile':pidfile, 'logfile':logfile, 'protocol':protocol})
+        #print(config)
+        #exit()
+        #print(host,port)
+        Backend(host,port,config)
+        asyncore.loop(timeout=30, use_poll=True)
+        #thr = threading.Thread(target = asyncore.loop)
+        #thr.setDaemon(True)
+        #thr.start()
+        #p = Process(target=asyncore.loop)
+        #p.daemon=True
+        #p.start()
+    except socket.error as err:
+        print("\r\nError: ",err)
+        sys.exit(2)
+    except IOError as err:
+        print("\r\nError: ",err)
+        sys.exit(2)
+
+def usage():
+    myself = str(sys.argv[0].split('/')[-1:][0])
+
+    print("Usage: %s -d -h <ip address> -p <7800>" % myself );
+    print("Development and deployment administration platform")
+    print("\r\nMandatory arguments to long options are mandatory for short options too.")
+    print("\t-?, --help")
+    print("\t-v, --verbose")
+    print("\t-d, --daemon")
+    print("\t-h, --host \t\t(default localhost)")
+    print("\t-p, --port")
+    print("\t    --config \t\t(default %s.cfg)" % myself)
+    print("\t    --protocol \t\t(default %s.cfg)" % "protocol.cfg")
+    print("\t    --pidfile \t\t(default /var/run/%s.pid)" % myself)
+    print("\t    --logfile \t\t(default /var/log/%s.log)" % myself)
+    print("\r\nExample:")
+    print("\t%s --daemon --host localhost --port 7800" % myself)
+    print("\t%s -d -h localhost -p 7800" % myself)
+    print("\r\nSee http://netkiller.sf.net/ for updates, bug reports, and answers, \r\nif you have no web access, by sending email to Neo Chan<openunix@163.com>. ")
+    # Exit status is 0 if OK, 1 if minor problems, 2 if serious trouble.
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print ("Crtl+C Pressed. Shutting down.")
+#    except:
+#        import traceback
+#        traceback.print_exc(file = file('sysadmin.log', 'a+'))
+

@@ -1,0 +1,1 @@
+bin/nodekeeper --protocol=etc/protocol.cfg -h 172.16.0.10 -p 7801

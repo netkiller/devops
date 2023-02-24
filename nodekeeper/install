@@ -1,0 +1,14 @@
+PREFIX=/srv/nodekeeper
+
+#mkdir $PREFIX
+mkdir -p $PREFIX/{bin,etc,run,log}
+
+cp bin/nodekeeper $PREFIX/bin/
+cp bin/console $PREFIX/bin/
+#cp protocol.cfg $PREFIX/etc/nodekeeper.cfg
+#cp commands.cfg $PREFIX/etc/
+touch $PREFIX/etc/nodekeeper.cfg
+cp -r etc/* $PREFIX/etc/ 
+#cp nodekeeper.script /etc/init.d/nodekeeper
+cp nodekeeper.ubuntu /etc/init.d/nodekeeper
+
