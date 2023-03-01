@@ -3,6 +3,7 @@ import os, sys,logging
 class Git():
 	def __init__(self, workspace = None, logger = None):
 		self.cmd = []
+		self.opt = None
 		if logger :
 			self.logger = logger
 		else:
@@ -44,8 +45,11 @@ class Git():
 	def status(self):
 		self.cmd.append('status')
 		return(self)
-	def log(self):
-		self.cmd.append('log')
+	def log(self, opt = None):
+		if opt :
+			self.cmd.append('log '+ opt)
+		else:
+			self.cmd.append('log')
 		return(self)
 	def pull(self):
 		# if self.workspace :

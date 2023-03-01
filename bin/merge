@@ -36,6 +36,8 @@ class Merge():
                                help='workspace ~/workspace', default='None', metavar='~/workspace')
         self.parser.add_option('-p', '--project', dest='project',
                                help='project directory', default=None, metavar='')
+        self.parser.add_option('-C', '--changelist', dest='changelist', help='Change list',
+                               default=None, metavar='2023-03-01')
         self.parser.add_option('-l', '--logfile', dest='logfile', help='log file',
                                default='/tmp/merge.log', metavar='/tmp/merge.log')
         self.parser.add_option('-d', '--debug', dest='debug',
@@ -157,6 +159,10 @@ class Merge():
     def push(self):
         git = Git(self.project, self.logger)
         git.push(True).execute()
+    def changelist(self, since):
+        git = Git(self.project, self.logger)
+        git.log('--since="'+since+'" --no-merges --pretty=format:"%h %an %ai %s"')
+        git.execute()
 
     def main(self):
         if self.options.workspace:
@@ -169,6 +175,10 @@ class Merge():
                 self.project = self.options.project
         else:
             self.project = os.getcwd()
+
+        if self.options.changelist :
+            self.changelist(self.options.changelist)
+            exit()
 
         if self.options.clone:
             self.clone(self.options.clone)
