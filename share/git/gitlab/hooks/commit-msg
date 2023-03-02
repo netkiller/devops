@@ -66,6 +66,7 @@ def format(msg):
         ids = numbers(msg)
         for id in ids:
             task = title('TASK', id)
+            task = task.replace('TASK#', 'TASK #')
             if task:
                 # msg = msg.replace(                   id, "[{title}]("+zentao + "/zentao/task-view-{id}.html)".format(id=id, title=task))
                 message += "[{title}]({zentao}/zentao/task-view-{id}.html)\n".format(
