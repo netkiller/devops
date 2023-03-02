@@ -125,7 +125,7 @@ class Pipeline:
                 if stage in self.pipelines.keys():
                     for command in self.pipelines[stage]:
                         rev = subprocess.call(command, shell=True)
-                        if rev == 0 :
+                        if rev.returncode == 0 :
                             status = 'done'
                         else:
                             status = 'error'

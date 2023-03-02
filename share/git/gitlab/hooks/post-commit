@@ -1,0 +1,47 @@
+#! /usr/bin/env python3
+# -*- coding: UTF-8 -*-
+##############################################
+# Home	: https://www.netkiller.cn
+# Author: Neo <netkiller@msn.com>
+# Help  : https://github.com/netkiller/devops/blob/master/doc/zentao.md
+##############################################
+
+import os, re, requests, subprocess
+
+api_address = 'http://zentao.netkiller.cn/zentao/gitlab.php'
+gitlab_address = 'https://gitlab.netkiller.cn'
+
+def zentao(type, id, commit):
+    origin = subprocess.getoutput('git ls-remote --get-url origin')
+    project = os.path.basename(os.getcwd())
+    group = re.findall(r"/(\w+)/"+project+"\.", origin)[0]
+    # print(origin, project)
+    # print(group)   
+    message = gitlab_address + '/' + group + '/' + project + '/-/commit/{commit}'.format(
+        commit=commit)
+    message = '<a href="' + message + '">' + message + '</a>'
+    url = api_address + "?id={id}&type={type}&message={message}".format(
+        id=id, type=type, message=message)
+    request = requests.get(url)
+
+
+file = open('.git/COMMIT_EDITMSG', 'r', encoding='utf-8')
+# lines = file.readlines()
+message = file.read()
+file.close()
+# print(message)
+commit = subprocess.getoutput('git rev-parse HEAD')
+
+ids = []
+ids.extend(re.findall(r"TASK#(\d+)\s", message, re.M))
+ids.extend(re.findall(r"\[TASK\s#(\d+)\]", message, re.M))
+
+# print(ids)
+for id in ids:
+    zentao('task', id, commit)
+
+ids = []
+ids.extend(re.findall(r"BUG #(\d+)\s", message, re.M))
+# print(ids)
+for id in ids:
+    zentao('bug', id, commit)
