@@ -34,7 +34,8 @@ commit = subprocess.getoutput('git rev-parse HEAD')
 
 ids = []
 ids.extend(re.findall(r"TASK#(\d+)\s", message, re.M))
-ids.extend(re.findall(r"\[TASK\s#(\d+)\]", message, re.M))
+ids.extend(re.findall(r"TASK\s#(\d+)\s", message, re.M))
+# ids.extend(re.findall(r"\[TASK\s#(\d+)\]", message, re.M))
 
 # print(ids)
 for id in ids:

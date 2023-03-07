@@ -28,18 +28,19 @@ class Zentao {
         try {
             $this->conn = new PDO("mysql:host=$this->host;dbname=zentao",$this->username, $this->password);
             $id =ltrim($id, '0');
-            $sql = "update zt_task set consumed=estimate, `left`=0, status='done', finishedDate=now() where id='".$id."'";
+            // $sql = "update zt_task set consumed=estimate, `left`=0, status='done', finishedDate=now() where id='".$id."'";
+            $sql = "update zt_task set status='doing', estStarted=now() where status='wait' and id='".$id."'";
         //    print($sql);
-            $count = $this->conn->exec($sql);
+            $task = $this->conn->exec($sql);
 
             if($message){
                 //$comment = "insert into zt_action(objectType,objectID,product,project,execution,actor,action,date,comment,extra,`read`,vision,efforted) select 'task','".$id."',',1,', project, execution, 'gitlab','commented',now(),'".$message."','','1','rnd','0' from zt_task where id=".$id;
                 $comment = "insert into zt_action(objectType,objectID,product,project,actor,action,date,comment,extra,`read`,efforted) select 'task','".$id."',',1,', project, 'gitlab','commented',now(),'".$message."','','1','0' from zt_task where id=".$id;
-                $status = $this->conn->exec($comment);
-                $effort = "insert into zt_effort(objectType,objectID,product,project,account,work,date,`left`,consumed,begin,end) select 'task', id ,'',project,assignedTo,name, now(),0,consumed,'0000','0000' from zt_task where id=".$id;
-                $status = $this->conn->exec($effort);
+                $action = $this->conn->exec($comment);
+                $effort = "insert into zt_effort(objectType,objectID,product,project,account,work,date,`left`,consumed,begin,end) select 'task', id ,'',project,assignedTo,name, now(),0,estimate,'0000','0000' from zt_task where id=".$id;
+                $effort = $this->conn->exec($effort);
             }
-        //print("$count rows.\n");
+            print("$task, $action, $effort");
 
         }
         catch(PDOException $e){
