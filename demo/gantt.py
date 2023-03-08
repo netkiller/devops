@@ -1,22 +1,8 @@
 import calendar
 import drawsvg as draw
-
 from datetime import datetime
 
-begin = '2023-02-01'
-end = '2023-02-28'
-
-print(datetime.strptime(end, '%Y-%m-%d'))
-
-interval = datetime.strptime(end, '%Y-%m-%d').date() - \
-    datetime.strptime(begin, '%Y-%m-%d').date()
-print(interval.days)  # 181 days, 0:00:00
-
-
-# 系统默认：星期一作为一周的第一天（即：0），星期日作为一周的最后一天（即：6）
-
 # class Graph:
-
 
 class Gantt:
     canvasWidth = 1980
@@ -24,27 +10,36 @@ class Gantt:
     unitWidth = 30
     unitHeight = 30
     splitLine = 1
+    starting = 100
+    itemLine = 0
+
+    data = [
+        {'title':'Java', 'begin':'2023-03-01', 'end':'2023-03-05'},
+        {'title':'PHP', 'begin':'2023-03-03', 'end':'2023-03-10'},
+        {'title':'Go', 'begin':'2023-03-10', 'end':'2023-03-20'},
+        {'title':'Python', 'begin':'2023-03-06', 'end':'2023-03-08'},
+    ]
 
     def __init__(self) -> None:
         self.draw = draw.Drawing(self.canvasWidth, self.canvasHeight)
-        self.draw.append(draw.Rectangle(1, 1, self.canvasWidth,
-                         self.canvasHeight, fill='#eeeeee'))
+        self.draw.append(draw.Rectangle(1, 1, self.canvasWidth,       self.canvasHeight, fill='#eeeeee'))
 
-        # left = draw.Line(1, 1, 1, self.canvas_height, stroke='black')
-        # top = draw.Line(1, 1, self.canvas_width, 1, stroke='black')
-        # right = draw.Line(self.canvas_width, 1, 1,
-        #                   self.canvas_height, stroke='black')
-        # buttom = draw.Line(self.canvas_height, 1, 1,
-        #                    self.canvas_width,  stroke='black')
-        # self.draw.append(left)
-        # self.draw.append(top)
-        # self.draw.append(right)
-        # self.draw.append(buttom)
-    def month(self):
+        left = draw.Line(0, 0, 1, self.canvasHeight, stroke='black')
+        top = draw.Line(0, 0, self.canvasWidth, 0, stroke='black')
+        right = draw.Line(self.canvasWidth, 0, 
+                           self.canvasWidth, self.canvasHeight,stroke='black')
+        buttom = draw.Line(0, self.canvasHeight, self.canvasWidth,
+                           self.canvasHeight,  stroke='black')
+        self.draw.append(left)
+        self.draw.append(top)
+        self.draw.append(right)
+        self.draw.append(buttom)
+
+    def title(self, text):
         line = draw.Line(1, 50, self.canvasWidth, 50, stroke='black')
         self.draw.append(line)
 
-        self.draw.append(draw.Text('Middle', 30, self.canvasWidth /
+        self.draw.append(draw.Text(text, 30, self.canvasWidth /
                          2, 25, center=True, text_anchor='middle'))
 
     def week(self):
@@ -52,16 +47,17 @@ class Gantt:
         line = draw.Line(1, top, self.canvasWidth, top, stroke='black')
         self.draw.append(line)
         offsetX = 0
-        for w in range(1,6):
-        # w = 0
+        for w in range(1, 6):
+            # w = 0
             x = self.unitWidth * 7 * (w-1) + offsetX
-            r = draw.Rectangle(x, top, self.unitWidth *7 , top, fill='#44cccc')
-            r.append_title(str(w))  
+            r = draw.Rectangle(x, top, self.unitWidth * 7, top, fill='#44cccc')
+            r.append_title(str(w))
             self.draw.append(r)
-            if w :
+            if w:
                 offsetX += 5
 
-    def days(self):
+    def background(self):
+        left = self.starting
         top = 80
         offsetX = 0
         for day in range(1, 31):
@@ -72,38 +68,55 @@ class Gantt:
                 color = '#dddddd'
             else:
                 color = '#cccccc'
-            x = self.unitWidth * (day-1) + offsetX
-            r = draw.Rectangle(x, top, self.unitWidth, self.canvasHeight, fill=color)
+            x = left + self.unitWidth * (day-1) + offsetX
+            r = draw.Rectangle(x, top, self.unitWidth,
+                               self.canvasHeight, fill=color)
             r.append_title(str(day))
             self.draw.append(r)
-            self.draw.append(draw.Text(str(day), 24, x, top + 24, fill='#555555'))
+            self.draw.append(
+                draw.Text(str(day), 24, x, top + 24, fill='#555555'))
 
-            if day :
+            if day:
                 offsetX += self.splitLine
-        line = draw.Line(1, top + 26, self.canvasWidth,top + 26, stroke='grey')
+        line = draw.Line(1, top + 26, self.canvasWidth,
+                         top + 26, stroke='grey')
         self.draw.append(line)
+    def item(self, line):
+        left = self.starting
+        top = 110 + self.itemLine * 30
 
+        day = (datetime.strptime(line['end'], '%Y-%m-%d').date() - datetime.strptime(line['begin'], '%Y-%m-%d').date()).days
+        print(day)
+
+        self.draw.append(draw.Text(line['title'], 20, 5,top + 15, text_anchor='start'))
+
+        r = draw.Rectangle(left, top, 30 * day, 30, fill='#ccccff')
+        r.append_title(line['title'])
+        self.draw.append(r)
+        day = 2
+        r = draw.Rectangle(left, top + 5, 30 * day, 15, fill='#ccffff')
+        r.append_title("50%")
+        self.draw.append(r)
+        self.itemLine += 1
     def task(self):
-        for y in range(1, 10):
-            offsetY = 30 * y
-            for x in range(1, 30):
-                # print(day)
-                offsetX = 31 * x
-                r = draw.Rectangle(offsetX, offsetY+150,
-                                   30, 30, fill='#bbbbbb')
-                r.append_title("Our first rectangle")  # Add a tooltip
-                self.draw.append(r)
-
-        # r = draw.Rectangle(5, 5, 40, 50, fill='#cccccc')
-        # r.append_title("Our first rectangle")  # Add a tooltip
-        # self.draw.append(r)
+        for line in self.data:
+            self.item(line)
+        #     offsetY = 30 * y
+        #     for x in range(1, 30):
+        #         # print(day)
+        #         offsetX = 31 * x
+        #         r = draw.Rectangle(offsetX, offsetY+150,
+        #                            30, 30, fill='#bbbbbb')
+        #         r.append_title("Our first rectangle")  # Add a tooltip
+        #         self.draw.append(r)
+        
 
     def main(self):
 
-        self.month()
-        self.week()
-        self.days()
-        # self.task()
+        self.title("Gantt Test")
+        self.background()
+        # self.days()
+        self.task()
         self.draw.save_svg('example.svg')
 
 
