@@ -36,6 +36,8 @@ class Gantt:
     itemWidth = 30
     barHeight = 20
     progressHeight = 14
+    textSize = 30
+    textIndent = 0
 
     data = []
 
@@ -58,6 +60,22 @@ class Gantt:
         top = 80
         offsetX = 0
         group = draw.Group(id='background')
+        group.append(draw.Line(1, 80, self.canvasWidth,
+                            80,  stroke='black'))
+        group.append(draw.Text('任务', 20, 5, top + 20, fill='#555555'))
+        group.append(draw.Line(self.textSize, top - 30,
+                               self.textSize, self.canvasHeight, stroke='grey'))
+        group.append(draw.Text('开始日期', 20, self.textSize,
+                     top + 20, fill='#555555'))
+        group.append(draw.Line(self.textSize + 100, top - 30,self.textSize + 100, self.canvasHeight, stroke='grey'))
+        group.append(draw.Text('截止日期', 20, self.textSize +
+                     100, top + 20, fill='#555555'))
+        group.append(draw.Line(self.textSize + 200, top - 30,self.textSize + 200, self.canvasHeight, stroke='grey'))
+        group.append(draw.Text('工时', 20, self.textSize +
+                     200, top + 20, fill='#555555'))
+        group.append(draw.Line(self.textSize + 250, top - 30,self.textSize + 250, self.canvasHeight, stroke='grey'))
+        group.append(draw.Text('资源', 20, self.textSize +
+                     250, top + 20, fill='#555555'))
         for day in range(1, 31):
             # print(day)
             weekday = calendar.weekday(2023, 3, day)
@@ -90,8 +108,7 @@ class Gantt:
         # top = draw.Line(0, 0, self.canvasWidth, 0, stroke='black')
         # right = draw.Line(self.canvasWidth, 0,
         #                   self.canvasWidth, self.canvasHeight, stroke='black')
-        # buttom = draw.Line(0, self.canvasHeight, self.canvasWidth,
-        #                    self.canvasHeight,  stroke='black')
+        # buttom = 
         self.draw.append(
             draw.Line(left, top-30, left, self.canvasHeight, stroke='grey'))
         # self.draw.append(top)
@@ -108,20 +125,25 @@ class Gantt:
         end = (datetime.strptime(line['end'], '%Y-%m-%d').date() -
                datetime.strptime(line['begin'], '%Y-%m-%d').date()).days
 
-        left += self.itemWidth * (begin - 1) + (1 * begin)
+        left += self.itemWidth * (begin - 1) + (1 * begin) 
         # 日宽度 + 竖线宽度
         right = self.itemWidth * (end + 1) + (1 * end)
 
         table = draw.Group(id='text')
-        text = draw.Text(line['title'], 20, 5, top + 15, text_anchor='start')
+        text = draw.Text(line['title'], 20, 5 + (self.textIndent * self.itemWidth), top + 20, text_anchor='start')
         # text.append(draw.TSpan(line['begin'], text_anchor='start'))
         # text.append(draw.TSpan(line['end'], text_anchor='start'))
         table.append(text)
         fontSize = self.getTextSize(line['title'])
-        begin = draw.Text(line['begin'], 20, fontSize, top + 15, text_anchor='start')
+        begin = draw.Text(line['begin'], 20, self.textSize,
+                          top + 20, text_anchor='start')
         table.append(begin)
-        end = draw.Text(line['end'], 20, fontSize + 50, top + 15, text_anchor='start')
+        end = draw.Text(line['end'], 20, self.textSize +
+                        100, top + 20, text_anchor='start')
         table.append(end)
+        if 'progress' in line:
+            table.append(draw.Text(
+                str(line['progress']), 20, self.textSize + 200, top + 20, text_anchor='start'))
         self.draw.append(table)
 
         group = draw.Group(id='item', fill='none', stroke='black')
@@ -168,7 +190,7 @@ class Gantt:
                 group.append(progress)
 
         # 分割线
-        group.append(draw.Lines(self.starting, top + self.itemHeight,
+        group.append(draw.Lines(1, top + self.itemHeight,
                                 self.canvasWidth, top + self.itemHeight, stroke='grey'))
 
         self.draw.append(group)
@@ -201,8 +223,10 @@ class Gantt:
         for line in self.data:
             if 'subitem' in line:
                 self.item(line, True)
+                self.textIndent += 1
                 for item in line['subitem']:
                     self.item(item)
+                self.textIndent -= 1
             else:
                 self.item(line)
 
@@ -225,11 +249,13 @@ class Gantt:
             length = self.getTextSize(item['title'])
             if self.starting < length:
                 self.starting = length
+                self.textSize = length
                 # print(item['title'], len(item['title']))
         # print(lenght)
+        self.starting += 300
 
     def rander(self):
-        
+
         self.background()
         self.task()
 
