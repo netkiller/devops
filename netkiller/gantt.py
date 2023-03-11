@@ -59,7 +59,10 @@ class Gantt:
         left = self.starting
         top = 80
         offsetX = 0
-        group = draw.Group(id='background')
+        background = draw.Group(id='background')
+
+        group = draw.Group(id='table')
+        group.append_title('表格')
         group.append(draw.Line(1, 80, self.canvasWidth,
                             80,  stroke='black'))
         group.append(draw.Text('任务', 20, 5, top + 20, fill='#555555'))
@@ -76,10 +79,24 @@ class Gantt:
         group.append(draw.Line(self.textSize + 250, top - 30,self.textSize + 250, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('资源', 20, self.textSize +
                      250, top + 20, fill='#555555'))
+        background.append(group)
+
+        
+        # calendarGroup = draw.Group(id='calendar')
+        
+        weekNumber = datetime.strptime('2023-03-01', '%Y-%m-%d').strftime('%W')
+        weekGroup = {}
+        weekGroup[weekNumber] = draw.Group(id='week'+str(weekNumber))
+
         for day in range(1, 31):
             # print(day)
             weekday = calendar.weekday(2023, 3, day)
-            # print(weekday)
+            
+            currentWeekNumber = datetime.strptime('2023-03-'+ str(day), '%Y-%m-%d').strftime('%W')
+            # print(weekNumber, currentWeekNumber)
+            if currentWeekNumber != weekNumber:
+                weekNumber = currentWeekNumber
+                weekGroup[weekNumber]  = draw.Group(id='week'+str(weekNumber))
 
             if weekday >= 5:
                 color = '#dddddd'
@@ -88,32 +105,35 @@ class Gantt:
             x = left + self.unitWidth * (day-1) + offsetX
 
             if weekday == 6:
-                group.append(draw.Line(x + 30, top - 30,
+                weekGroup[weekNumber].append(draw.Line(x + 30, top - 30,
                                        x + 30, self.canvasHeight, stroke='black'))
 
             r = draw.Rectangle(x, top, self.unitWidth,
                                self.canvasHeight, fill=color)
             r.append_title(str(day))
-            group.append(r)
-            group.append(
+            weekGroup[weekNumber].append(r)
+            weekGroup[weekNumber].append(
                 draw.Text(str(day), 24, x, top + 24, fill='#555555'))
 
             if day:
                 offsetX += self.splitLine
+        # print(weekGroup)
+        for key, value in weekGroup.items():
+            background.append(value)
+
         group.append(draw.Line(1, top + 26, self.canvasWidth,
                                top + 26, stroke='grey'))
-
-        self.draw.append(group)
+        background.append(group)
 
         # top = draw.Line(0, 0, self.canvasWidth, 0, stroke='black')
         # right = draw.Line(self.canvasWidth, 0,
         #                   self.canvasWidth, self.canvasHeight, stroke='black')
         # buttom = 
-        self.draw.append(
+        background.append(
             draw.Line(left, top-30, left, self.canvasHeight, stroke='grey'))
         # self.draw.append(top)
         # self.draw.append(right)
-        # self.draw.append(buttom)
+        self.draw.append(background)
 
     def item(self, line, subitem=False):
         left = self.starting
