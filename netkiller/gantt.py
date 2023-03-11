@@ -139,7 +139,7 @@ class Gantt:
         else:
             beginDay = 1
             endDay = calendar.monthrange(datetime.now().year, month)[1]
-        print(beginDay, endDay)
+        # print(beginDay, endDay)
 
         weekNumber = datetime.strptime(str(
             datetime.now().year)+'-'+str(month)+'-01', '%Y-%m-%d').strftime('%W')
@@ -206,7 +206,7 @@ class Gantt:
         for key, value in self.__month(top).items():
             background.append(value)
 
-        print(self.dayPosition)
+        # print(self.dayPosition)
 
         # for key, value in self.__weekday(top).items():
         #     background.append(value)
@@ -318,7 +318,7 @@ class Gantt:
 
         left = self.dayPosition[line['begin']]
         # right = self.dayPosition[line['end']]
-
+        lineGroup = draw.Group(id='line')
         table = draw.Group(id='text')
         text = draw.Text(line['title'], 20, 5 + (self.textIndent *
                          self.itemWidth), top + 20, text_anchor='start')
@@ -338,11 +338,11 @@ class Gantt:
         if 'resource' in line:
             table.append(draw.Text(
                 str(line['resource']), 20, self.textSize + 250, top + 20, text_anchor='start'))
-
+        lineGroup.append(table)
         group = draw.Group(id='item', fill='none', stroke='black')
         # text = draw.Text(line['title'], 20, 5, top + 15, text_anchor='start')
         # group.append(text)
-        group.append(table)
+        
         if subitem:
             # print(begin,end)
             # print(left,top,right)
@@ -384,7 +384,8 @@ class Gantt:
         group.append(draw.Lines(1, top + self.itemHeight,
                                 self.canvasWidth, top + self.itemHeight, stroke='grey'))
 
-        self.draw.append(group)
+        lineGroup.append(group)
+        self.draw.append(lineGroup)
         self.itemLine += 1
 
     def legend(self):
@@ -394,7 +395,7 @@ class Gantt:
                              fill='red', stroke='black', close='true')
         star = draw.Lines(48, 16, 16, 96, 96, 48, 0, 48, 88, 96,
                           stroke='black', fill='red', close='true')
-        print(draw.Text("Test", 20, 5, top + 15, text_anchor='start'))
+        self.draw.append(draw.Text("https://www.netkiller.cn - design by netkiller", 15, self.canvasWidth - 300, top + 30, text_anchor='start', fill='grey'))
 
         # self.draw.append(lines)
         # top = 40
@@ -467,6 +468,7 @@ class Gantt:
     def rander(self):
         self.background()
         self.task()
+        self.legend()
 
     def save(self, filename=None):
         if filename:

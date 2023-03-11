@@ -7,13 +7,11 @@
 import os
 import sys
 module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print(module)
+# print(module)
 sys.path.insert(0, module)
 
 try:
     from netkiller.gantt import Gantt
-    import cv2
-    import requests
     import json
     import logging
     import logging.handlers
@@ -41,7 +39,7 @@ class GanttChart:
     def usage(self):
         self.parser.print_help()
         print("\nHomepage: https://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
-        print("Help: https://github.com/netkiller/devops/blob/master/doc/gantt.md")
+        print("Help: https://github.com/netkiller/devops/blob/master/doc/gantt/index.md")
         exit()
 
     def main(self):
