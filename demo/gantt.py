@@ -14,7 +14,7 @@ try:
     from netkiller.gantt import Gantt
     import cv2
     import requests
-
+    import json
     import logging
     import logging.handlers
     from optparse import OptionParser, OptionGroup
@@ -47,8 +47,8 @@ class GanttChart:
     def main(self):
         (options, args) = self.parser.parse_args()
         if options.stdin:
-            data = sys.stdin.read()
-            print(data)
+            data = json.loads(sys.stdin.read())
+            # print(data)
         elif options.save:
             self.gantt.save(options.save)
         elif options.debug:
@@ -69,7 +69,7 @@ class GanttChart:
                 ]},
 
                 {'title': '汉字', 'begin': '2023-03-01',
-                 'end': '2023-03-05', 'progress': 3},
+                 'end': '2023-04-05', 'progress': 3},
                 {'title': 'Java', 'begin': '2023-03-01',
                  'end': '2023-03-05', 'progress': 2},
                 {'title': 'PHP', 'begin': '2023-03-03',
@@ -81,12 +81,13 @@ class GanttChart:
                     {'title': 'Clang', 'begin': '2023-03-03', 'end': '2023-03-10'},
                 ]},
             ]
+            print(json.dumps(data,ensure_ascii=False))
             
         else:
             self.usage()
 
-        self.gantt.title("Gantt Test")
         self.gantt.load(data)
+        self.gantt.title("Gantt Test")
         self.gantt.rander()
         self.gantt.save('gantt.svg')
 
