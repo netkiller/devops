@@ -144,6 +144,9 @@ class Gantt:
         if 'progress' in line:
             table.append(draw.Text(
                 str(line['progress']), 20, self.textSize + 200, top + 20, text_anchor='start'))
+        if 'resource' in line:
+            table.append(draw.Text(
+                str(line['resource']), 20, self.textSize + 250, top + 20, text_anchor='start'))
         self.draw.append(table)
 
         group = draw.Group(id='item', fill='none', stroke='black')
@@ -244,7 +247,8 @@ class Gantt:
 
     def load(self, data):
         self.data = data
-
+    def rander(self):
+        # 计算文字宽度
         for item in self.data:
             length = self.getTextSize(item['title'])
             if self.starting < length:
@@ -252,17 +256,16 @@ class Gantt:
                 self.textSize = length
                 # print(item['title'], len(item['title']))
         # print(lenght)
-        self.starting += 300
-
-    def rander(self):
+        # 文本表格所占用的宽度
+        self.starting += 320
 
         self.background()
         self.task()
 
-    def save(self):
+    def save(self, filename = None):
+        if filename :
         # d.set_pixel_scale(2)  # Set number of pixels per geometry unit
         # d.set_render_size(400, 200)  # Alternative to set_pixel_scale
-
-        self.draw.save_svg('example.svg')
+            self.draw.save_svg(filename)
         # self.draw.save_png('example.png')
         # self.draw.rasterize()
