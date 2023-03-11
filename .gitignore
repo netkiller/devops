@@ -50,4 +50,4 @@ demo/k8s/ensd
 *.pdf
 *.gv
 libexec/Web/Gradle/.settings/
-example.svg
+*.svg
