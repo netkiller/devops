@@ -17,6 +17,7 @@ try:
     import logging
     import logging.handlers
     from optparse import OptionParser, OptionGroup
+    from datetime import datetime, date
 except ImportError as err:
     print("Error: %s" % (err))
 
@@ -34,6 +35,10 @@ class GanttChart:
         self.parser.add_option(
             '', "--stdin", action="store_true", dest="stdin", help="cat gantt.json | gantt -s file.svg")
         self.parser.add_option(
+            '-g', "--gantt", action="store_true", dest="gantt", default=False, help="Gantt chart")
+        self.parser.add_option(
+            '-w', "--workload", action="store_true", dest="workload", help="Workload chart")
+        self.parser.add_option(
             '-d', "--debug", action="store_true", dest="debug", help="debug mode")
 
         self.gantt = Gantt()
@@ -50,17 +55,43 @@ class GanttChart:
             data = json.loads(sys.stdin.read())
 
         elif options.csv:
-            tmp = Data()
             with open(options.csv) as csvfile:
                 items = csv.DictReader(csvfile)
-                for item in items:
-                    tmp.add(item['id'], item['name'], item['start'],
-                            item['finish'], item['resource'],item['parent'])
-                    # print(item)
-            # data = json.loads(tmp.data)
-            data = tmp.data
-            # print(data)
-        elif options.debug:
+                if options.gantt:
+                    tmp = Data()
+                    for item in items:
+                        tmp.add(item['id'], item['name'], item['start'],
+                                item['finish'], item['resource'], item['parent'])
+                        # print(item)
+                    # 
+                    data = tmp.data
+
+                elif options.workload:
+                    tmp = {}
+                    beginDate = datetime.now().date()
+                    endDate = datetime.now().date()
+                    for item in items:
+                        
+                        start = datetime.strptime(
+                            item['start'], '%Y-%m-%d').date()
+                        finish = datetime.strptime(
+                            item['finish'], '%Y-%m-%d').date()
+                        if not item['resource']:
+                            item['resource'] = 'Null'
+                        if item['resource'] in tmp.keys():
+                            if tmp[item['resource']]['start'] > start:
+                                tmp[item['resource']]['start'] = start
+                            if tmp[item['resource']]['finish'] < finish:
+                                tmp[item['resource']]['finish'] = finish
+                        else:
+                            tmp[item['resource']] = {
+                                'resource': item['resource'], 'start': start, 'finish': finish}
+                        # print(item['resource'])
+                    # data = json.loads(tmp)
+                    data = tmp
+                    # print(tmp)
+
+        if options.debug:
             print(options, args)
             data = [
                 {'name': '汉字', 'start': '2023-03-01',
@@ -84,7 +115,10 @@ class GanttChart:
 
         self.gantt.load(data)
         self.gantt.title("Gantt Test")
-        self.gantt.rander()
+        if options.gantt:
+            self.gantt.ganttChart()
+        elif options.workload:
+            self.gantt.workloadChart()
         self.gantt.save('gantt.svg')
 
 
