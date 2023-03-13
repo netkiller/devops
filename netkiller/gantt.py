@@ -62,6 +62,7 @@ class Gantt:
     endDate = datetime.now().date()
     weekdayPosition = 0
     dayPosition = {}
+    linkPosition = {}
 
     data = {}
 
@@ -193,8 +194,18 @@ class Gantt:
                                self.canvasHeight, fill=color)
             r.append_title(str(day))
             weekGroups[weekNumber].append(r)
+
+            # dayName = ["星期一","星期二","星期三","星期四","星期五","星期六","星期日"]
+            dayName = ["一", "二", "三", "四", "五", "六", "日"]
+
             weekGroups[weekNumber].append(
-                draw.Text(str(day), 24, x, top + 24, fill='#555555'))
+                draw.Text(dayName[weekday], 20, x + 4, top - 10, fill='#555555'))
+            if day < 10:
+                numberOffsetX = 10
+            else:
+                numberOffsetX = 0
+            weekGroups[weekNumber].append(
+                draw.Text(str(day), 20, x + numberOffsetX, top + 20, fill='#555555'))
 
             # if column:
             offsetX += self.splitLine
@@ -336,6 +347,9 @@ class Gantt:
 
         left = self.dayPosition[line['begin']]
         # right = self.dayPosition[line['end']]
+
+        self.linkPosition[line['id']] = {'x': left, 'y':  top, 'width': right}
+
         lineGroup = draw.Group(id='line')
         table = draw.Group(id='text')
         text = draw.Text(line['name'], 20, 5 + (self.textIndent *
@@ -344,12 +358,10 @@ class Gantt:
         # text.append(draw.TSpan(line['end'], text_anchor='start'))
         table.append(text)
         fontSize = self.getTextSize(line['name'])
-        begin = draw.Text(line['begin'], 20, self.textSize,
-                          top + 20, text_anchor='start')
-        table.append(begin)
-        end = draw.Text(line['end'], 20, self.textSize +
-                        100, top + 20, text_anchor='start')
-        table.append(end)
+        table.append(draw.Text(line['begin'], 20, self.textSize,
+                               top + 20, text_anchor='start'))
+        table.append(draw.Text(line['end'], 20, self.textSize +
+                               100, top + 20, text_anchor='start'))
         if 'progress' in line:
             table.append(draw.Text(
                 str(line['progress']), 20, self.textSize + 200, top + 20, text_anchor='start'))
@@ -364,7 +376,7 @@ class Gantt:
         if subitem:
             # print(begin,end)
             # print(left,top,right)
-            offsetY = 6
+            offsetY = 7
             length = left + right
             group.append(draw.Lines(
                 # 坐标
@@ -408,27 +420,9 @@ class Gantt:
 
     def legend(self):
         top = 10
-        width = 100
-        polygon = draw.Lines(15, top, width, top, width, 25, width - 8, 20, 15, top+5, width, top+5,
-                             fill='red', stroke='black', close='true')
-        star = draw.Lines(48, 16, 16, 96, 96, 48, 0, 48, 88, 96,
-                          stroke='black', fill='red', close='true')
         self.draw.append(draw.Text("https://www.netkiller.cn - design by netkiller",
                                    15, self.canvasWidth - 300, top + 30, text_anchor='start', fill='grey'))
-
-        # self.draw.append(lines)
-        # top = 40
-        # line = draw.Line(1, top, self.canvasWidth, top, stroke='black')
-        # self.draw.append(line)
-        # offsetX = 0
-        # for w in range(1, 6):
-        #     # w = 0
-        #     x = self.unitWidth * 7 * (w-1) + offsetX
-        #     r = draw.Rectangle(x, top, self.unitWidth * 7, top, fill='#44cccc')
-        #     r.append_title(str(w))
-        #     self.draw.append(r)
-        #     if w:
-        #         offsetX += 5
+        # print(self.linkPosition)
 
     def task(self):
         offsetY = 0
@@ -441,6 +435,32 @@ class Gantt:
                 self.textIndent -= 1
             else:
                 self.items(line)
+
+    def link(self, fromTask, toTask):
+        # print(fromTask, toTask)
+        linkGroup = draw.Group(id='link')
+        x = fromTask['x']+fromTask['width'] + 1
+        y = fromTask['y'] + 15
+        arrow = draw.Marker(-0.1, -0.51, 0.9, 0.5, scale=4, orient='auto')
+        arrow.append(draw.Lines(-0.1, 0.5, -0.1, -0.5,
+                     0.9, 0, fill='red', close=True))
+        path = draw.Path(stroke='red', stroke_width=2,
+                         fill='none', marker_end=arrow)
+        path.M(x, y).H(toTask['x']+15).V(toTask['y']-5)
+        linkGroup.append(path)
+        self.draw.append(linkGroup)
+        
+
+    def next(self):
+        for id, line in self.data.items():
+            if 'next' in line:
+                self.link(self.linkPosition[line['id']],
+                          self.linkPosition[line['next']])
+            if 'subitem' in line:
+                for id, item in line['subitem'].items():
+                    if 'next' in item:
+                        self.link(
+                            self.linkPosition[item['id']], self.linkPosition[item['next']])
 
     def getTextSize(self, text):
 
@@ -463,14 +483,14 @@ class Gantt:
                 for id, item in line['subitem'].items():
                     self.initialize(item)
 
-        self.starting = self.textSize + 310    
-        print(self.starting, self.textSize)
+        self.starting = self.textSize + 310
+        # print(self.starting, self.textSize)
 
     def initialize(self, item):
         # print(item)
         # 计算文字宽度
         length = self.getTextSize(item['name'])
-        print(item['name'], length)
+        # print(item['name'], length)
         # 文本表格所占用的宽度
         if self.textSize < length - 50:
             self.textSize = length - 50
@@ -488,6 +508,7 @@ class Gantt:
     def rander(self):
         self.background()
         self.task()
+        self.next()
         self.legend()
 
     def save(self, filename=None):
