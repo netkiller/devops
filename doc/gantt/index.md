@@ -34,3 +34,28 @@ Options:
   --stdin               cat gantt.json | gantt -s file.svg
   -d, --debug           debug mode
 ```
+
+## 从 CSV 文件生成
+
+```sql
+select id, parent, name,estStarted,deadline,assignedTo  from zt_task 
+INTO OUTFILE '/tmp/project.csv'
+FIELDS ENCLOSED BY '"'
+TERMINATED BY ‘,’
+ESCAPED BY '"'
+LINES TERMINATED BY '\r\n';
+```
+
+```shell
+rm -rf /tmp/project.csv
+cat <<EOF | mysql -h127.0.0.1 -uroot -p123456 zentao
+SELECT 'id','name','start','finish', 'resource', 'parent'
+UNION
+select id, name,estStarted,deadline,assignedTo, parent  from zt_task
+INTO OUTFILE '/tmp/project.csv'
+FIELDS ENCLOSED BY '"'
+TERMINATED BY ','
+ESCAPED BY '"'
+LINES TERMINATED BY '\r\n';
+EOF
+```

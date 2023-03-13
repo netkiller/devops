@@ -21,8 +21,27 @@ class Canvas:
     height = 1080
 
 
-class Item:
-    height = 30
+class Data:
+    data = {}
+
+    def __init__(self) -> None:
+        pass
+
+    def add(self, id, name, start, finish, resource, parent):
+        # duration
+        item = {'id': id, 'name': name, 'begin': start,
+                'end': finish, 'resource': resource}
+        if int(parent) > 0:
+            if not 'subitem' in self.data[parent]:
+                self.data[parent]['subitem'] = {}
+            self.data[parent]['subitem'][id] = item
+
+        else:
+            self.data[id] = item
+        # print(self.data)
+
+    def addDict(self, item):
+        pass
 
 
 class Gantt:
@@ -44,19 +63,19 @@ class Gantt:
     weekdayPosition = 0
     dayPosition = {}
 
-    data = []
+    data = {}
 
     def __init__(self) -> None:
 
         self.draw = draw.Drawing(self.canvasWidth, self.canvasHeight)
         self.draw.append(draw.Rectangle(1, 1, self.canvasWidth - 1,
-                         self.canvasHeight-1, fill='#eeeeee', stroke='black'))
+                                        self.canvasHeight-1, fill='#eeeeee', stroke='black'))
 
     def title(self, text):
         group = draw.Group(id='title')  # fill='none', stroke='none'
         group.append(draw.Line(1, 50, self.canvasWidth, 50, stroke='black'))
         group.append(draw.Text(text, 30, self.canvasWidth / 2,
-                     25, center=True, text_anchor='middle'))
+                               25, center=True, text_anchor='middle'))
         self.draw.append(group)
 
     def __table(self, top):
@@ -68,19 +87,19 @@ class Gantt:
         group.append(draw.Line(self.textSize, top - 30,
                                self.textSize, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('开始日期', 20, self.textSize,
-                     top + 20, fill='#555555'))
+                               top + 20, fill='#555555'))
         group.append(draw.Line(self.textSize + 100, top - 30,
-                     self.textSize + 100, self.canvasHeight, stroke='grey'))
+                               self.textSize + 100, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('截止日期', 20, self.textSize +
-                     100, top + 20, fill='#555555'))
+                               100, top + 20, fill='#555555'))
         group.append(draw.Line(self.textSize + 200, top - 30,
-                     self.textSize + 200, self.canvasHeight, stroke='grey'))
+                               self.textSize + 200, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('工时', 20, self.textSize +
-                     200, top + 20, fill='#555555'))
+                               200, top + 20, fill='#555555'))
         group.append(draw.Line(self.textSize + 250, top - 30,
-                     self.textSize + 250, self.canvasHeight, stroke='grey'))
+                               self.textSize + 250, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('资源', 20, self.textSize +
-                     250, top + 20, fill='#555555'))
+                               250, top + 20, fill='#555555'))
 
         return group
 
@@ -305,7 +324,6 @@ class Gantt:
     def items(self, line, subitem=False):
         left = self.starting
         top = 110 + self.itemLine * self.itemHeight + self.splitLine * self.itemLine
-        # print(top)
 
         begin = datetime.strptime(line['begin'], '%Y-%m-%d').day
         # end = datetime.strptime(line['end'], '%Y-%m-%d').day
@@ -320,12 +338,12 @@ class Gantt:
         # right = self.dayPosition[line['end']]
         lineGroup = draw.Group(id='line')
         table = draw.Group(id='text')
-        text = draw.Text(line['title'], 20, 5 + (self.textIndent *
-                         self.itemWidth), top + 20, text_anchor='start')
+        text = draw.Text(line['name'], 20, 5 + (self.textIndent *
+                                                self.itemWidth), top + 20, text_anchor='start')
         # text.append(draw.TSpan(line['begin'], text_anchor='start'))
         # text.append(draw.TSpan(line['end'], text_anchor='start'))
         table.append(text)
-        fontSize = self.getTextSize(line['title'])
+        fontSize = self.getTextSize(line['name'])
         begin = draw.Text(line['begin'], 20, self.textSize,
                           top + 20, text_anchor='start')
         table.append(begin)
@@ -340,9 +358,9 @@ class Gantt:
                 str(line['resource']), 20, self.textSize + 250, top + 20, text_anchor='start'))
         lineGroup.append(table)
         group = draw.Group(id='item', fill='none', stroke='black')
-        # text = draw.Text(line['title'], 20, 5, top + 15, text_anchor='start')
+        # text = draw.Text(line['name'], 20, 5, top + 15, text_anchor='start')
         # group.append(text)
-        
+
         if subitem:
             # print(begin,end)
             # print(left,top,right)
@@ -369,7 +387,7 @@ class Gantt:
             # 工时
             r = draw.Rectangle(left, top + 4, right,
                                self.barHeight, fill='#ccccff')
-            r.append_title(line['title'])
+            r.append_title(line['name'])
             group.append(r)
 
             # 进度
@@ -395,7 +413,8 @@ class Gantt:
                              fill='red', stroke='black', close='true')
         star = draw.Lines(48, 16, 16, 96, 96, 48, 0, 48, 88, 96,
                           stroke='black', fill='red', close='true')
-        self.draw.append(draw.Text("https://www.netkiller.cn - design by netkiller", 15, self.canvasWidth - 300, top + 30, text_anchor='start', fill='grey'))
+        self.draw.append(draw.Text("https://www.netkiller.cn - design by netkiller",
+                                   15, self.canvasWidth - 300, top + 30, text_anchor='start', fill='grey'))
 
         # self.draw.append(lines)
         # top = 40
@@ -413,11 +432,11 @@ class Gantt:
 
     def task(self):
         offsetY = 0
-        for line in self.data:
+        for id, line in self.data.items():
             if 'subitem' in line:
                 self.items(line, True)
                 self.textIndent += 1
-                for item in line['subitem']:
+                for id, item in line['subitem'].items():
                     self.items(item)
                 self.textIndent -= 1
             else:
@@ -438,23 +457,24 @@ class Gantt:
     def load(self, data):
         self.data = data
 
-        for line in self.data:
+        for id, line in self.data.items():
             self.initialize(line)
             if 'subitem' in line:
-                for item in line['subitem']:
+                for id, item in line['subitem'].items():
                     self.initialize(item)
-        # print(self.beginDate, self.endDate)
-        # print(self.endDate.month - self.beginDate.month)
+
+        self.starting = self.textSize + 310    
+        print(self.starting, self.textSize)
 
     def initialize(self, item):
         # print(item)
         # 计算文字宽度
-        length = self.getTextSize(item['title'])
+        length = self.getTextSize(item['name'])
+        print(item['name'], length)
         # 文本表格所占用的宽度
-        if self.starting < length:
-            self.starting = length + 400
-            self.textSize = length
-            # print(item['title'], len(item['title']))
+        if self.textSize < length - 50:
+            self.textSize = length - 50
+            # print(item['name'], len(item['name']))
 
         begin = datetime.strptime(item['begin'], '%Y-%m-%d').date()
         if self.beginDate > begin:
