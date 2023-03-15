@@ -59,3 +59,8 @@ ESCAPED BY '"'
 LINES TERMINATED BY '\r\n';
 EOF
 ```
+
+```
+select id, name,estStarted as start, deadline as finish,  assignedTo as resource, parent from zt_task where `group` = 4 order by id desc limit 100;
+select id, name,estStarted as start, deadline as finish,  assignedTo as resource, parent from zt_task where assignedTo in ('chenjingfeng','ligongfa','yuanjianfeng','liqiang') order by id desc limit 100;
+```
