@@ -1,10 +1,18 @@
 <?php
-
 $id = $_GET['id'];
 $type = $_GET['type'];
-$message = $_GET['message'];
 $zentao = new Zentao();
+
+$func = $_GET['func'];
+
+if($func == 'close'){
+
+    $zentao->close($id, $type);
+    exit();
+}
+
 if($id){
+    $message = $_GET['message'];
     if($type == 'task'){
         $zentao->task($id,$message);
     }elseif($type == 'bug'){
@@ -22,6 +30,26 @@ class Zentao {
 
     function __construct() {
 
+    }
+    function close($id,$type){
+        try {
+            $this->conn = new PDO("mysql:host=$this->host;dbname=zentao",$this->username, $this->password);
+            $id =ltrim($id, '0');
+            if($type == 'task'){
+                $sql = "update zt_task set status='closed', closedBy='devops', closedDate=now() where status='done' and id='".$id."'";
+            }
+            if($type == 'bug'){
+                $sql = "update zt_bug set status='closed', closedBy='devops', closedDate=now() where status='resolved' and id='".$id."'";
+            }
+
+            $status = $this->conn->exec($sql);
+            print("$id, $status");
+
+        }
+        catch(PDOException $e){
+            echo $e->getMessage();
+        }
+        
     }
     function task($id, $message){
 
