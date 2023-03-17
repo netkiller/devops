@@ -1,0 +1,85 @@
+#! /usr/bin/env python3
+# -*- coding: UTF-8 -*-
+##############################################
+# Home	: https://www.netkiller.cn
+# Author: Neo <netkiller@msn.com>
+##############################################
+import os
+import sys
+module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# print(module)
+sys.path.insert(0, module)
+
+try:
+    from optparse import OptionParser, OptionGroup
+    from netkiller.nacos import Nacos
+except ImportError as err:
+    print("Error: %s" % (err))
+
+
+class NacosApplication:
+    def __init__(self) -> None:
+
+        self.parser = OptionParser("usage: %prog [options] message")
+        self.parser.add_option("-s", "--server-addr", dest="nacos", help="localhost:8848",
+                               default=None, metavar="localhost:8848")
+        self.parser.add_option('-u', '--username', dest='username',
+                               help='', default=None, metavar='')
+        self.parser.add_option('-p', '--password', dest='password',
+                               help='', default=None, metavar='')
+        self.parser.add_option('-n', '--namespace', dest='namespace',
+                               help='', default='public', metavar='public')
+
+        self.parser.add_option('-d', '--dataId', dest='dataId',
+                               help='', default=None, metavar='')
+        self.parser.add_option('-g', '--group', dest='group',
+                               help='', default='DEFAULT_GROUP', metavar='DEFAULT_GROUP')
+        group = OptionGroup(self.parser, "Config")
+        group.add_option(
+            '', "--push", action="store_true", dest="push", help="")
+        group.add_option(
+            '', "--show", action="store_true", dest="show", default=False, help="")
+        group.add_option(
+            '', "--save", action="store_true", dest="save", help="")
+        group.add_option('-f', '--file', dest='file',
+                               help='.yaml file', default=None, metavar='')
+        self.parser.add_option_group(group)
+        # self.parser.add_option(
+        #     '', "--debug", action="store_true", dest="debug", help="debug mode")
+
+    def usage(self):
+        self.parser.print_help()
+        print("\nHomepage: https://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
+        print("Help: https://github.com/netkiller/devops/blob/master/doc/")
+        exit()
+
+    def main(self):
+        (options, args) = self.parser.parse_args()
+        namespace = 'public'
+        group = 'DEFAULT_GROUP'
+        if options.namespace:
+            namespace = options.namespace
+        if not options.nacos:
+            self.usage()
+        if not options.dataId:
+            self.usage()
+        if options.group:
+            group = options.group
+
+        nacos = Nacos(options.nacos, namespace)
+        nacos.login(options.username, options.password)
+        if options.show:
+            nacos.showConfig(options.dataId, group)
+        elif options.save:
+            if not options.file:
+                self.usage()
+            nacos.saveConfig(options.file, options.dataId, group)
+        elif options.push:
+            if not options.file:
+                self.usage()
+            nacos.putConfig(options.file, options.dataId, group)
+
+
+if __name__ == '__main__':
+    app = NacosApplication()
+    app.main()
