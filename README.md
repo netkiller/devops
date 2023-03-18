@@ -5,26 +5,8 @@ OS Software Configure Managment
 
 Install
 -------
-### Ubuntu
 
-	$ cd /usr/local/src/
-	$ git clone https://github.com/netkiller/devops.git
-	$ cd devops
-	$ python3 setup.py sdist
-	$ python3 setup.py install
-
-### CentOS
-
-	$ cd /usr/local/src/
-	$ git clone https://github.com/netkiller/devops.git
-	$ cd devops
-	$ python3 setup.py sdist
-	$ python3 setup.py install --prefix=/srv/devops
-	
-	or
-	
-	python36 setup.py sdist
-  	python36 setup.py install --prefix=/srv/devops
+	pip install netkiller-devops -i
 
 ### Docker 
 
@@ -44,6 +26,27 @@ Install
 Deployment
 ----------
 [Software deployment tools](https://github.com/netkiller/devops/blob/master/doc/deployment.md).	
+
+### Ubuntu 编译安装
+
+	$ cd /usr/local/src/
+	$ git clone https://github.com/netkiller/devops.git
+	$ cd devops
+	$ python3 setup.py sdist
+	$ python3 setup.py install
+
+### CentOS 编译安装
+
+	$ cd /usr/local/src/
+	$ git clone https://github.com/netkiller/devops.git
+	$ cd devops
+	$ python3 setup.py sdist
+	$ python3 setup.py install --prefix=/srv/devops
+	
+	or
+	
+	python36 setup.py sdist
+  	python36 setup.py install --prefix=/srv/devops
 
 Backup
 ------
