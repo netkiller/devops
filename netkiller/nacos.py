@@ -7,6 +7,7 @@
 ##############################################
 import requests
 
+
 class Nacos():
 
     def __init__(self, nacos, namespace=None) -> None:
@@ -24,45 +25,70 @@ class Nacos():
         except requests.exceptions.MissingSchema as err:
             print(err)
             exit(1)
+        except requests.exceptions.ConnectionError as err:
+            print(err)
+            exit(1)
         return False
 
-    def getConfig(self, dataId, group, namespace=None):
-        if namespace == None:
-            namespace = self.namespace
+    def getConfig(self, dataId, group):
+
         url = "{nacos}/cs/configs?accessToken={accessToken}&dataId={dataId}&group={group}&tenant={namespace}".format(
-            nacos=self.nacos, accessToken=self.accessToken, dataId=dataId, group=group, namespace=namespace)
+            nacos=self.nacos, accessToken=self.accessToken, dataId=dataId, group=group, namespace=self.namespace)
         response = requests.get(url)
         if response.status_code == 200:
-            # print(response.status_code)
             return (response.text)
         else:
             return None
 
-    def showConfig(self, dataId, group, namespace=None):
-        print(self.getConfig(dataId, group, namespace))
+    def showConfig(self, dataId, group):
+        print(self.getConfig(dataId, group))
 
-    def saveConfig(self, filename, dataId, group, namespace=None):
-        file = open(filename, 'w')
-        file.write(self.getConfig(dataId, group, namespace))
-        file.flush()
-        file.close()
+    def saveConfig(self, filename, dataId, group):
+        config = self.getConfig(dataId, group)
+        if config:
+            file = open(filename, 'w')
+            file.write(config)
+            file.flush()
+            file.close()
 
-    def putConfig(self, filename, dataId, group, namespace=None):
-        if namespace == None:
-            namespace = self.namespace
-        url = "{nacos}/cs/configs?".format(nacos=self.nacos)
+    def putConfig(self, filename, dataId, group, type='yaml'):
+
+        url = "{nacos}/cs/configs?accessToken={accessToken}".format(
+            nacos=self.nacos, accessToken=self.accessToken)
+        # url = "{nacos}/cs/configs".format(
+        # nacos=self.nacos)
         with open(filename) as file:
             content = file.read()
         data = {
-            "accessToken": self.accessToken,
+            # "accessToken": self.accessToken,
+            "tenant": self.namespace,
             "dataId": dataId,
             "group": group,
-            "content": content,
-            "tenant": namespace,
-            "type": "yaml"
+            "type": type,
+            "content": content
         }
 
         response = requests.post(url, data)
+        # print(data, response.text)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+
+    def deleteConfig(self, dataId, group):
+
+        url = "{nacos}/cs/configs?accessToken={accessToken}".format(
+            nacos=self.nacos, accessToken=self.accessToken)
+
+        data = {
+            # "accessToken": self.accessToken,
+            "tenant": self.namespace,
+            "dataId": dataId,
+            "group": group,
+        }
+
+        response = requests.delete(url, data=data)
+        # print(url,data, response.text)
         if response.status_code == 200:
             return True
         else:

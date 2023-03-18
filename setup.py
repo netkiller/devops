@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
 	name="netkiller-devops",
-	version="0.7.0",
+	version="0.6.10",
 	author="Neo Chen",
 	author_email="netkiller@msn.com",
 	description="DevOps of useful deployment and automation",
@@ -47,7 +47,8 @@ setup(
 		'bin/logviewer.kubectl',
 		'bin/merge',
 		'bin/dingtalk',
-    	'bin/gantt'
+    	'bin/gantt',
+		'bin/nacos'
 	],
 	data_files = [
 		('etc', ['etc/deployment.cfg']),

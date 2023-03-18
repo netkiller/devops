@@ -26,6 +26,10 @@ Install
 	python36 setup.py sdist
   	python36 setup.py install --prefix=/srv/devops
 
+### Docker 
+
+	root@netkiller ~# docker run --rm -it --name=netkiller --entrypoint=sh netkiller-devops:latest
+
 ### PATH Variable
 
 	$ cp share/profile.d/devops.sh /etc/profile.d/
