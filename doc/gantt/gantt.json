@@ -19,6 +19,7 @@
                 "name": "权限角色开发",
                 "start": "2023-03-01",
                 "finish": "2023-03-03",
+                "resource": "Tom",
                 "progress": 5
             }
         }
@@ -50,6 +51,7 @@
         "name": "汉字",
         "start": "2023-02-25",
         "finish": "2023-04-05",
+        "resource": "陈景峰",
         "progress": 3
     },
     "4": {

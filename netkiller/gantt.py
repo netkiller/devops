@@ -478,16 +478,16 @@ class Gantt:
         for key, value in self.data.items():
             self.fontSize = self.getTextSize(key)
 
-        start = datetime.strptime(value['start'], '%Y-%m-%d').date()
-        finish = datetime.strptime(value['finish'], '%Y-%m-%d').date()
+            start = datetime.strptime(value['start'], '%Y-%m-%d').date()
+            finish = datetime.strptime(value['finish'], '%Y-%m-%d').date()
 
-        if self.beginDate > start:
-            self.beginDate = start
+            if self.beginDate > start:
+                self.beginDate = start
 
-        if self.endDate < finish:
-            self.endDate = finish
+            if self.endDate < finish:
+                self.endDate = finish
 
-        print(self.fontSize)
+        # print(self.fontSize)
 
         chart = draw.Group(id='workload')
 
@@ -496,19 +496,19 @@ class Gantt:
         table.append(draw.Line(1, 80, self.canvasWidth,
                                80,  stroke='black'))
         table.append(draw.Text('资源', 20, 5, top + 20, fill='#555555'))
-        table.append(draw.Line(self.textSize + 100, top ,
+        table.append(draw.Line(self.textSize + 100, top,
                      self.textSize + 100, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('开始日期', 20, self.textSize +
                      100, top + 20, fill='#555555'))
-        table.append(draw.Line(self.textSize + 200, top ,
+        table.append(draw.Line(self.textSize + 200, top,
                      self.textSize + 200, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('截止日期', 20, self.textSize +
                      200, top + 20, fill='#555555'))
-        table.append(draw.Line(self.textSize + 300, top ,
+        table.append(draw.Line(self.textSize + 300, top,
                      self.textSize + 300, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('工时', 20, self.textSize +
                                300, top + 20, fill='#555555'))
-        table.append(draw.Line(self.textSize + 400, top ,
+        table.append(draw.Line(self.textSize + 400, top,
                                self.textSize + 400, self.canvasHeight, stroke='grey'))
 
         chart.append(table)

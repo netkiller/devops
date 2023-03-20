@@ -23,6 +23,8 @@ except ImportError as err:
 
 
 class GanttChart:
+    data = {}
+
     def __init__(self) -> None:
 
         self.parser = OptionParser("usage: %prog [options] ")
@@ -51,37 +53,43 @@ class GanttChart:
         print("Help: https://github.com/netkiller/devops/blob/master/doc/gantt/index.md")
         exit()
 
+    def __gantt2workload(self, jsonData):
+
+        for key, item in jsonData.items():
+            if 'subitem' in item:
+                self.__gantt2workload(item['subitem'])
+
+            if not 'resource' in item:
+                continue
+            elif not item['resource']:
+                item['resource'] = 'null'
+
+            if item['resource'] in self.data.keys():
+                # if data.has_key(item['resource']):
+                start = datetime.strptime(
+                    item['start'], '%Y-%m-%d').date()
+                finish = datetime.strptime(
+                    item['finish'], '%Y-%m-%d').date()
+
+                # if not 'start' in tmp[item['resource']]:
+                # tmp[item['resource']]['start']=''
+                if datetime.strptime(self.data[item['resource']]['start'], '%Y-%m-%d').date() > start:
+                    self.data[item['resource']]['start'] = item['start']
+                if datetime.strptime(self.data[item['resource']]['finish'], '%Y-%m-%d').date() < finish:
+                    self.data[item['resource']]['finish'] = item['finish']
+            else:
+                self.data[item['resource']] = {
+                    'resource': item['resource'], 'start': item['start'], 'finish': item['finish']}
+
     def main(self):
         (options, args) = self.parser.parse_args()
-        data = {}
+
         if options.stdin:
-            
             if options.workload:
-                tmp = {}
-                for key, item in json.loads(sys.stdin.read()).items():
-                    start = datetime.strptime(
-                        item['start'], '%Y-%m-%d').date()
-                    finish = datetime.strptime(
-                        item['finish'], '%Y-%m-%d').date()
-                    if not 'resource' in item:
-                        item['resource'] = 'Null'
-                    # if not item['resource']:
-                    if item['resource'] in tmp.keys():
-                        if not 'start' in tmp[item['resource']]:
-                            tmp[item['resource']]['start']=''
-                        if tmp[item['resource']]['start'] > start:
-                            tmp[item['resource']]['start'] = start
-                        if tmp[item['resource']]['finish'] < finish:
-                            tmp[item['resource']]['finish'] = finish
-                    else:
-                        tmp[item['resource']] = {
-                            'resource': item['resource'], 'start': item['start'], 'finish': item['finish']}
-                    
-                # data = json.loads(tmp)
-                print(tmp)
-                data = tmp
-            elif options.gantt:    
-                data = json.loads(sys.stdin.read())
+                tmp = json.loads(sys.stdin.read())
+                self.__gantt2workload(tmp)
+            elif options.gantt:
+                self.data = json.loads(sys.stdin.read())
         elif options.csv:
             with open(options.csv) as csvfile:
                 items = csv.DictReader(csvfile)
@@ -92,7 +100,7 @@ class GanttChart:
                                 item['finish'], item['resource'], item['parent'])
                         # print(item)
                     #
-                    data = tmp.data
+                    self.data = tmp.data
 
                 elif options.workload:
                     tmp = {}
@@ -116,7 +124,7 @@ class GanttChart:
                                 'resource': item['resource'], 'start': start, 'finish': finish}
                         # print(item['resource'])
                     # data = json.loads(tmp)
-                    data = tmp
+                    self.data = tmp
                     # print(tmp)
 
         if options.debug:
@@ -138,11 +146,11 @@ class GanttChart:
             print(json.dumps(data, ensure_ascii=False))
         if options.save:
             self.gantt.save(options.save)
-        if not data:
+        if not self.data:
             # else:
             self.usage()
 
-        self.gantt.load(data)
+        self.gantt.load(self.data)
         self.gantt.title(options.title)
 
         if options.workload:
