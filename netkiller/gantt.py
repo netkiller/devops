@@ -85,19 +85,19 @@ class Gantt:
         group.append(draw.Line(1, 80, self.canvasWidth,
                                80,  stroke='black'))
         group.append(draw.Text('任务', 20, 5, top + 20, fill='#555555'))
-        group.append(draw.Line(self.textSize, top - 30,
+        group.append(draw.Line(self.textSize, top,
                                self.textSize, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('开始日期', 20, self.textSize,
                                top + 20, fill='#555555'))
-        group.append(draw.Line(self.textSize + 100, top - 30,
+        group.append(draw.Line(self.textSize + 100, top,
                                self.textSize + 100, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('截止日期', 20, self.textSize +
                                100, top + 20, fill='#555555'))
-        group.append(draw.Line(self.textSize + 200, top - 30,
+        group.append(draw.Line(self.textSize + 200, top,
                                self.textSize + 200, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('工时', 20, self.textSize +
                                200, top + 20, fill='#555555'))
-        group.append(draw.Line(self.textSize + 250, top - 30,
+        group.append(draw.Line(self.textSize + 250, top,
                                self.textSize + 250, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('资源', 20, self.textSize +
                                250, top + 20, fill='#555555'))
@@ -336,16 +336,16 @@ class Gantt:
         left = self.starting
         top = 110 + self.itemLine * self.itemHeight + self.splitLine * self.itemLine
 
-        begin = datetime.strptime(line['begin'], '%Y-%m-%d').day
+        begin = datetime.strptime(line['start'], '%Y-%m-%d').day
         # end = datetime.strptime(line['end'], '%Y-%m-%d').day
-        end = (datetime.strptime(line['end'], '%Y-%m-%d').date() -
-               datetime.strptime(line['begin'], '%Y-%m-%d').date()).days
+        end = (datetime.strptime(line['finish'], '%Y-%m-%d').date() -
+               datetime.strptime(line['start'], '%Y-%m-%d').date()).days
 
         # left += self.itemWidth * (begin - 1) + (1 * begin)
         # # 日宽度 + 竖线宽度
         right = self.itemWidth * (end + 1) + (1 * end)
 
-        left = self.dayPosition[line['begin']]
+        left = self.dayPosition[line['start']]
         # right = self.dayPosition[line['end']]
 
         self.linkPosition[line['id']] = {'x': left, 'y':  top, 'width': right}
@@ -358,23 +358,21 @@ class Gantt:
         # text.append(draw.TSpan(line['end'], text_anchor='start'))
         table.append(text)
         fontSize = self.getTextSize(line['name'])
-        table.append(draw.Text(line['begin'], 20, self.textSize,
+        table.append(draw.Text(line['start'], 20, self.textSize,
                                top + 20, text_anchor='start'))
-        table.append(draw.Text(line['end'], 20, self.textSize +
+        table.append(draw.Text(line['finish'], 20, self.textSize +
                                100, top + 20, text_anchor='start'))
         # if 'progress' in line:
         #     table.append(draw.Text(
         #         str(line['progress']), 20, self.textSize + 200, top + 20, text_anchor='start'))
 
-        table.append(draw.Text(str(end), 20, self.textSize +
+        table.append(draw.Text(str(end+1), 20, self.textSize +
                      210, top + 20, text_anchor='start'))
         if 'resource' in line:
             table.append(draw.Text(
                 str(line['resource']), 20, self.textSize + 250, top + 20, text_anchor='start'))
         lineGroup.append(table)
         group = draw.Group(id='item', fill='none', stroke='black')
-        # text = draw.Text(line['name'], 20, 5, top + 15, text_anchor='start')
-        # group.append(text)
 
         if subitem:
             # print(begin,end)
@@ -406,12 +404,20 @@ class Gantt:
             group.append(r)
 
             # 进度
-            if 'progress' in line:
-                progress = draw.Rectangle(
-                    left, top + 7, 30 * line['progress'], self.progressHeight, fill='#ccffff')
-                progress.append_title(str(line['progress']))
-                # mask.append(progress)
-                group.append(progress)
+            if 'progress' in line and line['progress'] > 0:
+
+                progress = 0
+                if line['progress'] > end + 1:
+                    progress = end + 1
+                else:
+                    progress = line['progress']
+
+                progressBar = draw.Rectangle(
+                    left+2, top + 7, 30 * progress - 2, self.progressHeight, fill='#ccffff')
+                progressBar.append_title(str(progress))
+                group.append(progressBar)
+                group.append(draw.Text("%d%%" % ((progress/(end+1))*100),
+                             10, left + 5, top + 18, text_anchor='start', fill='blue'))
 
         # 分割线
         group.append(draw.Lines(1, top + self.itemHeight,
@@ -472,11 +478,14 @@ class Gantt:
         for key, value in self.data.items():
             self.fontSize = self.getTextSize(key)
 
-        if self.beginDate > value['start']:
-            self.beginDate = value['start']
+        start = datetime.strptime(value['start'], '%Y-%m-%d').date()
+        finish = datetime.strptime(value['finish'], '%Y-%m-%d').date()
 
-        if self.endDate < value['finish']:
-            self.endDate = value['finish']
+        if self.beginDate > start:
+            self.beginDate = start
+
+        if self.endDate < finish:
+            self.endDate = finish
 
         print(self.fontSize)
 
@@ -487,19 +496,19 @@ class Gantt:
         table.append(draw.Line(1, 80, self.canvasWidth,
                                80,  stroke='black'))
         table.append(draw.Text('资源', 20, 5, top + 20, fill='#555555'))
-        table.append(draw.Line(self.textSize + 100, top - 30,
+        table.append(draw.Line(self.textSize + 100, top ,
                      self.textSize + 100, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('开始日期', 20, self.textSize +
                      100, top + 20, fill='#555555'))
-        table.append(draw.Line(self.textSize + 200, top - 30,
+        table.append(draw.Line(self.textSize + 200, top ,
                      self.textSize + 200, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('截止日期', 20, self.textSize +
                      200, top + 20, fill='#555555'))
-        table.append(draw.Line(self.textSize + 300, top - 30,
+        table.append(draw.Line(self.textSize + 300, top ,
                      self.textSize + 300, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('工时', 20, self.textSize +
                                300, top + 20, fill='#555555'))
-        table.append(draw.Line(self.textSize + 400, top - 30,
+        table.append(draw.Line(self.textSize + 400, top ,
                                self.textSize + 400, self.canvasHeight, stroke='grey'))
 
         chart.append(table)
@@ -535,15 +544,16 @@ class Gantt:
 
             # # 工时
             top = 110 + self.itemLine * self.itemHeight + self.splitLine * self.itemLine
-            # end = (datetime.strptime(line['end'], '%Y-%m-%d').date() -               datetime.strptime(line['begin'], '%Y-%m-%d').date()).days
-            end = (row['finish'] - row['start']).days
+            end = (datetime.strptime(row['finish'], '%Y-%m-%d').date() -
+                   datetime.strptime(row['start'], '%Y-%m-%d').date()).days
+            # end = (row['finish'] - row['start']).days
             right = self.itemWidth * (end + 1) + (1 * end)
 
             chart.append(draw.Text(resource, 20, 5 + (self.textIndent *
                          self.itemWidth), top + 20, text_anchor='start'))
-            chart.append(draw.Text(row['start'].strftime('%Y-%m-%d'), 20, self.textSize + 100,
+            chart.append(draw.Text(row['start'], 20, self.textSize + 100,
                                    top + 20, text_anchor='start'))
-            chart.append(draw.Text(row['finish'].strftime('%Y-%m-%d'), 20, self.textSize +
+            chart.append(draw.Text(row['finish'], 20, self.textSize +
                                    200, top + 20, text_anchor='start'))
 
             chart.append(draw.Text(str(end), 20, self.textSize +
@@ -583,23 +593,25 @@ class Gantt:
             self.textSize = length - 50
             # print(item['name'], len(item['name']))
 
-        begin = datetime.strptime(item['begin'], '%Y-%m-%d').date()
+        begin = datetime.strptime(item['start'], '%Y-%m-%d').date()
         if self.beginDate > begin:
             self.beginDate = begin
 
-        end = datetime.strptime(item['end'], '%Y-%m-%d').date()
+        end = datetime.strptime(item['finish'], '%Y-%m-%d').date()
         if self.endDate < end:
             self.endDate = end
         # print(self.endDate)
 
     def ganttChart(self):
-
+        textIndent = 0
         for id, line in self.data.items():
             self.initialize(line)
             if 'subitem' in line:
                 for id, item in line['subitem'].items():
                     self.initialize(item)
+                textIndent = 30
 
+        self.textSize += textIndent
         self.starting = self.textSize + 310
      # print(self.starting, self.textSize)
 

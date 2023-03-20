@@ -1,5 +1,13 @@
 # Python Gantt 工具
 
+## 安装
+
+```bash
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+pip install netkiller-devops -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install opencv-python drawsvg
+```
+
 ## 命令帮助
 
 ```bash

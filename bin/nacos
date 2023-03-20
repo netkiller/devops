@@ -20,33 +20,32 @@ except ImportError as err:
 class NacosApplication:
     def __init__(self) -> None:
 
-        self.parser = OptionParser("usage: %prog [options] message")
-        self.parser.add_option("-s", "--server-addr", dest="nacos", help="localhost:8848",
-                               default=None, metavar="localhost:8848")
-        self.parser.add_option('-u', '--username', dest='username',
-                               help='', default=None, metavar='')
-        self.parser.add_option('-p', '--password', dest='password',
-                               help='', default=None, metavar='')
-        self.parser.add_option('-n', '--namespace', dest='namespace',
-                               help='', default='public', metavar='public')
-
-        self.parser.add_option('-d', '--dataId', dest='dataId',
-                               help='', default=None, metavar='')
-        self.parser.add_option('-g', '--group', dest='group',
-                               help='', default='DEFAULT_GROUP', metavar='DEFAULT_GROUP')
-        group = OptionGroup(self.parser, "Config")
+        self.parser = OptionParser("usage: %prog [options]")
+        self.parser.add_option("-s", "--server-addr", dest="nacos", help="Nacos 服务器地址",
+                               default=None, metavar="http://localhost:8848")
+        self.parser.add_option('-u', '--username', dest='username', default=None, metavar='',
+                               help='用户名')
+        self.parser.add_option('-p', '--password', dest='password', default=None, metavar='',
+                               help='密码')
+        self.parser.add_option('-n', '--namespace', dest='namespace', default='public', metavar='public',
+                               help='命名空间')
+        self.parser.add_option('-d', '--dataId', dest='dataId', default=None, metavar='',
+                               help='配置ID')
+        self.parser.add_option('-g', '--group', dest='group', default='DEFAULT_GROUP', metavar='DEFAULT_GROUP',
+                               help='分组')
+        group = OptionGroup(self.parser, "配置管理")
         group.add_option(
-            '', "--push", action="store_true", dest="push", help="")
+            '', "--push", action="store_true", dest="push", help="发布配置")
         group.add_option(
-            '', "--show", action="store_true", dest="show", default=False, help="")
+            '', "--show", action="store_true", dest="show", default=False, help="查看配置")
         group.add_option(
-            '', "--save", action="store_true", dest="save", help="")
+            '', "--save", action="store_true", dest="save", help="保存配置")
         group.add_option('-f', '--file', dest='file',
-                               help='.yaml file', default=None, metavar='')
+                               help='.yaml 文件', default=None, metavar='')
         group.add_option('-t', '--type', dest='type',
                                help='yaml|text|json|xml|Properties', default='yaml', metavar='yaml')
         group.add_option(
-            '', "--delete", action="store_true", dest="delete", help="")
+            '', "--delete", action="store_true", dest="delete", help="删除配置")
         self.parser.add_option_group(group)
         # self.parser.add_option(
         #     '', "--debug", action="store_true", dest="debug", help="debug mode")

@@ -6,7 +6,7 @@ OS Software Configure Managment
 Install
 -------
 
-	pip install netkiller-devops -i
+	pip install netkiller-devops -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ### Docker 
 
