@@ -372,7 +372,8 @@ class Gantt:
             table.append(draw.Text(
                 str(line['resource']), 20, self.textSize + 250, top + 20, text_anchor='start'))
         lineGroup.append(table)
-        group = draw.Group(id='item', fill='none', stroke='black')
+        group = draw.Group(id='item')
+        # fill='none', stroke='black'
 
         if subitem:
             # print(begin,end)
@@ -396,28 +397,37 @@ class Gantt:
                 left, top + offsetY,
                 fill='black', stroke='black'))
         else:
+            if 'milestone' in line:
+                mleft = left + 15
+                mtop = top + 4
+                p = draw.Path(fill='black')
+                p.M(mleft, mtop).L(mleft+11, top+15).L(mleft, top +
+                                                       26).L(mleft - 11, top + 15).L(mleft, mtop).Z()
+                group.append(p)
+                group.append(draw.Text(datetime.strptime(line['start'], '%Y-%m-%d').strftime('%m月%d日'),
+                                       18, left + 30, top + 20, text_anchor='start', fill='black'))
+            else:
+                # 工时
+                r = draw.Rectangle(left, top + 4, right,
+                                   self.barHeight, fill='#ccccff', stroke='black')
+                r.append_title(line['name'])
+                group.append(r)
 
-            # 工时
-            r = draw.Rectangle(left, top + 4, right,
-                               self.barHeight, fill='#ccccff')
-            r.append_title(line['name'])
-            group.append(r)
+                # 进度
+                if 'progress' in line and line['progress'] > 0:
 
-            # 进度
-            if 'progress' in line and line['progress'] > 0:
+                    progress = 0
+                    if line['progress'] > end + 1:
+                        progress = end + 1
+                    else:
+                        progress = line['progress']
 
-                progress = 0
-                if line['progress'] > end + 1:
-                    progress = end + 1
-                else:
-                    progress = line['progress']
-
-                progressBar = draw.Rectangle(
-                    left+2, top + 7, 30 * progress - 2, self.progressHeight, fill='#ccffff')
-                progressBar.append_title(str(progress))
-                group.append(progressBar)
-                group.append(draw.Text("%d%%" % ((progress/(end+1))*100),
-                             10, left + 5, top + 18, text_anchor='start', fill='blue'))
+                    progressBar = draw.Rectangle(
+                        left+2, top + 7, 30 * progress - 2, self.progressHeight, fill='#ccffff')
+                    progressBar.append_title(str(progress))
+                    group.append(progressBar)
+                    group.append(draw.Text("%d%%" % ((progress/(end+1))*100),
+                                           10, left + 5, top + 18, text_anchor='start', fill='blue'))
 
         # 分割线
         group.append(draw.Lines(1, top + self.itemHeight,
