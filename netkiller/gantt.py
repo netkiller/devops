@@ -225,12 +225,12 @@ class Gantt:
                 monthGroups[month].append(value)
         return monthGroups
 
-    def background(self):
+    def calendar(self):
 
         left = self.starting
         top = 80
 
-        background = draw.Group(id='background')
+        background = draw.Group(id='calendar')
 
         background.append(self.__table(top))
 
@@ -637,7 +637,7 @@ class Gantt:
         self.nameTextSize += textIndent
         self.starting = self.nameTextSize + self.resourceTextSize + 250
 
-        self.background()
+        self.calendar()
         self.task()
         self.next()
         self.legend()
