@@ -556,7 +556,7 @@ class Gantt:
         # left += self.itemWidth * (begin - 1) + (1 * begin)
         # # 日宽度 + 竖线宽度
 
-        # left = self.dayPosition[line['begin']]
+        
 
         for resource, row in self.data.items():
             #     print(resource, row)
@@ -577,7 +577,8 @@ class Gantt:
 
             chart.append(draw.Text(str(end), 20, self.nameTextSize +
                                    300, top + 20, text_anchor='start'))
-
+            
+            left = self.dayPosition[row['start']]
             r = draw.Rectangle(left, top + 4, right,
                                self.barHeight, fill='#aaaaaa')
             r.append_title(resource)
