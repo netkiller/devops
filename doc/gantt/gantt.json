@@ -19,7 +19,7 @@
                 "name": "权限角色开发",
                 "start": "2023-03-01",
                 "finish": "2023-03-03",
-                "resource": "Tom",
+                "resource": "Neo",
                 "progress": 5
             }
         }
@@ -35,6 +35,7 @@
                 "name": "用户登陆测试",
                 "start": "2023-03-06",
                 "finish": "2023-03-15",
+                "resource": "陈景峰",
                 "progress": 4
             },
             "22": {
@@ -42,6 +43,7 @@
                 "name": "权限角色测试",
                 "start": "2023-03-15",
                 "finish": "2023-03-22",
+                "resource": "netkiller",
                 "progress": 0
             }
         }
@@ -59,6 +61,7 @@
         "name": "Java",
         "start": "2023-02-24",
         "finish": "2023-02-27",
+        "resource": "司空摘星",
         "progress": 2,
         "next": "5"
     },
