@@ -97,9 +97,7 @@ class GanttChart:
                     tmp = Data()
                     for item in items:
                         tmp.add(item['id'], item['name'], item['start'],
-                                item['finish'], item['resource'], item['parent'])
-                        # print(item)
-                    #
+                                item['finish'], item['resource'], item['next'], item['milestone'], item['parent'])
                     self.data = tmp.data
 
                 elif options.workload:

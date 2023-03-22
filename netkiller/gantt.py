@@ -11,7 +11,7 @@ try:
     import cv2
     import drawsvg as draw
     from datetime import datetime, date
-    import time
+    from distutils import util
 except ImportError as err:
     print("Error: %s" % (err))
 
@@ -27,10 +27,10 @@ class Data:
     def __init__(self) -> None:
         pass
 
-    def add(self, id, name, start, finish, resource, parent):
+    def add(self, id, name, start, finish, resource, next, milestone, parent):
         # duration
-        item = {'id': id, 'name': name, 'begin': start,
-                'end': finish, 'resource': resource}
+        item = {'id': id, 'name': name, 'start': start,
+                'finish': finish, 'resource': resource, 'next': next, 'milestone': eval(milestone)}
         if int(parent) > 0:
             if not 'subitem' in self.data[parent]:
                 self.data[parent]['subitem'] = {}
@@ -398,7 +398,7 @@ class Gantt:
                 left, top + offsetY,
                 fill='black', stroke='black'))
         else:
-            if 'milestone' in line:
+            if 'milestone' in line and line['milestone']:
                 mleft = left + 15
                 mtop = top + 4
                 p = draw.Path(fill='black')
@@ -477,13 +477,13 @@ class Gantt:
     def next(self):
         handover = draw.Group(id='handover')
         for id, line in self.data.items():
-            if 'next' in line:
+            if 'next' in line and line['next'] and int(line['next']) > 0:
                 link = self.link(self.linkPosition[line['id']],
                                  self.linkPosition[line['next']])
                 handover.append(link)
             if 'subitem' in line:
                 for id, item in line['subitem'].items():
-                    if 'next' in item:
+                    if 'next' in item and line['next'] and int(item['next']) > 0:
                         link = self.link(
                             self.linkPosition[item['id']], self.linkPosition[item['next']])
                         handover.append(link)
@@ -556,8 +556,6 @@ class Gantt:
         # left += self.itemWidth * (begin - 1) + (1 * begin)
         # # 日宽度 + 竖线宽度
 
-        
-
         for resource, row in self.data.items():
             #     print(resource, row)
 
@@ -577,7 +575,7 @@ class Gantt:
 
             chart.append(draw.Text(str(end), 20, self.nameTextSize +
                                    300, top + 20, text_anchor='start'))
-            
+
             left = self.dayPosition[row['start']]
             r = draw.Rectangle(left, top + 4, right,
                                self.barHeight, fill='#aaaaaa')
@@ -613,7 +611,7 @@ class Gantt:
             self.nameTextSize = length - 50
             # print(item['name'], len(item['name']))
 
-        if 'resource' in item :
+        if 'resource' in item:
             length = self.getTextSize(item['resource'])
             if self.resourceTextSize < length - 50:
                 self.resourceTextSize = length - 50

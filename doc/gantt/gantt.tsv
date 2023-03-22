@@ -1,0 +1,13 @@
+id	name	start	finish	resource	parent	next	milestone
+1	任务组	2023-03-01	2023-03-02	admin	0	3	FALSE
+2	aaabbb	2023-03-02	2023-03-03	closed	0	0	TRUE
+3	aaa	2023-03-03	2023-03-04	test	0	4	FALSE
+4	bbb	2023-03-01	2023-03-07		0	5	FALSE
+5	ccc	2023-03-05	2023-03-10	test	0	6	FALSE
+6	ddd	2023-03-06	2023-03-10		0	7	FALSE
+7	aaa	2023-03-10	2023-03-20	test	0	0	FALSE
+8	eeeee	2023-03-10	2023-03-13		0	0	TRUE
+9	主任务主任务主任务	2023-03-10	2023-03-15		-1	0	FALSE
+10	子任务1	2023-03-14	2023-03-15	test	9	11	FALSE
+11	子任务2	2023-03-13	2023-03-15	test	9	12	FALSE
+12	子任务3	2023-03-13	2023-03-15	test	9	0	FALSE
