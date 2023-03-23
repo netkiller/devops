@@ -125,11 +125,11 @@ class Pipeline:
                 if stage in self.pipelines.keys():
                     for command in self.pipelines[stage]:
                         rev = subprocess.call(command, shell=True)
-                        if rev.returncode == 0 :
-                            status = 'done'
-                        else:
-                            status = 'error'
-                        self.logging.info("command: %s, %s, status: %s" % (rev, command,status))
+                        # if rev.returncode == 0 :
+                        #     status = 'done'
+                        # else:
+                        #     status = 'error'
+                        self.logging.info("command: %s, %s, status: %s" % (rev, command,rev))
                         # if rev != 0 :
                         # raise Exception("{} 执行失败".format(command))
         except KeyboardInterrupt as e:
