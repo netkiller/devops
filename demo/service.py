@@ -1,36 +1,34 @@
-import os,sys
-module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0,module)
+import calendar
+import datetime
 
-from netkiller.docker import *
-
-service =  Services('nginx')
-service.image('nginx:latest')
-service.container_name('nginx')
-service.restart('always')
-service.hostname('www.netkiller.cn')
-service.extra_hosts(['db.netkiller.cn:127.0.0.1','cache.netkiller.cn:127.0.0.1','api.netkiller.cn:127.0.0.1'])
-service.environment(['TZ=Asia/Shanghai'])
-service.ports(['80:80','443:443'])
-service.volumes(['/tmp:/tmp'])
-service.links('nginx:web1.netkiller.cn')
-# service.debug()
-# print(service.dump())
+begin = "2017-11-15"
+end = "2018-04-23"
 
 
+def monthlist(begin, end):
+    begin = datetime.datetime.strptime(begin, "%Y-%m-%d")
+    end = datetime.datetime.strptime(end, "%Y-%m-%d")
 
-for i in range(10) :
-    cluster =  Services('nginx-'+str(i))
-    cluster.image('nginx:latest').container_name('nginx-'+str(i)).restart('always').hostname('www'+str(i)+'.netkiller.cn')
-    cluster.ports(['8{port}:80'.format(port=i)])
-    # print(cluster.dump())
+    result = []
+    while True:
+        if begin.month == 12:
+            next = begin.replace(year=begin.year+1, month=1, day=1)
+        else:
+            next = begin.replace(month=begin.month+1, day=1)
+        if next > end:
+            break
+
+        day = calendar.monthrange(begin.year, begin.month)[1]
+        # print()
+        # print(datetime.datetime.date())
+        result.append((begin.strftime("%Y-%m-%d"),
+                      begin.replace(day=day).strftime("%Y-%m-%d")))
+        begin = next
+    result.append((begin.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")))
+    return result
 
 
-compose = Composes('development')
-compose.version('3.9')
-compose.services(service)
-# print (compose.debug())
-print(compose.dump())
-compose.workdir('/tmp')
-compose.save()
-# compose.save('/tmp/docker-compost.yaml')
+lists = monthlist(begin, end)
+print(lists)
+for (b, e) in lists:
+    print(b, e)

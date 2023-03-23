@@ -46,6 +46,7 @@ class GanttChart:
             '-d', "--debug", action="store_true", dest="debug", help="debug mode")
 
         self.gantt = Gantt()
+        self.gantt.hideTable()
 
     def usage(self):
         self.parser.print_help()
@@ -96,6 +97,10 @@ class GanttChart:
                 if options.gantt:
                     tmp = Data()
                     for item in items:
+                        if item['milestone'] == 'TURE' :
+                            item['milestone'] = True
+                        else:
+                            item['milestone'] = False
                         tmp.add(item['id'], item['name'], item['start'],
                                 item['finish'], item['resource'], item['next'], item['milestone'], item['parent'])
                     self.data = tmp.data

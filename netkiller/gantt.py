@@ -30,7 +30,7 @@ class Data:
     def add(self, id, name, start, finish, resource, next, milestone, parent):
         # duration
         item = {'id': id, 'name': name, 'start': start,
-                'finish': finish, 'resource': resource, 'next': next, 'milestone': eval(milestone)}
+                'finish': finish, 'resource': resource, 'next': next, 'milestone': milestone}
         if int(parent) > 0:
             if not 'subitem' in self.data[parent]:
                 self.data[parent]['subitem'] = {}
@@ -64,6 +64,8 @@ class Gantt:
     weekdayPosition = 0
     dayPosition = {}
     linkPosition = {}
+    # 隐藏表格
+    hideTable = True
 
     data = {}
 
@@ -105,20 +107,34 @@ class Gantt:
 
         return group
 
-    # def __weekday(self, top):
-    #     left = self.starting
-    #     offsetX = 0
+    # def __weekdays(self, top, month):
+    #     offsetX = 1
+    #     column = 0
 
-    #     weekNumber = datetime.strptime('2023-03-01', '%Y-%m-%d').strftime('%W')
+    #     if month == self.beginDate.month:
+    #         beginDay = self.beginDate.day
+    #         endDay = calendar.monthrange(
+    #             self.beginDate.year, self.beginDate.month)[1]
+    #     elif month == self.endDate.month:
+    #         beginDay = 1
+    #         endDay = self.endDate.day
+    #     else:
+    #         beginDay = 1
+    #         endDay = calendar.monthrange(datetime.now().year, month)[1]
+    #     # print(beginDay, endDay)
+
+    #     weekNumber = datetime.strptime(str(
+    #         datetime.now().year)+'-'+str(month)+'-01', '%Y-%m-%d').strftime('%W')
+    #     # weekNumber = datetime.date(datetime.now().year,month,1).strftime('%W')
     #     weekGroups = {}
     #     weekGroups[weekNumber] = draw.Group(id='week'+str(weekNumber))
 
-    #     for day in range(1, 31):
+    #     for day in range(beginDay, endDay+1):
     #         # print(day)
-    #         weekday = calendar.weekday(2023, 3, day)
+    #         weekday = calendar.weekday(datetime.now().year, month, day)
 
-    #         currentWeekNumber = datetime.strptime(
-    #             '2023-03-' + str(day), '%Y-%m-%d').strftime('%W')
+    #         currentWeekNumber = datetime.strptime(str(datetime.now().year) +
+    #                                               '-'+str(month)+'-' + str(day), '%Y-%m-%d').strftime('%W')
     #         # print(weekNumber, currentWeekNumber)
     #         if currentWeekNumber != weekNumber:
     #             weekNumber = currentWeekNumber
@@ -128,24 +144,39 @@ class Gantt:
     #             color = '#dddddd'
     #         else:
     #             color = '#cccccc'
-    #         x = left + self.unitWidth * (day-1) + offsetX
 
+    #         x = self.weekdayPosition + self.unitWidth * (column) + offsetX
+    #         self.dayPosition[date(year=int(datetime.now().year), month=int(
+    #             month), day=int(day)).strftime('%Y-%m-%d')] = x
     #         if weekday == 6:
-    #             weekGroups[weekNumber].append(draw.Line(x + 30, top - 30,
-    #                                           x + 30, self.canvasHeight, stroke='black'))
-
-    #         r = draw.Rectangle(x, top, self.unitWidth,
-    #                            self.canvasHeight, fill=color)
+    #             weekGroups[weekNumber].append(draw.Line(x + self.unitWidth, top - self.unitHeight,
+    #                                                     x + self.unitWidth, self.canvasHeight, stroke='black'))
+    #         # 日栏位
+    #         # print(self.weekdayPosition)
+    #         r = draw.Rectangle(x, top+1, self.unitWidth,
+    #                            self.canvasHeight - 80-2, fill=color)
     #         r.append_title(str(day))
     #         weekGroups[weekNumber].append(r)
+
+    #         # dayName = ["星期一","星期二","星期三","星期四","星期五","星期六","星期日"]
+    #         dayName = ["一", "二", "三", "四", "五", "六", "日"]
+
     #         weekGroups[weekNumber].append(
-    #             draw.Text(str(day), 24, x, top + 24, fill='#555555'))
+    #             draw.Text(dayName[weekday], 20, x + 4, top - 10, fill='#555555'))
+    #         if day < 10:
+    #             numberOffsetX = 10
+    #         else:
+    #             numberOffsetX = 0
+    #         weekGroups[weekNumber].append(
+    #             draw.Text(str(day), 20, x + numberOffsetX, top + 20, fill='#555555'))
 
-    #         if day:
-    #             offsetX += self.splitLine
-    #     # print(weekGroups)
+    #         # if column:
+    #         offsetX += self.splitLine
+    #         column += 1
+
+    #     self.weekdayPosition = x + self.unitWidth
+
     #     return weekGroups
-
     def __weekdays(self, top, month):
         offsetX = 1
         column = 0
@@ -190,7 +221,8 @@ class Gantt:
             if weekday == 6:
                 weekGroups[weekNumber].append(draw.Line(x + self.unitWidth, top - self.unitHeight,
                                                         x + self.unitWidth, self.canvasHeight, stroke='black'))
-
+            # 日栏位
+            # print(self.weekdayPosition)
             r = draw.Rectangle(x, top+1, self.unitWidth,
                                self.canvasHeight - 80-2, fill=color)
             r.append_title(str(day))
@@ -215,6 +247,24 @@ class Gantt:
         self.weekdayPosition = x + self.unitWidth
 
         return weekGroups
+    def __monthRange(self, begin, end):
+
+        result = []
+        while True:
+            if begin.month == 12:
+                next = begin.replace(year=begin.year+1, month=1, day=1)
+            else:
+                next = begin.replace(month=begin.month+1, day=1)
+            if next > end:
+                break
+
+            day = calendar.monthrange(begin.year, begin.month)[1]
+
+            result.append((begin.strftime("%Y-%m-%d"),
+                           begin.replace(day=day).strftime("%Y-%m-%d")))
+            begin = next
+        result.append((begin.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")))
+        return result
 
     def __month(self, top):
         self.weekdayPosition = self.starting
@@ -225,23 +275,37 @@ class Gantt:
                 monthGroups[month].append(value)
         return monthGroups
 
+    def __year(self, top):
+        self.weekdayPosition = self.starting
+        yearGroups = {}
+        # print(self.beginDate, self.endDate)
+        years = self.__monthRange(self.beginDate, self.endDate)
+        # print(len(years))
+        for month in years:
+            begin, end = month
+            begin = datetime.strptime(begin, "%Y-%m-%d").date()
+            end = datetime.strptime(end, "%Y-%m-%d").date()
+            print(begin, end)
+            yearGroups[begin.year] = draw.Group(id='year'+str(begin.year))
+            for key, value in self.__month(top, year).items():
+                yearGroups[year].append(value)
+        return yearGroups
+
     def calendar(self):
 
         left = self.starting
         top = 80
 
         background = draw.Group(id='calendar')
+        if self.hideTable:
+            self.starting = 0
+        else:
+            background.append(self.__table(top))
 
-        background.append(self.__table(top))
-
-        for key, value in self.__month(top).items():
+        for key, value in self.__year(top).items():
             background.append(value)
-
-        # print(self.dayPosition)
-
-        # for key, value in self.__weekday(top).items():
+        # for key, value in self.__month(top).items():
         #     background.append(value)
-
         background.append(draw.Line(1, top + 26, self.canvasWidth,
                                     top + 26, stroke='grey'))
 
@@ -252,87 +316,6 @@ class Gantt:
             draw.Line(left, top-30, left, self.canvasHeight, stroke='grey'))
         self.draw.append(background)
 
-    # def item(self, line, subitem=False):
-    #     left = self.starting
-    #     top = 110 + self.itemLine * self.itemHeight + self.splitLine * self.itemLine
-    #     # print(top)
-
-    #     begin = datetime.strptime(line['begin'], '%Y-%m-%d').day
-    #     # end = datetime.strptime(line['end'], '%Y-%m-%d').day
-    #     end = (datetime.strptime(line['end'], '%Y-%m-%d').date() -
-    #            datetime.strptime(line['begin'], '%Y-%m-%d').date()).days
-
-    #     left += self.itemWidth * (begin - 1) + (1 * begin)
-    #     # 日宽度 + 竖线宽度
-    #     right = self.itemWidth * (end + 1) + (1 * end)
-
-    #     table = draw.Group(id='text')
-    #     text = draw.Text(line['title'], 20, 5 + (self.textIndent *
-    #                      self.itemWidth), top + 20, text_anchor='start')
-    #     # text.append(draw.TSpan(line['begin'], text_anchor='start'))
-    #     # text.append(draw.TSpan(line['end'], text_anchor='start'))
-    #     table.append(text)
-    #     fontSize = self.getTextSize(line['title'])
-    #     begin = draw.Text(line['begin'], 20, self.textSize,
-    #                       top + 20, text_anchor='start')
-    #     table.append(begin)
-    #     end = draw.Text(line['end'], 20, self.textSize +
-    #                     100, top + 20, text_anchor='start')
-    #     table.append(end)
-    #     if 'progress' in line:
-    #         table.append(draw.Text(
-    #             str(line['progress']), 20, self.textSize + 200, top + 20, text_anchor='start'))
-    #     if 'resource' in line:
-    #         table.append(draw.Text(
-    #             str(line['resource']), 20, self.textSize + 250, top + 20, text_anchor='start'))
-
-    #     group = draw.Group(id='item', fill='none', stroke='black')
-    #     # text = draw.Text(line['title'], 20, 5, top + 15, text_anchor='start')
-    #     # group.append(text)
-    #     group.append(table)
-    #     if subitem:
-    #         # print(begin,end)
-    #         # print(left,top,right)
-    #         offsetY = 6
-    #         length = left + right
-    #         group.append(draw.Lines(
-    #             # 坐标
-    #             left, top + offsetY,
-    #             # 横线
-    #             length, top + offsetY,
-    #             # 竖线
-    #             length, top + 24,
-    #             # 斜线
-    #             length - 10, top + 15,
-    #             # 横线2
-    #             left + 10, top+15,
-    #             # # 斜线
-    #             left, top + 24,
-    #             # # 闭合竖线
-    #             left, top + offsetY,
-    #             fill='black', stroke='black'))
-    #     else:
-
-    #         # 工时
-    #         r = draw.Rectangle(left, top + 4, right,
-    #                            self.barHeight, fill='#ccccff')
-    #         r.append_title(line['title'])
-    #         group.append(r)
-
-    #         # 进度
-    #         if 'progress' in line:
-    #             progress = draw.Rectangle(
-    #                 left, top + 7, 30 * line['progress'], self.progressHeight, fill='#ccffff')
-    #             progress.append_title(str(line['progress']))
-    #             # mask.append(progress)
-    #             group.append(progress)
-
-    #     # 分割线
-    #     group.append(draw.Lines(1, top + self.itemHeight,
-    #                             self.canvasWidth, top + self.itemHeight, stroke='grey'))
-
-    #     self.draw.append(group)
-    #     self.itemLine += 1
     def items(self, line, subitem=False):
         left = self.starting
         top = 110 + self.itemLine * self.itemHeight + self.splitLine * self.itemLine
@@ -352,27 +335,29 @@ class Gantt:
         self.linkPosition[line['id']] = {'x': left, 'y':  top, 'width': right}
 
         lineGroup = draw.Group(id='line')
-        table = draw.Group(id='text')
-        text = draw.Text(line['name'], 20, 5 + (self.textIndent *
-                                                self.itemWidth), top + 20, text_anchor='start')
-        # text.append(draw.TSpan(line['begin'], text_anchor='start'))
-        # text.append(draw.TSpan(line['end'], text_anchor='start'))
-        table.append(text)
-        fontSize = self.getTextSize(line['name'])
-        table.append(draw.Text(line['start'], 20, self.nameTextSize,
-                               top + 20, text_anchor='start'))
-        table.append(draw.Text(line['finish'], 20, self.nameTextSize +
-                               100, top + 20, text_anchor='start'))
-        # if 'progress' in line:
-        #     table.append(draw.Text(
-        #         str(line['progress']), 20, self.nameTextSize + 200, top + 20, text_anchor='start'))
+        if not self.hideTable:
+            table = draw.Group(id='text')
+            text = draw.Text(line['name'], 20, 5 + (self.textIndent *
+                                                    self.itemWidth), top + 20, text_anchor='start')
+            # text.append(draw.TSpan(line['begin'], text_anchor='start'))
+            # text.append(draw.TSpan(line['end'], text_anchor='start'))
+            table.append(text)
+            fontSize = self.getTextSize(line['name'])
+            table.append(draw.Text(line['start'], 20, self.nameTextSize,
+                                   top + 20, text_anchor='start'))
+            table.append(draw.Text(line['finish'], 20, self.nameTextSize +
+                                   100, top + 20, text_anchor='start'))
+            # if 'progress' in line:
+            #     table.append(draw.Text(
+            #         str(line['progress']), 20, self.nameTextSize + 200, top + 20, text_anchor='start'))
 
-        table.append(draw.Text(str(end+1), 20, self.nameTextSize +
-                     210, top + 20, text_anchor='start'))
-        if 'resource' in line:
-            table.append(draw.Text(
-                str(line['resource']), 20, self.nameTextSize + 250, top + 20, text_anchor='start'))
-        lineGroup.append(table)
+            table.append(draw.Text(str(end+1), 20, self.nameTextSize +
+                                   210, top + 20, text_anchor='start'))
+            if 'resource' in line:
+                table.append(draw.Text(
+                    str(line['resource']), 20, self.nameTextSize + 250, top + 20, text_anchor='start'))
+            lineGroup.append(table)
+
         group = draw.Group(id='item')
         # fill='none', stroke='black'
 
@@ -443,6 +428,9 @@ class Gantt:
         self.draw.append(draw.Text("https://www.netkiller.cn - design by netkiller",
                                    15, self.canvasWidth - 300, top + 30, text_anchor='start', fill='grey'))
         # print(self.linkPosition)
+
+    def hideTable(self):
+        self.hideTable = True
 
     def task(self):
         taskGroup = draw.Group(id='task')
@@ -638,9 +626,9 @@ class Gantt:
         self.starting = self.nameTextSize + self.resourceTextSize + 250
 
         self.calendar()
-        self.task()
-        self.next()
-        self.legend()
+        # self.task()
+        # self.next()
+        # self.legend()
 
     def workloadChart(self):
         self.workload()
