@@ -1,3 +1,11 @@
+#! /usr/bin/env python3
+# -*- coding: UTF-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+# Data: 2023-03-09
+##############################################
+
 from netkiller.git import *
 from netkiller.kubernetes import *
 import os
@@ -8,6 +16,7 @@ import logging
 import logging.handlers
 from logging import basicConfig
 sys.path.insert(0, '/Users/neo/workspace/devops')
+sys.path.insert(0, '../devops')
 
 class Stage:
     def __init__(self) -> None:
@@ -21,6 +30,9 @@ class Pipeline:
     Gradle = 'gradle'
 
     def __init__(self, workspace, logfile = 'debug.log'):
+
+        self.container = 'docker'
+        self.registry=None
         self.workspace = workspace
         self.pipelines = {}
         if not os.path.exists(self.workspace) :
@@ -39,6 +51,7 @@ class Pipeline:
 
     def env(self, key, value):
         os.putenv(key, value)
+        # os.environ['JAVA_HOME'] = '/Library/Java/JavaVirtualMachines/jdk1.8.0_341.jdk/Contents/Home'
         self.logging.info("%s = %s" % (key,value))
         return self
 
@@ -79,11 +92,24 @@ class Pipeline:
         self.pipelines['test'] = script
         self.logging.info("test: %s" % script)
         return self
-
-    def dockerfile(self, registry=None, tag=None, dir=None):
+    def docker(self, registry, username=None, password=None):
+        self.pipelines['container'] = []
+        self.registry =registry 
+        self.container = 'docker'
+        if username :
+            self.pipelines['container'].append(self.container + " login -u {username} -p{password} {registry}".format(username=username ,password= password,registry = self.registry))
+        return self
+    def podman(self, registry, username=None, password=None):
+        self.pipelines['container'] = []
+        self.registry =registry 
+        self.container = 'podman'
+        if username :
+            self.pipelines['container'].append(self.container + " login -u {username} -p{password} {registry}".format(username=username ,password= password,registry = self.registry))
+        return self
+    def dockerfile(self, tag=None, dir=None):
         self.pipelines['dockerfile'] = []
-        if registry:
-            image = os.path.join(registry,self.project)
+        if self.registry:
+            image = os.path.join(self.registry,self.project)
         else:
             image = self.project
 
@@ -95,12 +121,12 @@ class Pipeline:
         if dir :
             os.chdir(dir)
             
-        self.pipelines['dockerfile'].append('docker build -t '+tag+' .')
-        self.pipelines['dockerfile'].append('docker tag '+tag+' '+image)
-        self.pipelines['dockerfile'].append('docker push '+tag)
-        self.pipelines['dockerfile'].append('docker push '+image)
-        self.pipelines['dockerfile'].append('docker image rm '+tag)
-        self.pipelines['dockerfile'].append('docker image rm '+image)
+        self.pipelines['dockerfile'].append(self.container + ' build -t '+tag+' .')
+        self.pipelines['dockerfile'].append(self.container + ' tag '+tag+' '+image)
+        self.pipelines['dockerfile'].append(self.container + ' push '+tag)
+        self.pipelines['dockerfile'].append(self.container + ' push '+image)
+        self.pipelines['dockerfile'].append(self.container + ' image rm '+tag)
+        self.pipelines['dockerfile'].append(self.container + ' image rm '+image)
         self.logging.info("dockerfile: %s" % self.pipelines['dockerfile'])
         return self
 
@@ -121,10 +147,11 @@ class Pipeline:
         if script:
             self.pipelines['end'] = script
         try:
-            for stage in ['begin','init', 'checkout', 'build', 'dockerfile', 'deploy', 'stop', 'startup', 'end']:
+            for stage in ['begin','init', 'checkout', 'build', 'container','dockerfile', 'deploy', 'stop', 'startup', 'end']:
                 if stage in self.pipelines.keys():
                     for command in self.pipelines[stage]:
                         rev = subprocess.call(command, shell=True)
+                        # rev = subprocess.call(command, shell=True,executable='/bin/bash', env=dict(ENV='/User/neo/.zprofile'))
                         # if rev.returncode == 0 :
                         #     status = 'done'
                         # else:
@@ -136,7 +163,8 @@ class Pipeline:
             self.logging.info(e)
         self.logging.info("="*50)
         return self
-
+    def image(self):
+        return(self.image)
     def debug(self):
         print(self.pipelines)
         return self
