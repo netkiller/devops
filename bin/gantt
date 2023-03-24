@@ -46,7 +46,7 @@ class GanttChart:
             '-d', "--debug", action="store_true", dest="debug", help="debug mode")
 
         self.gantt = Gantt()
-        # self.gantt.hideTable()
+        self.gantt.hideTable()
 
     def usage(self):
         self.parser.print_help()
