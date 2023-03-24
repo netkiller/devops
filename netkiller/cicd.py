@@ -23,6 +23,7 @@ class CICD:
 
     basedir = os.getcwd()
     skip = []
+    template = {}
 
     def __init__(self) -> None:
 
@@ -167,7 +168,8 @@ class CICD:
         if not 'image' in self.skip:
             pipeline.docker(registry).dockerfile(tag=tag, dir=module)
         if not 'nacos' in self.skip:
-            pipeline.template(template, {'test': 'helloworld!!!'}, filepath)
+            if self.template:
+                pipeline.template(template, self.template, filepath)
             if os.path.exists(filepath):
                 pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
                                dataid, group, filepath)
@@ -190,6 +192,9 @@ class CICD:
         self.nacos['server'] = server
         self.nacos['username'] = username
         self.nacos['password'] = password
+
+    def template(self, map):
+        self.template = map
 
     def main(self):
         (options, args) = self.parser.parse_args()
