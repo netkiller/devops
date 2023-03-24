@@ -146,8 +146,8 @@ class Pipeline:
         self.pipelines['nacos'] = []
         self.pipelines['nacos'].append("nacos -s {server} -u {username} -p {password} -n {namespace} -d {dataid} -g {group} --push -f {filepath}".format(
             server=server, username=username, password=password, namespace=namespace, dataid=dataid, group=group, filepath=filepath))
-        self.pipelines['nacos'].append("nacos -s {server} -u {username} -p {password} -n {namespace} -d {dataid} --show".format(
-            server=server, username=username, password=password, namespace=namespace, dataid=dataid))
+        # self.pipelines['nacos'].append("nacos -s {server} -u {username} -p {password} -n {namespace} -d {dataid} --show".format(
+        #     server=server, username=username, password=password, namespace=namespace, dataid=dataid))
         return self
 
     def deploy(self, script):
