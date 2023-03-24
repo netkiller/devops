@@ -177,34 +177,39 @@ class Gantt:
     #     self.weekdayPosition = x + self.unitWidth
 
     #     return weekGroups
-    def __weekdays(self, top, month):
+    def __weekdays(self, top, begin, end):
         offsetX = 1
         column = 0
 
-        if month == self.beginDate.month:
-            beginDay = self.beginDate.day
-            endDay = calendar.monthrange(
-                self.beginDate.year, self.beginDate.month)[1]
-        elif month == self.endDate.month:
-            beginDay = 1
-            endDay = self.endDate.day
-        else:
-            beginDay = 1
-            endDay = calendar.monthrange(datetime.now().year, month)[1]
+        # if month == self.beginDate.month:
+        #     beginDay = self.beginDate.day
+        #     endDay = calendar.monthrange(
+        #         self.beginDate.year, self.beginDate.month)[1]
+        # elif month == self.endDate.month:
+        #     beginDay = 1
+        #     endDay = self.endDate.day
+        # else:
+        #     beginDay = 1
+        #     endDay = calendar.monthrange(datetime.now().year, month)[1]
+
+        begin = datetime.strptime(begin, '%Y-%m-%d')
+        end = datetime.strptime(end, '%Y-%m-%d')
+
+        beginDay = begin.day
+        endDay = end.day
         # print(beginDay, endDay)
 
-        weekNumber = datetime.strptime(str(
-            datetime.now().year)+'-'+str(month)+'-01', '%Y-%m-%d').strftime('%W')
+        weekNumber = datetime.strptime(str(begin.year)+'-'+str(begin.month)+'-01', '%Y-%m-%d').strftime('%W')
+        # weekNumber = begin.strftime('%W')
         # weekNumber = datetime.date(datetime.now().year,month,1).strftime('%W')
         weekGroups = {}
         weekGroups[weekNumber] = draw.Group(id='week'+str(weekNumber))
 
         for day in range(beginDay, endDay+1):
             # print(day)
-            weekday = calendar.weekday(datetime.now().year, month, day)
+            weekday = calendar.weekday(begin.year, begin.month, day)
 
-            currentWeekNumber = datetime.strptime(str(datetime.now().year) +
-                                                  '-'+str(month)+'-' + str(day), '%Y-%m-%d').strftime('%W')
+            currentWeekNumber = datetime.strptime(str(begin.year) +'-'+str(begin.month)+'-' + str(day), '%Y-%m-%d').strftime('%W')
             # print(weekNumber, currentWeekNumber)
             if currentWeekNumber != weekNumber:
                 weekNumber = currentWeekNumber
@@ -216,8 +221,7 @@ class Gantt:
                 color = '#cccccc'
 
             x = self.weekdayPosition + self.unitWidth * (column) + offsetX
-            self.dayPosition[date(year=int(datetime.now().year), month=int(
-                month), day=int(day)).strftime('%Y-%m-%d')] = x
+            self.dayPosition[date(year=int(begin.year), month=int(begin.month), day=int(day)).strftime('%Y-%m-%d')] = x
             if weekday == 6:
                 weekGroups[weekNumber].append(draw.Line(x + self.unitWidth, top - self.unitHeight,
                                                         x + self.unitWidth, self.canvasHeight, stroke='black'))
@@ -247,9 +251,28 @@ class Gantt:
         self.weekdayPosition = x + self.unitWidth
 
         return weekGroups
-    def __monthRange(self, begin, end):
 
-        result = []
+
+    # def __month(self, top):
+    #     self.weekdayPosition = self.starting
+    #     monthGroups = {}
+    #     for month in range(self.beginDate.month, self.endDate.month+1):
+    #         monthGroups[month] = draw.Group(id='month'+str(month))
+    #         for key, value in self.__weekdays(top, month).items():
+    #             monthGroups[month].append(value)
+    #     return monthGroups
+    def __month(self, top, months):
+        # self.weekdayPosition = self.starting
+        monthGroups = {}
+        for begin, end in months:
+            month = datetime.strptime(begin, '%Y-%m-%d').month
+            monthGroups[month] = draw.Group(id='month'+str(month))
+            for key, value in self.__weekdays(top, begin, end).items():
+                monthGroups[month].append(value)
+        return monthGroups
+    def __monthRange(self, begin, end):
+        years = {}
+        # result = []
         while True:
             if begin.month == 12:
                 next = begin.replace(year=begin.year+1, month=1, day=1)
@@ -260,34 +283,32 @@ class Gantt:
 
             day = calendar.monthrange(begin.year, begin.month)[1]
 
-            result.append((begin.strftime("%Y-%m-%d"),
+            # result.append((begin.strftime("%Y-%m-%d"),
+            #                begin.replace(day=day).strftime("%Y-%m-%d")))
+            if not begin.year in years :
+                years[begin.year] = []    
+            years[begin.year].append((begin.strftime("%Y-%m-%d"),
                            begin.replace(day=day).strftime("%Y-%m-%d")))
             begin = next
-        result.append((begin.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")))
-        return result
-
-    def __month(self, top):
-        self.weekdayPosition = self.starting
-        monthGroups = {}
-        for month in range(self.beginDate.month, self.endDate.month+1):
-            monthGroups[month] = draw.Group(id='month'+str(month))
-            for key, value in self.__weekdays(top, month).items():
-                monthGroups[month].append(value)
-        return monthGroups
-
+        # result.append((begin.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")))
+        years[begin.year].append((begin.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")))
+        # print(years)
+        return years
     def __year(self, top):
         self.weekdayPosition = self.starting
         yearGroups = {}
         # print(self.beginDate, self.endDate)
         years = self.__monthRange(self.beginDate, self.endDate)
+        
         # print(len(years))
-        for month in years:
-            begin, end = month
-            begin = datetime.strptime(begin, "%Y-%m-%d").date()
-            end = datetime.strptime(end, "%Y-%m-%d").date()
-            print(begin, end)
-            yearGroups[begin.year] = draw.Group(id='year'+str(begin.year))
-            for key, value in self.__month(top, year).items():
+        for year, month in years.items():
+            print(year, month)
+            # begin, end = month
+            # begin = datetime.strptime(begin, "%Y-%m-%d").date()
+            # end = datetime.strptime(end, "%Y-%m-%d").date()
+            # print(begin, end)
+            yearGroups[year] = draw.Group(id='year'+str(year))
+            for key, value in self.__month(top, month).items():
                 yearGroups[year].append(value)
         return yearGroups
 
