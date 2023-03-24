@@ -118,7 +118,7 @@ class CICD:
             module = ci['module']
 
         time = datetime.now().strftime('%Y%m%d-%H%M')
-        registry = self.registr+'/' + self.namespace
+        registry = self.registry+'/' + self.namespace
         image = registry + '/' + name + ':' + time
         tag = time
         # deploy = 'python3 aliyun.py -u '+latest+' -n '+project['deployment']['group']+' ' + name
