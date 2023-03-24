@@ -10,7 +10,7 @@ try:
     import calendar
     import cv2
     import drawsvg as draw
-    from datetime import datetime, date
+    from datetime import datetime,date
     from distutils import util
 except ImportError as err:
     print("Error: %s" % (err))
@@ -305,8 +305,7 @@ class Gantt:
                                       begin.replace(day=day).strftime("%Y-%m-%d")))
             begin = next
         # result.append((begin.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")))
-        years[begin.year].append(
-            (begin.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")))
+        years[end.year].append((begin.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")))
         # print(years)
         return years
 
@@ -318,11 +317,9 @@ class Gantt:
 
         # print(len(years))
         for year, month in years.items():
-            # print(year, month)
-            # begin, end = month
+            print(year, month)
             # begin = datetime.strptime(begin, "%Y-%m-%d").date()
             # end = datetime.strptime(end, "%Y-%m-%d").date()
-            # print(begin, end)
             yearGroups[year] = draw.Group(id='year'+str(year))
             for key, value in self.__month(top, month).items():
                 yearGroups[year].append(value)
@@ -654,16 +651,16 @@ class Gantt:
             if self.resourceTextSize < length - 50:
                 self.resourceTextSize = length - 50
 
-        begin = datetime.strptime(item['start'], '%Y-%m-%d').date()
-        if self.beginDate > begin:
-            self.beginDate = begin
+        # begin = datetime.strptime(item['start'], '%Y-%m-%d').date()
+        self.minDate.append(item['start'])
+        # end = datetime.strptime(item['finish'], '%Y-%m-%d').date()
+        self.maxDate.append(item['finish'])
 
-        end = datetime.strptime(item['finish'], '%Y-%m-%d').date()
-        if self.endDate < end:
-            self.endDate = end
-        # print(self.endDate)
 
     def ganttChart(self, title):
+        self.maxDate = []
+        self.minDate = []
+
         textIndent = 0
         for id, line in self.data.items():
             self.initialize(line)
@@ -672,6 +669,15 @@ class Gantt:
                     self.initialize(item)
                 textIndent = 30
 
+        begin = min(sorted(self.minDate, key=lambda d: datetime.strptime(
+            d, "%Y-%m-%d").timestamp()))
+        end = max(sorted(self.maxDate, key=lambda d: datetime.strptime(
+            d, "%Y-%m-%d").timestamp()))
+        self.beginDate = datetime.strptime(begin, '%Y-%m-%d').date()
+        self.endDate = datetime.strptime(end, '%Y-%m-%d').date()
+        # print(self.minDate, begin)
+        # print(self.maxDate, end)
+        # print(self.beginDate, self.endDate)
         self.nameTextSize += textIndent
         if not self.isTable:
             self.startPosition = self.nameTextSize + self.resourceTextSize + 250
