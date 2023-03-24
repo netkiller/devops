@@ -15,6 +15,7 @@ from datetime import datetime
 import logging
 import logging.handlers
 from logging import basicConfig
+from string import Template
 sys.path.insert(0, '/Users/neo/workspace/devops')
 sys.path.insert(0, '../devops')
 
@@ -141,7 +142,15 @@ class Pipeline:
             self.container + ' image rm '+image)
         self.logging.info("dockerfile: %s" % self.pipelines['dockerfile'])
         return self
-
+    def template(self, tpl, variable, filepath):
+        file = open(tpl,'r')
+        temp=Template(file.read())
+        file.close()
+        
+        file = open(filepath,'w')
+        file.write(temp.substitute(variable))
+        file.close()
+        return self
     def nacos(self, server, username, password, namespace, dataid, group, filepath):
         self.pipelines['nacos'] = []
         self.pipelines['nacos'].append("nacos -s {server} -u {username} -p {password} -n {namespace} -d {dataid} -g {group} --push -f {filepath}".format(
