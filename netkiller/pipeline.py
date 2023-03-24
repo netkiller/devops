@@ -73,7 +73,7 @@ class Pipeline:
             git.option('--branch ' + branch)
             git.clone(url, self.project).execute()
             os.chdir(self.project)
-        self.pipelines['checkout'] = ['pwd', 'ls']
+        self.pipelines['checkout'] = ['pwd']
         return self
 
     def build(self, script):
