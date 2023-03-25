@@ -79,7 +79,7 @@ class Gantt:
 
     def title(self, text):
         if not self.isTable:
-            group = draw.Group(id='title')  # fill='none', stroke='none'
+            group = draw.Group(id='title', onclick="this.style.stroke = 'green'; ")  # fill='none', stroke='none'
             group.append(draw.Text(text, 30, self.canvasWidth / 2,
                                    25, center=True, text_anchor='middle'))
             self.draw.append(group)
