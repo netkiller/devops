@@ -215,6 +215,7 @@ class CICD:
                 cmd = "kubectl delete namespace {namespace}".format(
                     namespace=self.namespace)
                 os.system(cmd)
+            exit()
 
         if options.workspace:
             self.workspace = options.workspace
