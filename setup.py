@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
 	name="netkiller-devops",
-	version="0.6.13",
+	version="0.6.14",
 	author="Neo Chen",
 	author_email="netkiller@msn.com",
 	description="DevOps of useful deployment and automation",
@@ -48,7 +48,8 @@ setup(
 		'bin/merge',
 		'bin/dingtalk',
     	'bin/gantt',
-		'bin/nacos'
+		'bin/nacos',
+    	'bin/exceldiff'
 	],
 	data_files = [
 		('etc', ['etc/deployment.cfg']),

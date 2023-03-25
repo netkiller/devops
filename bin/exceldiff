@@ -1,0 +1,102 @@
+#! /usr/bin/env python3
+# -*- coding: UTF-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+# Data: 2023-03-25
+##############################################
+try:
+    import os
+    from optparse import OptionParser, OptionGroup
+    import pandas as pd
+    import platform
+except ImportError as err:
+    print("Error: %s" % (err))
+
+
+class ExcelDiff():
+    def __init__(self) -> None:
+        self.parser = OptionParser(
+            "usage: %prog [options] <file1.xlsx> <file2.xlsx>")
+        self.parser.add_option('-f',
+                               "--file",
+                               action="store_true",
+                               dest="file",
+                               help="文件对比")
+
+        self.parser.add_option('-s',
+                               '--sheet',
+                               dest='sheet',
+                               help='工作表',
+                               default=None,
+                               metavar='Sheet1')
+
+        self.parser.add_option('-d',
+                               "--debug",
+                               action="store_true",
+                               dest="debug",
+                               help="debug mode")
+        (self.options, self.args) = self.parser.parse_args()
+
+    def usage(self):
+        self.parser.print_help()
+        print(
+            "\nHomepage: https://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>"
+        )
+        print(
+            "Help: https://github.com/netkiller/devops/blob/master/doc/index.md"
+        )
+        exit()
+
+    def md5sum(self):
+        print("=" * 40, "md5sum", "=" * 40)
+        if platform.system() == 'Darwin':
+            os.system(
+                "test -f /sbin/md5 && md5 {file1} {file2}".format(file1=self.args[0], file2=self.args[1]))
+        else:
+            os.system("test -f /usr/bin/md5sum && md5sum {file1} {file2}".format(
+                file1=self.args[0], file2=self.args[1]))
+
+        try:
+            print("=" * 40, self.args[0], "=" * 40)
+            file1 = pd.read_excel(self.args[0], sheet_name=None, index_col=0)
+            print(list(file1))
+            print()
+            print("=" * 40, self.args[1], "=" * 40)
+            file2 = pd.read_excel(self.args[1], sheet_name=None, index_col=0)
+            print(list(file2))
+        except FileNotFoundError as err:
+            print(err)
+
+    def sheet(self, name):
+        print("=" * 40, "工作表 [{name}] 对比结果".format(name=name), "=" * 40)
+        file1 = pd.read_excel(self.args[0], name, index_col=0)
+        file1.to_csv('/tmp/file1.csv', encoding='utf-8')
+
+        file2 = pd.read_excel(self.args[1], name, index_col=0)
+        file2.to_csv('/tmp/file2.csv', encoding='utf-8')
+        if platform.system() in ['Darwin', 'Linux']:
+            os.system("sdiff -a -s /tmp/file1.csv /tmp/file2.csv")
+        # else:
+        os.system(
+            "/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code --diff /tmp/file1.csv /tmp/file2.csv ")
+        # os.system("code -d /tmp/file1.csv /tmp/file2.csv")
+
+    def main(self):
+        if self.options.debug:
+            print(self.options, self.args)
+
+        if len(self.args) == 2:
+            # print(len(self.args))
+            if self.options.sheet:
+                self.sheet(self.options.sheet)
+                exit()
+            if self.options.file:
+                self.md5sum()
+                exit()
+        self.usage()
+
+
+if __name__ == '__main__':
+    diff = ExcelDiff()
+    diff.main()
