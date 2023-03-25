@@ -101,8 +101,10 @@ class GanttChart:
                             item['milestone'] = True
                         else:
                             item['milestone'] = False
+
                         tmp.add(item['id'], item['name'], item['start'],
                                 item['finish'], item['resource'], item['next'], item['milestone'], item['parent'])
+                    # print(tmp.data)
                     self.data = tmp.data
 
                 elif options.workload:
