@@ -148,7 +148,7 @@ class Pipeline:
         file.close()
         
         file = open(filepath,'w')
-        file.write(temp.substitute(variable))
+        file.write(temp.safe_substitute(variable))
         file.close()
         return self
     def nacos(self, server, username, password, namespace, dataid, group, filepath):

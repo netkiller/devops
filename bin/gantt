@@ -163,6 +163,6 @@ class GanttChart:
         if options.save:
             self.gantt.save(options.save)
 
-
-ganttChart = GanttChart()
-ganttChart.main()
+if __name__=='__main__':
+    ganttChart = GanttChart()
+    ganttChart.main()
