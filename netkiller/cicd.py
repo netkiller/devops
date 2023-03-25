@@ -32,14 +32,14 @@ class CICD:
                                "--namespace",
                                dest="namespace",
                                help="命名空间",
-                               default='test',
-                               metavar="test")
+                               default='dev',
+                               metavar="dev")
         self.parser.add_option('-w',
                                '--workspace',
                                dest='workspace',
                                help='工作空间',
-                               default='/tmp/workspace',
-                               metavar='/tmp/workspace')
+                               default='/var/tmp/workspace',
+                               metavar='/var/tmp/workspace')
         self.parser.add_option('-r',
                                '--registry',
                                dest='registry',
@@ -86,6 +86,11 @@ class CICD:
                                action="store_true",
                                dest="clean",
                                help="清理构建环境")
+        self.parser.add_option('',
+                               "--destroy",
+                               action="store_true",
+                               dest="destroy",
+                               help="销毁环境")
         self.parser.add_option('-d',
                                "--debug",
                                action="store_true",
@@ -202,6 +207,15 @@ class CICD:
             print(options, args)
         if options.namespace:
             self.namespace = options.namespace
+
+        if options.destroy:
+            user_input = input(
+                "你确认要销毁 {namespace} 环境吗？请输入(yes/no): ".format(namespace=self.namespace)).lower()
+            if user_input == 'yes':
+                cmd = "kubectl delete namespace {namespace}".format(
+                    namespace=self.namespace)
+                os.system(cmd)
+
         if options.workspace:
             self.workspace = options.workspace
         if options.branch:
