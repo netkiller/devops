@@ -1,0 +1,69 @@
+#!/bin/bash
+##################################################
+# AUTHOR: Neo <netkiller@msn.com>
+# WEBSITE: http://www.netkiller.cn
+# Description: software dependency check
+# Note：Zabbix 3.2
+# DateTime: 2016-12-08
+##################################################
+TIMEOUT=10
+CONFIG=/srv/zabbix/conf/dependency.conf
+##################################################
+
+function discovery(){
+	echo '{"data":['
+	tmp=""
+	while IFS=" " read -r name ipaddr port || [[ -n "$ipaddr" ]]; do
+    		tmp="$tmp{\"{#NAME}\":\"${name}\",\"{#IP}\":\"${ipaddr}\",\"{#PORT}\":\"${port}\"},"
+	done < "$1"
+	echo $tmp | sed "s/,$//"
+	echo "]}"
+	exit
+}
+function icmp(){
+	ping -c 1 -n -w ${TIMEOUT} $1 | egrep -o "time=(.*)" | sed "s/time\=\(.*\) ms/\1/"
+	exit
+}
+function port(){
+	CONNECTED=$(echo -e "\r\n"|nc -v -w ${TIMEOUT} $1 $2 2>&1 | grep Connected)
+	if [ -z "${CONNECTED}" ]; then
+		echo 0
+	else
+		echo 1
+	fi
+	exit
+}
+function usage(){
+	echo "$0 - Software dependency check"
+	echo "        author neo <netkiller@msn.com>"
+	echo "        -d/--discovery "
+	echo "        -p/--ping 192.168.0.1/www.netkiller.cn"
+	echo "        -c/--check 192.186.0.1 80"
+	echo "        -h/--help"
+	exit
+}
+
+TEMP=`getopt -o dp:c:h --long discovery,ping:,check:,help -n "$0" -- "$@"`
+
+if [ $# == 0 ] ; then usage >&2 ; exit 1 ; fi
+
+# Note the quotes around `$TEMP': they are essential!
+eval set -- "$TEMP"
+
+while true ; do
+        case "$1" in
+                -d|--discovery)
+			discovery ${CONFIG}
+			;;
+                -p|--ping)
+			icmp $2 ; shift 2 ;;
+                -c|--check)
+                 	port $2 $4 ;shift 4 ;;
+		-h|--help)
+			usage
+			;;
+                --) shift ; break ;;
+                *)  exit 1 ;;
+        esac
+done
+#for arg do echo '--> '"\`$arg'" ; done
