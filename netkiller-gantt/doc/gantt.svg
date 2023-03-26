@@ -1,0 +1,1082 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="3278" height="1194" viewBox="0 0 3278 1194">
+<defs>
+<marker markerWidth="4.0" markerHeight="4.04" viewBox="-0.1 -0.51 1.0 1.01" orient="auto" id="d0">
+<path d="M-0.1,0.5 L-0.1,-0.5 L0.9,0 Z" fill="red" />
+</marker>
+<marker markerWidth="4.0" markerHeight="4.04" viewBox="-0.1 -0.51 1.0 1.01" orient="auto" id="d1">
+<path d="M-0.1,0.5 L-0.1,-0.5 L0.9,0 Z" fill="red" />
+</marker>
+<marker markerWidth="4.0" markerHeight="4.04" viewBox="-0.1 -0.51 1.0 1.01" orient="auto" id="d2">
+<path d="M-0.1,0.5 L-0.1,-0.5 L0.9,0 Z" fill="red" />
+</marker>
+<marker markerWidth="4.0" markerHeight="4.04" viewBox="-0.1 -0.51 1.0 1.01" orient="auto" id="d3">
+<path d="M-0.1,0.5 L-0.1,-0.5 L0.9,0 Z" fill="red" />
+</marker>
+<marker markerWidth="4.0" markerHeight="4.04" viewBox="-0.1 -0.51 1.0 1.01" orient="auto" id="d4">
+<path d="M-0.1,0.5 L-0.1,-0.5 L0.9,0 Z" fill="red" />
+</marker>
+<marker markerWidth="4.0" markerHeight="4.04" viewBox="-0.1 -0.51 1.0 1.01" orient="auto" id="d5">
+<path d="M-0.1,0.5 L-0.1,-0.5 L0.9,0 Z" fill="red" />
+</marker>
+</defs>
+<rect x="0" y="0" width="3277" height="1193" fill="#eeeeee" stroke="black" />
+<g id="title" onclick="this.style.stroke = 'green'; ">
+<text x="1639.0" y="25" font-size="30" text-anchor="middle" dominant-baseline="central">甘特图标题</text>
+</g>
+<g id="calendar">
+<g id="table">
+<title>表格</title>
+<text x="5" y="130" font-size="20" fill="#555555">任务</text>
+<path d="M180,110 L180,1194" stroke="grey" />
+<text x="180" y="130" font-size="20" fill="#555555">开始日期</text>
+<path d="M280,110 L280,1194" stroke="grey" />
+<text x="280" y="130" font-size="20" fill="#555555">截止日期</text>
+<path d="M380,110 L380,1194" stroke="grey" />
+<text x="380" y="130" font-size="20" fill="#555555">工时</text>
+<path d="M430,110 L430,1194" stroke="grey" />
+<text x="430" y="130" font-size="20" fill="#555555">资源</text>
+</g>
+<g id="year2022">
+<g id="month12">
+<g id="week48"></g>
+<g id="week52">
+<text x="525" y="70" font-size="20" fill="#555555">2022年12月</text>
+<text x="525" y="100" font-size="20" fill="#555555">二</text>
+<rect x="521" y="110" width="30" height="1084" fill="#cccccc">
+<title>27</title>
+</rect>
+<text x="521" y="130" font-size="20" fill="#555555">27</text>
+<text x="556" y="100" font-size="20" fill="#555555">三</text>
+<rect x="552" y="110" width="30" height="1084" fill="#cccccc">
+<title>28</title>
+</rect>
+<text x="552" y="130" font-size="20" fill="#555555">28</text>
+<text x="587" y="100" font-size="20" fill="#555555">四</text>
+<rect x="583" y="110" width="30" height="1084" fill="#cccccc">
+<title>29</title>
+</rect>
+<text x="583" y="130" font-size="20" fill="#555555">29</text>
+<text x="618" y="100" font-size="20" fill="#555555">五</text>
+<rect x="614" y="110" width="30" height="1084" fill="#cccccc">
+<title>30</title>
+</rect>
+<text x="614" y="130" font-size="20" fill="#555555">30</text>
+<path d="M675,50 L675,1194" stroke="black" />
+<text x="649" y="100" font-size="20" fill="#555555">六</text>
+<rect x="645" y="110" width="30" height="1084" fill="#dddddd">
+<title>31</title>
+</rect>
+<text x="645" y="130" font-size="20" fill="#555555">31</text>
+</g>
+</g>
+</g>
+<g id="year2023">
+<g id="month1">
+<g id="week00">
+<path d="M706,80 L706,1194" stroke="black" />
+<text x="680" y="70" font-size="20" fill="#555555">2023年01月</text>
+<text x="680" y="100" font-size="20" fill="#555555">日</text>
+<rect x="676" y="110" width="30" height="1084" fill="#dddddd">
+<title>1</title>
+</rect>
+<text x="686" y="130" font-size="20" fill="#555555">1</text>
+</g>
+<g id="week01">
+<text x="711" y="100" font-size="20" fill="#555555">一</text>
+<rect x="707" y="110" width="30" height="1084" fill="#cccccc">
+<title>2</title>
+</rect>
+<text x="717" y="130" font-size="20" fill="#555555">2</text>
+<text x="742" y="100" font-size="20" fill="#555555">二</text>
+<rect x="738" y="110" width="30" height="1084" fill="#cccccc">
+<title>3</title>
+</rect>
+<text x="748" y="130" font-size="20" fill="#555555">3</text>
+<text x="773" y="100" font-size="20" fill="#555555">三</text>
+<rect x="769" y="110" width="30" height="1084" fill="#cccccc">
+<title>4</title>
+</rect>
+<text x="779" y="130" font-size="20" fill="#555555">4</text>
+<text x="804" y="100" font-size="20" fill="#555555">四</text>
+<rect x="800" y="110" width="30" height="1084" fill="#cccccc">
+<title>5</title>
+</rect>
+<text x="810" y="130" font-size="20" fill="#555555">5</text>
+<text x="835" y="100" font-size="20" fill="#555555">五</text>
+<rect x="831" y="110" width="30" height="1084" fill="#cccccc">
+<title>6</title>
+</rect>
+<text x="841" y="130" font-size="20" fill="#555555">6</text>
+<text x="866" y="100" font-size="20" fill="#555555">六</text>
+<rect x="862" y="110" width="30" height="1084" fill="#dddddd">
+<title>7</title>
+</rect>
+<text x="872" y="130" font-size="20" fill="#555555">7</text>
+<path d="M923,80 L923,1194" stroke="black" />
+<text x="897" y="100" font-size="20" fill="#555555">日</text>
+<rect x="893" y="110" width="30" height="1084" fill="#dddddd">
+<title>8</title>
+</rect>
+<text x="903" y="130" font-size="20" fill="#555555">8</text>
+</g>
+<g id="week02">
+<text x="928" y="100" font-size="20" fill="#555555">一</text>
+<rect x="924" y="110" width="30" height="1084" fill="#cccccc">
+<title>9</title>
+</rect>
+<text x="934" y="130" font-size="20" fill="#555555">9</text>
+<text x="959" y="100" font-size="20" fill="#555555">二</text>
+<rect x="955" y="110" width="30" height="1084" fill="#cccccc">
+<title>10</title>
+</rect>
+<text x="955" y="130" font-size="20" fill="#555555">10</text>
+<text x="990" y="100" font-size="20" fill="#555555">三</text>
+<rect x="986" y="110" width="30" height="1084" fill="#cccccc">
+<title>11</title>
+</rect>
+<text x="986" y="130" font-size="20" fill="#555555">11</text>
+<text x="1021" y="100" font-size="20" fill="#555555">四</text>
+<rect x="1017" y="110" width="30" height="1084" fill="#cccccc">
+<title>12</title>
+</rect>
+<text x="1017" y="130" font-size="20" fill="#555555">12</text>
+<text x="1052" y="100" font-size="20" fill="#555555">五</text>
+<rect x="1048" y="110" width="30" height="1084" fill="#cccccc">
+<title>13</title>
+</rect>
+<text x="1048" y="130" font-size="20" fill="#555555">13</text>
+<text x="1083" y="100" font-size="20" fill="#555555">六</text>
+<rect x="1079" y="110" width="30" height="1084" fill="#dddddd">
+<title>14</title>
+</rect>
+<text x="1079" y="130" font-size="20" fill="#555555">14</text>
+<path d="M1140,80 L1140,1194" stroke="black" />
+<text x="1114" y="100" font-size="20" fill="#555555">日</text>
+<rect x="1110" y="110" width="30" height="1084" fill="#dddddd">
+<title>15</title>
+</rect>
+<text x="1110" y="130" font-size="20" fill="#555555">15</text>
+</g>
+<g id="week03">
+<text x="1145" y="100" font-size="20" fill="#555555">一</text>
+<rect x="1141" y="110" width="30" height="1084" fill="#cccccc">
+<title>16</title>
+</rect>
+<text x="1141" y="130" font-size="20" fill="#555555">16</text>
+<text x="1176" y="100" font-size="20" fill="#555555">二</text>
+<rect x="1172" y="110" width="30" height="1084" fill="#cccccc">
+<title>17</title>
+</rect>
+<text x="1172" y="130" font-size="20" fill="#555555">17</text>
+<text x="1207" y="100" font-size="20" fill="#555555">三</text>
+<rect x="1203" y="110" width="30" height="1084" fill="#cccccc">
+<title>18</title>
+</rect>
+<text x="1203" y="130" font-size="20" fill="#555555">18</text>
+<text x="1238" y="100" font-size="20" fill="#555555">四</text>
+<rect x="1234" y="110" width="30" height="1084" fill="#cccccc">
+<title>19</title>
+</rect>
+<text x="1234" y="130" font-size="20" fill="#555555">19</text>
+<text x="1269" y="100" font-size="20" fill="#555555">五</text>
+<rect x="1265" y="110" width="30" height="1084" fill="#cccccc">
+<title>20</title>
+</rect>
+<text x="1265" y="130" font-size="20" fill="#555555">20</text>
+<text x="1300" y="100" font-size="20" fill="#555555">六</text>
+<rect x="1296" y="110" width="30" height="1084" fill="#dddddd">
+<title>21</title>
+</rect>
+<text x="1296" y="130" font-size="20" fill="#555555">21</text>
+<path d="M1357,80 L1357,1194" stroke="black" />
+<text x="1331" y="100" font-size="20" fill="#555555">日</text>
+<rect x="1327" y="110" width="30" height="1084" fill="#dddddd">
+<title>22</title>
+</rect>
+<text x="1327" y="130" font-size="20" fill="#555555">22</text>
+</g>
+<g id="week04">
+<text x="1362" y="100" font-size="20" fill="#555555">一</text>
+<rect x="1358" y="110" width="30" height="1084" fill="#cccccc">
+<title>23</title>
+</rect>
+<text x="1358" y="130" font-size="20" fill="#555555">23</text>
+<text x="1393" y="100" font-size="20" fill="#555555">二</text>
+<rect x="1389" y="110" width="30" height="1084" fill="#cccccc">
+<title>24</title>
+</rect>
+<text x="1389" y="130" font-size="20" fill="#555555">24</text>
+<text x="1424" y="100" font-size="20" fill="#555555">三</text>
+<rect x="1420" y="110" width="30" height="1084" fill="#cccccc">
+<title>25</title>
+</rect>
+<text x="1420" y="130" font-size="20" fill="#555555">25</text>
+<text x="1455" y="100" font-size="20" fill="#555555">四</text>
+<rect x="1451" y="110" width="30" height="1084" fill="#cccccc">
+<title>26</title>
+</rect>
+<text x="1451" y="130" font-size="20" fill="#555555">26</text>
+<text x="1486" y="100" font-size="20" fill="#555555">五</text>
+<rect x="1482" y="110" width="30" height="1084" fill="#cccccc">
+<title>27</title>
+</rect>
+<text x="1482" y="130" font-size="20" fill="#555555">27</text>
+<text x="1517" y="100" font-size="20" fill="#555555">六</text>
+<rect x="1513" y="110" width="30" height="1084" fill="#dddddd">
+<title>28</title>
+</rect>
+<text x="1513" y="130" font-size="20" fill="#555555">28</text>
+<path d="M1574,80 L1574,1194" stroke="black" />
+<text x="1548" y="100" font-size="20" fill="#555555">日</text>
+<rect x="1544" y="110" width="30" height="1084" fill="#dddddd">
+<title>29</title>
+</rect>
+<text x="1544" y="130" font-size="20" fill="#555555">29</text>
+</g>
+<g id="week05">
+<text x="1579" y="100" font-size="20" fill="#555555">一</text>
+<rect x="1575" y="110" width="30" height="1084" fill="#cccccc">
+<title>30</title>
+</rect>
+<text x="1575" y="130" font-size="20" fill="#555555">30</text>
+<path d="M1636,50 L1636,1194" stroke="black" />
+<text x="1610" y="100" font-size="20" fill="#555555">二</text>
+<rect x="1606" y="110" width="30" height="1084" fill="#cccccc">
+<title>31</title>
+</rect>
+<text x="1606" y="130" font-size="20" fill="#555555">31</text>
+</g>
+</g>
+<g id="month2">
+<g id="week05">
+<text x="1641" y="70" font-size="20" fill="#555555">2023年02月</text>
+<text x="1641" y="100" font-size="20" fill="#555555">三</text>
+<rect x="1637" y="110" width="30" height="1084" fill="#cccccc">
+<title>1</title>
+</rect>
+<text x="1647" y="130" font-size="20" fill="#555555">1</text>
+<text x="1672" y="100" font-size="20" fill="#555555">四</text>
+<rect x="1668" y="110" width="30" height="1084" fill="#cccccc">
+<title>2</title>
+</rect>
+<text x="1678" y="130" font-size="20" fill="#555555">2</text>
+<text x="1703" y="100" font-size="20" fill="#555555">五</text>
+<rect x="1699" y="110" width="30" height="1084" fill="#cccccc">
+<title>3</title>
+</rect>
+<text x="1709" y="130" font-size="20" fill="#555555">3</text>
+<text x="1734" y="100" font-size="20" fill="#555555">六</text>
+<rect x="1730" y="110" width="30" height="1084" fill="#dddddd">
+<title>4</title>
+</rect>
+<text x="1740" y="130" font-size="20" fill="#555555">4</text>
+<path d="M1791,80 L1791,1194" stroke="black" />
+<text x="1765" y="100" font-size="20" fill="#555555">日</text>
+<rect x="1761" y="110" width="30" height="1084" fill="#dddddd">
+<title>5</title>
+</rect>
+<text x="1771" y="130" font-size="20" fill="#555555">5</text>
+</g>
+<g id="week06">
+<text x="1796" y="100" font-size="20" fill="#555555">一</text>
+<rect x="1792" y="110" width="30" height="1084" fill="#cccccc">
+<title>6</title>
+</rect>
+<text x="1802" y="130" font-size="20" fill="#555555">6</text>
+<text x="1827" y="100" font-size="20" fill="#555555">二</text>
+<rect x="1823" y="110" width="30" height="1084" fill="#cccccc">
+<title>7</title>
+</rect>
+<text x="1833" y="130" font-size="20" fill="#555555">7</text>
+<text x="1858" y="100" font-size="20" fill="#555555">三</text>
+<rect x="1854" y="110" width="30" height="1084" fill="#cccccc">
+<title>8</title>
+</rect>
+<text x="1864" y="130" font-size="20" fill="#555555">8</text>
+<text x="1889" y="100" font-size="20" fill="#555555">四</text>
+<rect x="1885" y="110" width="30" height="1084" fill="#cccccc">
+<title>9</title>
+</rect>
+<text x="1895" y="130" font-size="20" fill="#555555">9</text>
+<text x="1920" y="100" font-size="20" fill="#555555">五</text>
+<rect x="1916" y="110" width="30" height="1084" fill="#cccccc">
+<title>10</title>
+</rect>
+<text x="1916" y="130" font-size="20" fill="#555555">10</text>
+<text x="1951" y="100" font-size="20" fill="#555555">六</text>
+<rect x="1947" y="110" width="30" height="1084" fill="#dddddd">
+<title>11</title>
+</rect>
+<text x="1947" y="130" font-size="20" fill="#555555">11</text>
+<path d="M2008,80 L2008,1194" stroke="black" />
+<text x="1982" y="100" font-size="20" fill="#555555">日</text>
+<rect x="1978" y="110" width="30" height="1084" fill="#dddddd">
+<title>12</title>
+</rect>
+<text x="1978" y="130" font-size="20" fill="#555555">12</text>
+</g>
+<g id="week07">
+<text x="2013" y="100" font-size="20" fill="#555555">一</text>
+<rect x="2009" y="110" width="30" height="1084" fill="#cccccc">
+<title>13</title>
+</rect>
+<text x="2009" y="130" font-size="20" fill="#555555">13</text>
+<text x="2044" y="100" font-size="20" fill="#555555">二</text>
+<rect x="2040" y="110" width="30" height="1084" fill="#cccccc">
+<title>14</title>
+</rect>
+<text x="2040" y="130" font-size="20" fill="#555555">14</text>
+<text x="2075" y="100" font-size="20" fill="#555555">三</text>
+<rect x="2071" y="110" width="30" height="1084" fill="#cccccc">
+<title>15</title>
+</rect>
+<text x="2071" y="130" font-size="20" fill="#555555">15</text>
+<text x="2106" y="100" font-size="20" fill="#555555">四</text>
+<rect x="2102" y="110" width="30" height="1084" fill="#cccccc">
+<title>16</title>
+</rect>
+<text x="2102" y="130" font-size="20" fill="#555555">16</text>
+<text x="2137" y="100" font-size="20" fill="#555555">五</text>
+<rect x="2133" y="110" width="30" height="1084" fill="#cccccc">
+<title>17</title>
+</rect>
+<text x="2133" y="130" font-size="20" fill="#555555">17</text>
+<text x="2168" y="100" font-size="20" fill="#555555">六</text>
+<rect x="2164" y="110" width="30" height="1084" fill="#dddddd">
+<title>18</title>
+</rect>
+<text x="2164" y="130" font-size="20" fill="#555555">18</text>
+<path d="M2225,80 L2225,1194" stroke="black" />
+<text x="2199" y="100" font-size="20" fill="#555555">日</text>
+<rect x="2195" y="110" width="30" height="1084" fill="#dddddd">
+<title>19</title>
+</rect>
+<text x="2195" y="130" font-size="20" fill="#555555">19</text>
+</g>
+<g id="week08">
+<text x="2230" y="100" font-size="20" fill="#555555">一</text>
+<rect x="2226" y="110" width="30" height="1084" fill="#cccccc">
+<title>20</title>
+</rect>
+<text x="2226" y="130" font-size="20" fill="#555555">20</text>
+<text x="2261" y="100" font-size="20" fill="#555555">二</text>
+<rect x="2257" y="110" width="30" height="1084" fill="#cccccc">
+<title>21</title>
+</rect>
+<text x="2257" y="130" font-size="20" fill="#555555">21</text>
+<text x="2292" y="100" font-size="20" fill="#555555">三</text>
+<rect x="2288" y="110" width="30" height="1084" fill="#cccccc">
+<title>22</title>
+</rect>
+<text x="2288" y="130" font-size="20" fill="#555555">22</text>
+<text x="2323" y="100" font-size="20" fill="#555555">四</text>
+<rect x="2319" y="110" width="30" height="1084" fill="#cccccc">
+<title>23</title>
+</rect>
+<text x="2319" y="130" font-size="20" fill="#555555">23</text>
+<text x="2354" y="100" font-size="20" fill="#555555">五</text>
+<rect x="2350" y="110" width="30" height="1084" fill="#cccccc">
+<title>24</title>
+</rect>
+<text x="2350" y="130" font-size="20" fill="#555555">24</text>
+<text x="2385" y="100" font-size="20" fill="#555555">六</text>
+<rect x="2381" y="110" width="30" height="1084" fill="#dddddd">
+<title>25</title>
+</rect>
+<text x="2381" y="130" font-size="20" fill="#555555">25</text>
+<path d="M2442,80 L2442,1194" stroke="black" />
+<text x="2416" y="100" font-size="20" fill="#555555">日</text>
+<rect x="2412" y="110" width="30" height="1084" fill="#dddddd">
+<title>26</title>
+</rect>
+<text x="2412" y="130" font-size="20" fill="#555555">26</text>
+</g>
+<g id="week09">
+<text x="2447" y="100" font-size="20" fill="#555555">一</text>
+<rect x="2443" y="110" width="30" height="1084" fill="#cccccc">
+<title>27</title>
+</rect>
+<text x="2443" y="130" font-size="20" fill="#555555">27</text>
+<path d="M2504,50 L2504,1194" stroke="black" />
+<text x="2478" y="100" font-size="20" fill="#555555">二</text>
+<rect x="2474" y="110" width="30" height="1084" fill="#cccccc">
+<title>28</title>
+</rect>
+<text x="2474" y="130" font-size="20" fill="#555555">28</text>
+</g>
+</g>
+<g id="month3">
+<g id="week09">
+<text x="2509" y="70" font-size="20" fill="#555555">2023年03月</text>
+<text x="2509" y="100" font-size="20" fill="#555555">三</text>
+<rect x="2505" y="110" width="30" height="1084" fill="#cccccc">
+<title>1</title>
+</rect>
+<text x="2515" y="130" font-size="20" fill="#555555">1</text>
+<text x="2540" y="100" font-size="20" fill="#555555">四</text>
+<rect x="2536" y="110" width="30" height="1084" fill="#cccccc">
+<title>2</title>
+</rect>
+<text x="2546" y="130" font-size="20" fill="#555555">2</text>
+<text x="2571" y="100" font-size="20" fill="#555555">五</text>
+<rect x="2567" y="110" width="30" height="1084" fill="#cccccc">
+<title>3</title>
+</rect>
+<text x="2577" y="130" font-size="20" fill="#555555">3</text>
+<text x="2602" y="100" font-size="20" fill="#555555">六</text>
+<rect x="2598" y="110" width="30" height="1084" fill="#dddddd">
+<title>4</title>
+</rect>
+<text x="2608" y="130" font-size="20" fill="#555555">4</text>
+<path d="M2659,80 L2659,1194" stroke="black" />
+<text x="2633" y="100" font-size="20" fill="#555555">日</text>
+<rect x="2629" y="110" width="30" height="1084" fill="#dddddd">
+<title>5</title>
+</rect>
+<text x="2639" y="130" font-size="20" fill="#555555">5</text>
+</g>
+<g id="week10">
+<text x="2664" y="100" font-size="20" fill="#555555">一</text>
+<rect x="2660" y="110" width="30" height="1084" fill="#cccccc">
+<title>6</title>
+</rect>
+<text x="2670" y="130" font-size="20" fill="#555555">6</text>
+<text x="2695" y="100" font-size="20" fill="#555555">二</text>
+<rect x="2691" y="110" width="30" height="1084" fill="#cccccc">
+<title>7</title>
+</rect>
+<text x="2701" y="130" font-size="20" fill="#555555">7</text>
+<text x="2726" y="100" font-size="20" fill="#555555">三</text>
+<rect x="2722" y="110" width="30" height="1084" fill="#cccccc">
+<title>8</title>
+</rect>
+<text x="2732" y="130" font-size="20" fill="#555555">8</text>
+<text x="2757" y="100" font-size="20" fill="#555555">四</text>
+<rect x="2753" y="110" width="30" height="1084" fill="#cccccc">
+<title>9</title>
+</rect>
+<text x="2763" y="130" font-size="20" fill="#555555">9</text>
+<text x="2788" y="100" font-size="20" fill="#555555">五</text>
+<rect x="2784" y="110" width="30" height="1084" fill="#cccccc">
+<title>10</title>
+</rect>
+<text x="2784" y="130" font-size="20" fill="#555555">10</text>
+<text x="2819" y="100" font-size="20" fill="#555555">六</text>
+<rect x="2815" y="110" width="30" height="1084" fill="#dddddd">
+<title>11</title>
+</rect>
+<text x="2815" y="130" font-size="20" fill="#555555">11</text>
+<path d="M2876,80 L2876,1194" stroke="black" />
+<text x="2850" y="100" font-size="20" fill="#555555">日</text>
+<rect x="2846" y="110" width="30" height="1084" fill="#dddddd">
+<title>12</title>
+</rect>
+<text x="2846" y="130" font-size="20" fill="#555555">12</text>
+</g>
+<g id="week11">
+<text x="2881" y="100" font-size="20" fill="#555555">一</text>
+<rect x="2877" y="110" width="30" height="1084" fill="#cccccc">
+<title>13</title>
+</rect>
+<text x="2877" y="130" font-size="20" fill="#555555">13</text>
+<text x="2912" y="100" font-size="20" fill="#555555">二</text>
+<rect x="2908" y="110" width="30" height="1084" fill="#cccccc">
+<title>14</title>
+</rect>
+<text x="2908" y="130" font-size="20" fill="#555555">14</text>
+<text x="2943" y="100" font-size="20" fill="#555555">三</text>
+<rect x="2939" y="110" width="30" height="1084" fill="#cccccc">
+<title>15</title>
+</rect>
+<text x="2939" y="130" font-size="20" fill="#555555">15</text>
+<text x="2974" y="100" font-size="20" fill="#555555">四</text>
+<rect x="2970" y="110" width="30" height="1084" fill="#cccccc">
+<title>16</title>
+</rect>
+<text x="2970" y="130" font-size="20" fill="#555555">16</text>
+<text x="3005" y="100" font-size="20" fill="#555555">五</text>
+<rect x="3001" y="110" width="30" height="1084" fill="#cccccc">
+<title>17</title>
+</rect>
+<text x="3001" y="130" font-size="20" fill="#555555">17</text>
+<text x="3036" y="100" font-size="20" fill="#555555">六</text>
+<rect x="3032" y="110" width="30" height="1084" fill="#dddddd">
+<title>18</title>
+</rect>
+<text x="3032" y="130" font-size="20" fill="#555555">18</text>
+<path d="M3093,80 L3093,1194" stroke="black" />
+<text x="3067" y="100" font-size="20" fill="#555555">日</text>
+<rect x="3063" y="110" width="30" height="1084" fill="#dddddd">
+<title>19</title>
+</rect>
+<text x="3063" y="130" font-size="20" fill="#555555">19</text>
+</g>
+<g id="week12">
+<text x="3098" y="100" font-size="20" fill="#555555">一</text>
+<rect x="3094" y="110" width="30" height="1084" fill="#cccccc">
+<title>20</title>
+</rect>
+<text x="3094" y="130" font-size="20" fill="#555555">20</text>
+<text x="3129" y="100" font-size="20" fill="#555555">二</text>
+<rect x="3125" y="110" width="30" height="1084" fill="#cccccc">
+<title>21</title>
+</rect>
+<text x="3125" y="130" font-size="20" fill="#555555">21</text>
+<text x="3160" y="100" font-size="20" fill="#555555">三</text>
+<rect x="3156" y="110" width="30" height="1084" fill="#cccccc">
+<title>22</title>
+</rect>
+<text x="3156" y="130" font-size="20" fill="#555555">22</text>
+<text x="3191" y="100" font-size="20" fill="#555555">四</text>
+<rect x="3187" y="110" width="30" height="1084" fill="#cccccc">
+<title>23</title>
+</rect>
+<text x="3187" y="130" font-size="20" fill="#555555">23</text>
+<text x="3222" y="100" font-size="20" fill="#555555">五</text>
+<rect x="3218" y="110" width="30" height="1084" fill="#cccccc">
+<title>24</title>
+</rect>
+<text x="3218" y="130" font-size="20" fill="#555555">24</text>
+<path d="M3279,50 L3279,1194" stroke="black" />
+<text x="3253" y="100" font-size="20" fill="#555555">六</text>
+<rect x="3249" y="110" width="30" height="1084" fill="#dddddd">
+<title>25</title>
+</rect>
+<text x="3249" y="130" font-size="20" fill="#555555">25</text>
+</g>
+</g>
+</g>
+<path d="M1,80 L3278,80" stroke="grey" />
+<path d="M1,110 L3278,110" stroke="grey" />
+<path d="M1,140 L3278,140" stroke="grey" />
+<path d="M1,50 L3278,50" stroke="grey" />
+<path d="M520,80 L520,1194" stroke="grey" />
+</g>
+<g id="task">
+<g id="line">
+<g id="text">
+<text x="5" y="160" font-size="20" text-anchor="start">任务组</text>
+<text x="180" y="160" font-size="20" text-anchor="start">2022-12-27</text>
+<text x="280" y="160" font-size="20" text-anchor="start">2023-01-02</text>
+<text x="390" y="160" font-size="20" text-anchor="start">7</text>
+<text x="430" y="160" font-size="20" text-anchor="start">admin</text>
+</g>
+<g id="item">
+<path d="M521,147 L737,147 L737,164 L727,155 L531,155 L521,164 L521,147" fill="black" stroke="black" />
+<path d="M1,170 L3278,170" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="35" y="191" font-size="20" text-anchor="start">aaa</text>
+<text x="180" y="191" font-size="20" text-anchor="start">2023-01-04</text>
+<text x="280" y="191" font-size="20" text-anchor="start">2023-01-15</text>
+<text x="390" y="191" font-size="20" text-anchor="start">12</text>
+<text x="430" y="191" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="769" y="175" width="371" height="20" fill="#67AAFF" stroke="black">
+<title>aaa</title>
+</rect>
+<path d="M1,201 L3278,201" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="35" y="222" font-size="20" text-anchor="start">bbb</text>
+<text x="180" y="222" font-size="20" text-anchor="start">2023-01-16</text>
+<text x="280" y="222" font-size="20" text-anchor="start">2023-02-06</text>
+<text x="390" y="222" font-size="20" text-anchor="start">22</text>
+<text x="430" y="222" font-size="20" text-anchor="start"></text>
+</g>
+<g id="item">
+<rect x="1141" y="206" width="681" height="20" fill="#67AAFF" stroke="black">
+<title>bbb</title>
+</rect>
+<path d="M1,232 L3278,232" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="35" y="253" font-size="20" text-anchor="start">ccc</text>
+<text x="180" y="253" font-size="20" text-anchor="start">2023-02-08</text>
+<text x="280" y="253" font-size="20" text-anchor="start">2023-02-10</text>
+<text x="390" y="253" font-size="20" text-anchor="start">3</text>
+<text x="430" y="253" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="1854" y="237" width="92" height="20" fill="#67AAFF" stroke="black">
+<title>ccc</title>
+</rect>
+<path d="M1,263 L3278,263" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="284" font-size="20" text-anchor="start">里程碑</text>
+<text x="180" y="284" font-size="20" text-anchor="start">2023-01-03</text>
+<text x="280" y="284" font-size="20" text-anchor="start">2023-01-03</text>
+<text x="390" y="284" font-size="20" text-anchor="start">1</text>
+<text x="430" y="284" font-size="20" text-anchor="start">closed</text>
+</g>
+<g id="item">
+<path d="M753,268 L764,279 L753,290 L742,279 L753,268 Z" fill="black" />
+<text x="768" y="284" font-size="18" text-anchor="start" fill="black">2023年01月03日</text>
+<path d="M1,294 L3278,294" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="315" font-size="20" text-anchor="start">ddd</text>
+<text x="180" y="315" font-size="20" text-anchor="start">2023-02-26</text>
+<text x="280" y="315" font-size="20" text-anchor="start">2023-02-28</text>
+<text x="390" y="315" font-size="20" text-anchor="start">3</text>
+<text x="430" y="315" font-size="20" text-anchor="start"></text>
+</g>
+<g id="item">
+<rect x="2412" y="299" width="92" height="20" fill="#67AAFF" stroke="black">
+<title>ddd</title>
+</rect>
+<path d="M1,325 L3278,325" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="346" font-size="20" text-anchor="start">eee</text>
+<text x="180" y="346" font-size="20" text-anchor="start">2023-02-26</text>
+<text x="280" y="346" font-size="20" text-anchor="start">2023-03-05</text>
+<text x="390" y="346" font-size="20" text-anchor="start">8</text>
+<text x="430" y="346" font-size="20" text-anchor="start"></text>
+</g>
+<g id="item">
+<rect x="2412" y="330" width="247" height="20" fill="#67AAFF" stroke="black">
+<title>eee</title>
+</rect>
+<path d="M1,356 L3278,356" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="377" font-size="20" text-anchor="start">fff</text>
+<text x="180" y="377" font-size="20" text-anchor="start">2023-03-10</text>
+<text x="280" y="377" font-size="20" text-anchor="start">2023-03-13</text>
+<text x="390" y="377" font-size="20" text-anchor="start">4</text>
+<text x="430" y="377" font-size="20" text-anchor="start"></text>
+</g>
+<g id="item">
+<path d="M2799,361 L2810,372 L2799,383 L2788,372 L2799,361 Z" fill="black" />
+<text x="2814" y="377" font-size="18" text-anchor="start" fill="black">2023年03月10日</text>
+<path d="M1,387 L3278,387" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="408" font-size="20" text-anchor="start">主任务主任务</text>
+<text x="180" y="408" font-size="20" text-anchor="start">2023-02-10</text>
+<text x="280" y="408" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="408" font-size="20" text-anchor="start">34</text>
+<text x="430" y="408" font-size="20" text-anchor="start"></text>
+</g>
+<g id="item">
+<path d="M1916,395 L2969,395 L2969,412 L2959,403 L1926,403 L1916,412 L1916,395" fill="black" stroke="black" />
+<path d="M1,418 L3278,418" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="35" y="439" font-size="20" text-anchor="start">子任务1</text>
+<text x="180" y="439" font-size="20" text-anchor="start">2023-02-10</text>
+<text x="280" y="439" font-size="20" text-anchor="start">2023-02-11</text>
+<text x="390" y="439" font-size="20" text-anchor="start">2</text>
+<text x="430" y="439" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="1916" y="423" width="61" height="20" fill="#67AAFF" stroke="black">
+<title>子任务1</title>
+</rect>
+<path d="M1,449 L3278,449" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="35" y="470" font-size="20" text-anchor="start">子任务2</text>
+<text x="180" y="470" font-size="20" text-anchor="start">2023-02-12</text>
+<text x="280" y="470" font-size="20" text-anchor="start">2023-03-08</text>
+<text x="390" y="470" font-size="20" text-anchor="start">25</text>
+<text x="430" y="470" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="1978" y="454" width="774" height="20" fill="#67AAFF" stroke="black">
+<title>子任务2</title>
+</rect>
+<path d="M1,480 L3278,480" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="35" y="501" font-size="20" text-anchor="start">子任务3</text>
+<text x="180" y="501" font-size="20" text-anchor="start">2023-03-10</text>
+<text x="280" y="501" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="501" font-size="20" text-anchor="start">6</text>
+<text x="430" y="501" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2784" y="485" width="185" height="20" fill="#67AAFF" stroke="black">
+<title>子任务3</title>
+</rect>
+<path d="M1,511 L3278,511" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="532" font-size="20" text-anchor="start">子任务4</text>
+<text x="180" y="532" font-size="20" text-anchor="start">2023-03-01</text>
+<text x="280" y="532" font-size="20" text-anchor="start">2023-03-07</text>
+<text x="390" y="532" font-size="20" text-anchor="start">7</text>
+<text x="430" y="532" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2505" y="516" width="216" height="20" fill="#67AAFF" stroke="black">
+<title>子任务4</title>
+</rect>
+<path d="M1,542 L3278,542" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="563" font-size="20" text-anchor="start">子任务5</text>
+<text x="180" y="563" font-size="20" text-anchor="start">2023-03-10</text>
+<text x="280" y="563" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="563" font-size="20" text-anchor="start">6</text>
+<text x="430" y="563" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2784" y="547" width="185" height="20" fill="#67AAFF" stroke="black">
+<title>子任务5</title>
+</rect>
+<path d="M1,573 L3278,573" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="594" font-size="20" text-anchor="start">子任务6</text>
+<text x="180" y="594" font-size="20" text-anchor="start">2023-03-02</text>
+<text x="280" y="594" font-size="20" text-anchor="start">2023-03-07</text>
+<text x="390" y="594" font-size="20" text-anchor="start">6</text>
+<text x="430" y="594" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2536" y="578" width="185" height="20" fill="#67AAFF" stroke="black">
+<title>子任务6</title>
+</rect>
+<path d="M1,604 L3278,604" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="625" font-size="20" text-anchor="start">子任务7</text>
+<text x="180" y="625" font-size="20" text-anchor="start">2023-03-10</text>
+<text x="280" y="625" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="625" font-size="20" text-anchor="start">6</text>
+<text x="430" y="625" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2784" y="609" width="185" height="20" fill="#67AAFF" stroke="black">
+<title>子任务7</title>
+</rect>
+<path d="M1,635 L3278,635" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="656" font-size="20" text-anchor="start">子任务8</text>
+<text x="180" y="656" font-size="20" text-anchor="start">2023-03-11</text>
+<text x="280" y="656" font-size="20" text-anchor="start">2023-03-07</text>
+<text x="390" y="656" font-size="20" text-anchor="start">-3</text>
+<text x="430" y="656" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2815" y="640" width="-94" height="20" fill="#67AAFF" stroke="black">
+<title>子任务8</title>
+</rect>
+<path d="M1,666 L3278,666" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="687" font-size="20" text-anchor="start">子任务9</text>
+<text x="180" y="687" font-size="20" text-anchor="start">2023-03-10</text>
+<text x="280" y="687" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="687" font-size="20" text-anchor="start">6</text>
+<text x="430" y="687" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2784" y="671" width="185" height="20" fill="#67AAFF" stroke="black">
+<title>子任务9</title>
+</rect>
+<path d="M1,697 L3278,697" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="718" font-size="20" text-anchor="start">子任务10</text>
+<text x="180" y="718" font-size="20" text-anchor="start">2023-03-11</text>
+<text x="280" y="718" font-size="20" text-anchor="start">2023-03-07</text>
+<text x="390" y="718" font-size="20" text-anchor="start">-3</text>
+<text x="430" y="718" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2815" y="702" width="-94" height="20" fill="#67AAFF" stroke="black">
+<title>子任务10</title>
+</rect>
+<path d="M1,728 L3278,728" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="749" font-size="20" text-anchor="start">主任务</text>
+<text x="180" y="749" font-size="20" text-anchor="start">2023-03-10</text>
+<text x="280" y="749" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="749" font-size="20" text-anchor="start">6</text>
+<text x="430" y="749" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<path d="M2784,736 L2969,736 L2969,753 L2959,744 L2794,744 L2784,753 L2784,736" fill="black" stroke="black" />
+<path d="M1,759 L3278,759" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="35" y="780" font-size="20" text-anchor="start">子任务12</text>
+<text x="180" y="780" font-size="20" text-anchor="start">2023-03-11</text>
+<text x="280" y="780" font-size="20" text-anchor="start">2023-03-07</text>
+<text x="390" y="780" font-size="20" text-anchor="start">-3</text>
+<text x="430" y="780" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2815" y="764" width="-94" height="20" fill="#67AAFF" stroke="black">
+<title>子任务12</title>
+</rect>
+<path d="M1,790 L3278,790" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="35" y="811" font-size="20" text-anchor="start">子任务13</text>
+<text x="180" y="811" font-size="20" text-anchor="start">2023-03-10</text>
+<text x="280" y="811" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="811" font-size="20" text-anchor="start">6</text>
+<text x="430" y="811" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2784" y="795" width="185" height="20" fill="#67AAFF" stroke="black">
+<title>子任务13</title>
+</rect>
+<path d="M1,821 L3278,821" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="35" y="842" font-size="20" text-anchor="start">子任务14</text>
+<text x="180" y="842" font-size="20" text-anchor="start">2023-03-11</text>
+<text x="280" y="842" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="842" font-size="20" text-anchor="start">5</text>
+<text x="430" y="842" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2815" y="826" width="154" height="20" fill="#67AAFF" stroke="black">
+<title>子任务14</title>
+</rect>
+<path d="M1,852 L3278,852" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="873" font-size="20" text-anchor="start">子任务15</text>
+<text x="180" y="873" font-size="20" text-anchor="start">2023-01-10</text>
+<text x="280" y="873" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="873" font-size="20" text-anchor="start">65</text>
+<text x="430" y="873" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="955" y="857" width="2014" height="20" fill="#67AAFF" stroke="black">
+<title>子任务15</title>
+</rect>
+<path d="M1,883 L3278,883" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="904" font-size="20" text-anchor="start">子任务16</text>
+<text x="180" y="904" font-size="20" text-anchor="start">2023-01-11</text>
+<text x="280" y="904" font-size="20" text-anchor="start">2023-03-10</text>
+<text x="390" y="904" font-size="20" text-anchor="start">59</text>
+<text x="430" y="904" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="986" y="888" width="1828" height="20" fill="#67AAFF" stroke="black">
+<title>子任务16</title>
+</rect>
+<path d="M1,914 L3278,914" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="935" font-size="20" text-anchor="start">子任务17</text>
+<text x="180" y="935" font-size="20" text-anchor="start">2023-02-10</text>
+<text x="280" y="935" font-size="20" text-anchor="start">2023-03-08</text>
+<text x="390" y="935" font-size="20" text-anchor="start">27</text>
+<text x="430" y="935" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="1916" y="919" width="836" height="20" fill="#67AAFF" stroke="black">
+<title>子任务17</title>
+</rect>
+<path d="M1,945 L3278,945" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="966" font-size="20" text-anchor="start">子任务18</text>
+<text x="180" y="966" font-size="20" text-anchor="start">2023-02-11</text>
+<text x="280" y="966" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="966" font-size="20" text-anchor="start">33</text>
+<text x="430" y="966" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="1947" y="950" width="1022" height="20" fill="#67AAFF" stroke="black">
+<title>子任务18</title>
+</rect>
+<path d="M1,976 L3278,976" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="997" font-size="20" text-anchor="start">子任务19</text>
+<text x="180" y="997" font-size="20" text-anchor="start">2023-02-10</text>
+<text x="280" y="997" font-size="20" text-anchor="start">2023-03-25</text>
+<text x="390" y="997" font-size="20" text-anchor="start">44</text>
+<text x="430" y="997" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="1916" y="981" width="1363" height="20" fill="#67AAFF" stroke="black">
+<title>子任务19</title>
+</rect>
+<path d="M1,1007 L3278,1007" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="1028" font-size="20" text-anchor="start">子任务20</text>
+<text x="180" y="1028" font-size="20" text-anchor="start">2023-03-01</text>
+<text x="280" y="1028" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="1028" font-size="20" text-anchor="start">15</text>
+<text x="430" y="1028" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2505" y="1012" width="464" height="20" fill="#67AAFF" stroke="black">
+<title>子任务20</title>
+</rect>
+<path d="M1,1038 L3278,1038" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="1059" font-size="20" text-anchor="start">子任务21</text>
+<text x="180" y="1059" font-size="20" text-anchor="start">2023-02-08</text>
+<text x="280" y="1059" font-size="20" text-anchor="start">2023-02-13</text>
+<text x="390" y="1059" font-size="20" text-anchor="start">6</text>
+<text x="430" y="1059" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="1854" y="1043" width="185" height="20" fill="#67AAFF" stroke="black">
+<title>子任务21</title>
+</rect>
+<path d="M1,1069 L3278,1069" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="1090" font-size="20" text-anchor="start">子任务22</text>
+<text x="180" y="1090" font-size="20" text-anchor="start">2023-02-10</text>
+<text x="280" y="1090" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="1090" font-size="20" text-anchor="start">34</text>
+<text x="430" y="1090" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="1916" y="1074" width="1053" height="20" fill="#67AAFF" stroke="black">
+<title>子任务22</title>
+</rect>
+<path d="M1,1100 L3278,1100" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="1121" font-size="20" text-anchor="start">子任务23</text>
+<text x="180" y="1121" font-size="20" text-anchor="start">2023-02-10</text>
+<text x="280" y="1121" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="1121" font-size="20" text-anchor="start">34</text>
+<text x="430" y="1121" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="1916" y="1105" width="1053" height="20" fill="#67AAFF" stroke="black">
+<title>子任务23</title>
+</rect>
+<path d="M1,1131 L3278,1131" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="1152" font-size="20" text-anchor="start">子任务24</text>
+<text x="180" y="1152" font-size="20" text-anchor="start">2023-01-29</text>
+<text x="280" y="1152" font-size="20" text-anchor="start">2023-02-08</text>
+<text x="390" y="1152" font-size="20" text-anchor="start">11</text>
+<text x="430" y="1152" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="1544" y="1136" width="340" height="20" fill="#67AAFF" stroke="black">
+<title>子任务24</title>
+</rect>
+<path d="M1,1162 L3278,1162" stroke="grey" />
+</g>
+</g>
+<g id="line">
+<g id="text">
+<text x="5" y="1183" font-size="20" text-anchor="start">子任务26</text>
+<text x="180" y="1183" font-size="20" text-anchor="start">2023-03-10</text>
+<text x="280" y="1183" font-size="20" text-anchor="start">2023-03-15</text>
+<text x="390" y="1183" font-size="20" text-anchor="start">6</text>
+<text x="430" y="1183" font-size="20" text-anchor="start">test</text>
+</g>
+<g id="item">
+<rect x="2784" y="1167" width="185" height="20" fill="#67AAFF" stroke="black">
+<title>子任务26</title>
+</rect>
+<path d="M1,1193 L3278,1193" stroke="grey" />
+</g>
+</g>
+</g>
+<g id="handover">
+<g id="link">
+<path d="M738,155 H784 V166" stroke="red" stroke-width="2" fill="none" marker-end="url(#d0)" />
+</g>
+<g id="link">
+<path d="M1141,186 H1156 V197" stroke="red" stroke-width="2" fill="none" marker-end="url(#d1)" />
+</g>
+<g id="link">
+<path d="M1823,217 H1869 V228" stroke="red" stroke-width="2" fill="none" marker-end="url(#d2)" />
+</g>
+<g id="link">
+<path d="M2505,310 H2427 V321" stroke="red" stroke-width="2" fill="none" marker-end="url(#d3)" />
+</g>
+<g id="link">
+<path d="M1978,434 H1993 V445" stroke="red" stroke-width="2" fill="none" marker-end="url(#d4)" />
+</g>
+<g id="link">
+<path d="M2753,465 H2799 V476" stroke="red" stroke-width="2" fill="none" marker-end="url(#d5)" />
+</g>
+</g>
+<text x="2978" y="40" font-size="15" text-anchor="start" fill="grey">https://www.netkiller.cn - design by netkiller</text>
+</svg>

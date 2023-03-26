@@ -49,5 +49,4 @@ demo/k8s/ensd
 *.pdf
 *.gv
 libexec/Web/Gradle/.settings/
-*.svg
 netkiller-gantt/netkiller
