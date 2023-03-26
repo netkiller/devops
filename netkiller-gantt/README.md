@@ -1,7 +1,7 @@
 # netkiller-gantt
 Best project gantt charts in Python
 
-![甘特图](doc/gantt.svg "Gantt chart")
+![甘特图](https://github.com/netkiller/devops/raw/master/netkiller-gantt/doc/gantt.svg "Gantt chart")
 
 # Python Gantt 工具
 
