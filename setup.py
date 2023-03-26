@@ -47,7 +47,7 @@ setup(
 		'bin/logviewer.kubectl',
 		'bin/merge',
 		'bin/dingtalk',
-    	'bin/gantt',
+    	# 'bin/gantt',
 		'bin/nacos',
     	'bin/exceldiff'
 	],

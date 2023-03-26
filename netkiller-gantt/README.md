@@ -1,11 +1,15 @@
+# netkiller-gantt
+Best project gantt charts in Python
+
+![甘特图](doc/gantt.svg "Gantt chart")
+
 # Python Gantt 工具
 
 ## 安装
 
 ```bash
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-pip install netkiller-devops -i https://pypi.tuna.tsinghua.edu.cn/simple
-pip install opencv-python drawsvg
+pip install netkiller-gantt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 ## 命令帮助
