@@ -50,3 +50,4 @@ demo/k8s/ensd
 *.gv
 libexec/Web/Gradle/.settings/
 netkiller-gantt/netkiller
+netkiller-gantt/test

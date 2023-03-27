@@ -79,7 +79,9 @@ class Gantt:
 
     def title(self, text):
         if not self.isTable:
-            group = draw.Group(id='title', onclick="this.style.stroke = 'green'; ")  # fill='none', stroke='none'
+            # fill='none', stroke='none'
+            group = draw.Group(
+                id='title', onclick="this.style.stroke = 'green'; ")
             group.append(draw.Text(text, 30, self.canvasWidth / 2,
                                    25, center=True, text_anchor='middle'))
             self.draw.append(group)
@@ -533,18 +535,20 @@ class Gantt:
                         handover.append(link)
         self.draw.append(handover)
 
-    def workload(self, title):
+    def workload(self):
         self.startPosition = 400
+        self.canvasTop = 60
         left = self.startPosition
-        top = 80
 
-        self.title(title)
+        # self.title(title)
 
         for key, value in self.data.items():
             self.fontSize = self.getTextSize(key)
 
-            start = datetime.strptime(value['start'], '%Y-%m-%d').date()
-            finish = datetime.strptime(value['finish'], '%Y-%m-%d').date()
+            # start = datetime.strptime(value['start'], '%Y-%m-%d').date()
+            # finish = datetime.strptime(value['finish'], '%Y-%m-%d').date()
+            start = value['start']
+            finish = value['finish']
 
             if self.beginDate > start:
                 self.beginDate = start
@@ -558,27 +562,30 @@ class Gantt:
 
         table = draw.Group(id='table')
         table.append_title('表格')
-        table.append(draw.Line(1, 80, self.canvasWidth,
-                               80,  stroke='black'))
-        table.append(draw.Text('资源', 20, 5, top + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 100, top,
+        table.append(draw.Line(1, self.canvasTop, self.canvasWidth,
+                     self.canvasTop,  stroke='black'))
+        table.append(
+            draw.Text('资源', 20, 5, self.canvasTop + 20, fill='#555555'))
+        table.append(draw.Line(self.nameTextSize + 100, self.canvasTop,
                      self.nameTextSize + 100, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('开始日期', 20, self.nameTextSize +
-                     100, top + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 200, top,
+                     100, self.canvasTop + 20, fill='#555555'))
+        table.append(draw.Line(self.nameTextSize + 200, self.canvasTop,
                      self.nameTextSize + 200, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('截止日期', 20, self.nameTextSize +
-                     200, top + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 300, top,
+                     200, self.canvasTop + 20, fill='#555555'))
+        table.append(draw.Line(self.nameTextSize + 300, self.canvasTop,
                      self.nameTextSize + 300, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('工时', 20, self.nameTextSize +
-                               300, top + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 400, top,
+                               300, self.canvasTop + 20, fill='#555555'))
+        table.append(draw.Line(self.nameTextSize + 400, self.canvasTop,
                                self.nameTextSize + 400, self.canvasHeight, stroke='grey'))
 
         chart.append(table)
 
-        for key, value in self.__month(top).items():
+        # for key, value in self.__month(top).items():
+        #     chart.append(value)
+        for key, value in self.__year(self.canvasTop).items():
             chart.append(value)
 
         # print(self.dayPosition)
@@ -586,14 +593,16 @@ class Gantt:
         # for key, value in self.__weekday(top).items():
         #     background.append(value)
 
-        chart.append(draw.Line(1, top + 26, self.canvasWidth,
-                               top + 26, stroke='grey'))
+        chart.append(draw.Line(1, self.canvasTop + 26, self.canvasWidth,
+                               self.canvasTop + 26, stroke='grey'))
 
-        # top = draw.Line(0, 0, self.canvasWidth, 0, stroke='black')
+        chart.append(draw.Line(1, self.canvasTop + self.itemHeight * 2, self.canvasWidth,
+                               self.canvasTop + self.itemHeight * 2, stroke='grey'))
         # right = draw.Line(self.canvasWidth, 0,
         #                   self.canvasWidth, self.canvasHeight, stroke='black')
+        # 竖线
         chart.append(
-            draw.Line(left, top-30, left, self.canvasHeight, stroke='grey'))
+            draw.Line(left, self.canvasTop, left, self.canvasHeight, stroke='grey'))
 
         # begin = datetime.strptime(line['begin'], '%Y-%m-%d').day
         # # end = datetime.strptime(line['end'], '%Y-%m-%d').day
@@ -601,30 +610,32 @@ class Gantt:
 
         # left += self.itemWidth * (begin - 1) + (1 * begin)
         # # 日宽度 + 竖线宽度
-
+        self.canvasTop = self.itemHeight * 5
         for resource, row in self.data.items():
-            #     print(resource, row)
 
             # # 工时
-            top = 110 + self.itemLine * self.itemHeight + self.splitLine * self.itemLine
-            end = (datetime.strptime(row['finish'], '%Y-%m-%d').date() -
-                   datetime.strptime(row['start'], '%Y-%m-%d').date()).days
+            top = self.canvasTop + self.itemLine * self.itemHeight + \
+                self.splitLine * self.itemLine 
+            print(resource, row, top)
+            # end = (datetime.strptime(row['finish'], '%Y-%m-%d').date() -
+            #        datetime.strptime(row['start'], '%Y-%m-%d').date()).days
+            end = (row['finish'] - row['start']).days
             # end = (row['finish'] - row['start']).days
             right = self.itemWidth * (end + 1) + (1 * end)
 
             chart.append(draw.Text(resource, 20, 5 + (self.textIndent *
                          self.itemWidth), top + 20, text_anchor='start'))
-            chart.append(draw.Text(row['start'], 20, self.nameTextSize + 100,
+            chart.append(draw.Text(row['start'].strftime('%Y-%m-%d'), 20, self.nameTextSize + 100,
                                    top + 20, text_anchor='start'))
-            chart.append(draw.Text(row['finish'], 20, self.nameTextSize +
+            chart.append(draw.Text(row['finish'].strftime('%Y-%m-%d'), 20, self.nameTextSize +
                                    200, top + 20, text_anchor='start'))
 
             chart.append(draw.Text(str(end), 20, self.nameTextSize +
                                    300, top + 20, text_anchor='start'))
 
-            left = self.dayPosition[row['start']]
+            left = self.dayPosition[row['start'].strftime('%Y-%m-%d')]
             r = draw.Rectangle(left, top + 4, right,
-                               self.barHeight, fill='#aaaaaa')
+                               self.barHeight, fill='blue')
             r.append_title(resource)
             chart.append(r)
 
@@ -715,7 +726,11 @@ class Gantt:
         self.next()
         self.legend()
 
-    def workloadChart(self):
+    def workloadChart(self, title):
+        self.draw = draw.Drawing(self.canvasWidth, self.canvasHeight)
+        self.draw.append(draw.Rectangle(0, 0, self.canvasWidth - 1,
+                                        self.canvasHeight-1, fill='#eeeeee', stroke='black'))
+        self.title(title)
         self.workload()
 
     def save(self, filename=None):

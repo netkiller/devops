@@ -6,7 +6,7 @@
 ##############################################
 import os
 import sys
-module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+module = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # print(module)
 sys.path.insert(0, module)
 
@@ -94,20 +94,8 @@ class GanttChart:
         elif options.csv:
             with open(options.csv) as csvfile:
                 items = csv.DictReader(csvfile)
-                if options.gantt:
-                    tmp = Data()
-                    for item in items:
-                        if item['milestone'] == 'TRUE' :
-                            item['milestone'] = True
-                        else:
-                            item['milestone'] = False
 
-                        tmp.add(item['id'], item['name'], item['start'],
-                                item['finish'], item['resource'], item['next'], item['milestone'], item['parent'])
-                    # print(tmp.data)
-                    self.data = tmp.data
-
-                elif options.workload:
+                if options.workload:
                     tmp = {}
                     beginDate = datetime.now().date()
                     endDate = datetime.now().date()
@@ -118,8 +106,9 @@ class GanttChart:
                         finish = datetime.strptime(
                             item['finish'], '%Y-%m-%d').date()
                         if not item['resource']:
-                            item['resource'] = 'Null'
-                        if item['resource'] in tmp.keys():
+                            continue
+                            # item['resource'] = 'Null'
+                        if item['resource'] and item['resource'] in tmp.keys():
                             if tmp[item['resource']]['start'] > start:
                                 tmp[item['resource']]['start'] = start
                             if tmp[item['resource']]['finish'] < finish:
@@ -131,24 +120,21 @@ class GanttChart:
                     # data = json.loads(tmp)
                     self.data = tmp
                     # print(tmp)
+                elif options.gantt:
+                    tmp = Data()
+                    for item in items:
+                        if item['milestone'] == 'TRUE' :
+                            item['milestone'] = True
+                        else:
+                            item['milestone'] = False
 
+                        tmp.add(item['id'], item['name'], item['start'],
+                                item['finish'], item['resource'], item['next'], item['milestone'], item['parent'])
+                    # print(tmp.data)
+                    self.data = tmp.data
         if options.debug:
             print(options, args)
-            data = [
-                {'name': '汉字', 'start': '2023-03-01',
-                 'finish': '2023-04-05', 'progress': 3},
-                {'name': 'Java', 'start': '2023-03-01',
-                 'finish': '2023-03-05', 'progress': 2},
-                {'name': 'PHP', 'start': '2023-03-03',
-                 'finish': '2023-03-10', 'progress': 5},
-                {'name': 'Go', 'start': '2023-03-10', 'finish': '2023-03-20'},
-                {'name': 'Python', 'start': '2023-03-06', 'finish': '2023-03-08'},
-                {'name': 'Swift', 'start': '2023-03-06', 'finish': '2023-03-20', 'subitem': [
-                    {'name': 'LLVM', 'start': '2023-03-09', 'finish': '2023-03-14'},
-                    {'name': 'Clang', 'start': '2023-03-03', 'finish': '2023-03-10'},
-                ]},
-            ]
-            print(json.dumps(data, ensure_ascii=False))
+            print(json.dumps(self.data, ensure_ascii=False))
 
         if not self.data:
             # else:
