@@ -529,7 +529,7 @@ class Gantt:
                 handover.append(link)
             if 'subitem' in line:
                 for id, item in line['subitem'].items():
-                    if 'next' in item and line['next'] and int(item['next']) > 0:
+                    if 'next' in item and item['next'] and int(item['next']) > 0:
                         link = self.link(
                             self.linkPosition[item['id']], self.linkPosition[item['next']])
                         handover.append(link)
@@ -598,8 +598,8 @@ class Gantt:
 
         chart.append(draw.Line(1, self.canvasTop + self.itemHeight * 2, self.canvasWidth,
                                self.canvasTop + self.itemHeight * 2, stroke='grey'))
-        # right = draw.Line(self.canvasWidth, 0,
-        #                   self.canvasWidth, self.canvasHeight, stroke='black')
+        chart.append(draw.Line(1, self.canvasTop + self.itemHeight * 3, self.canvasWidth,
+                               self.canvasTop + self.itemHeight * 3, stroke='black'))
         # 竖线
         chart.append(
             draw.Line(left, self.canvasTop, left, self.canvasHeight, stroke='grey'))
@@ -615,7 +615,7 @@ class Gantt:
 
             # # 工时
             top = self.canvasTop + self.itemLine * self.itemHeight + \
-                self.splitLine * self.itemLine 
+                self.splitLine * self.itemLine
             print(resource, row, top)
             # end = (datetime.strptime(row['finish'], '%Y-%m-%d').date() -
             #        datetime.strptime(row['start'], '%Y-%m-%d').date()).days
@@ -630,7 +630,7 @@ class Gantt:
             chart.append(draw.Text(row['finish'].strftime('%Y-%m-%d'), 20, self.nameTextSize +
                                    200, top + 20, text_anchor='start'))
 
-            chart.append(draw.Text(str(end), 20, self.nameTextSize +
+            chart.append(draw.Text(str(end + 1), 20, self.nameTextSize +
                                    300, top + 20, text_anchor='start'))
 
             left = self.dayPosition[row['start'].strftime('%Y-%m-%d')]
@@ -638,6 +638,9 @@ class Gantt:
                                self.barHeight, fill='blue')
             r.append_title(resource)
             chart.append(r)
+
+            chart.append(draw.Line(1, top + self.itemHeight, self.canvasWidth,
+                                   top + self.itemHeight, stroke='grey'))
 
             self.itemLine += 1
 
@@ -661,10 +664,11 @@ class Gantt:
     def initialize(self, item):
         # print(item)
         # 计算文字宽度
-        length = self.getTextSize(item['name'])
+        length = self.getTextSize(item['name']) - 250
         # print(item['name'], length)
         # 文本表格所占用的宽度
-        if self.nameTextSize + self.textIndentSize < length:
+        if self.nameTextSize  < length:
+        # if self.nameTextSize + self.textIndentSize < length:
             self.nameTextSize = length
             # print(+ self.textIndent)
 
