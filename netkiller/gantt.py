@@ -530,6 +530,7 @@ class Gantt:
             if 'subitem' in line:
                 for id, item in line['subitem'].items():
                     if 'next' in item and item['next'] and int(item['next']) > 0:
+                        # print(item)
                         link = self.link(
                             self.linkPosition[item['id']], self.linkPosition[item['next']])
                         handover.append(link)
@@ -616,7 +617,7 @@ class Gantt:
             # # 工时
             top = self.canvasTop + self.itemLine * self.itemHeight + \
                 self.splitLine * self.itemLine
-            print(resource, row, top)
+            # print(resource, row, top)
             # end = (datetime.strptime(row['finish'], '%Y-%m-%d').date() -
             #        datetime.strptime(row['start'], '%Y-%m-%d').date()).days
             end = (row['finish'] - row['start']).days

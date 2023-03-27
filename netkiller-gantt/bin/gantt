@@ -6,7 +6,8 @@
 ##############################################
 import os
 import sys
-module = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+module = os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))))
 # print(module)
 sys.path.insert(0, module)
 
@@ -35,7 +36,7 @@ class GanttChart:
         self.parser.add_option('-l', '--load', dest='load',
                                help='load data from file.', default=None, metavar='/path/to/gantt.json')
         self.parser.add_option('-s', '--save', dest='save',
-                               help='save file', default='gantt.svg', metavar='/path/to/gantt.svg')
+                               help='save file', default=None, metavar='/path/to/gantt.svg')
         self.parser.add_option(
             '', "--stdin", action="store_true", dest="stdin", help="cat gantt.json | gantt -s file.svg")
         self.parser.add_option(
@@ -123,7 +124,7 @@ class GanttChart:
                 elif options.gantt:
                     tmp = Data()
                     for item in items:
-                        if item['milestone'] == 'TRUE' :
+                        if item['milestone'] == 'TRUE':
                             item['milestone'] = True
                         else:
                             item['milestone'] = False
@@ -148,7 +149,14 @@ class GanttChart:
             self.gantt.ganttChart(options.title)
         if options.save:
             self.gantt.save(options.save)
+        else:
+            if options.workload:
+                file = 'workload.svg'
+            elif options.gantt:
+                file = 'gantt.svg'
+            self.gantt.save(file)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     ganttChart = GanttChart()
     ganttChart.main()
