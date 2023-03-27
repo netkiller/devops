@@ -8,6 +8,10 @@ Best project gantt charts in Python
 ## 安装
 
 ```bash
+brew install cairo
+brew install pkg-config
+pip3 install pycairo -i https://pypi.tuna.tsinghua.edu.cn/simple
+
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 pip install netkiller-gantt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```

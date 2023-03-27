@@ -79,12 +79,16 @@ class Gantt:
 
     def title(self, text):
         if not self.isTable:
-            # fill='none', stroke='none'
+            if text:
+                self.canvasTop += 50
+
             group = draw.Group(
                 id='title', onclick="this.style.stroke = 'green'; ")
             group.append(draw.Text(text, 30, self.canvasWidth / 2,
                                    25, center=True, text_anchor='middle'))
             self.draw.append(group)
+
+            self.legend()
 
     def __table(self, top):
         group = draw.Group(id='table')
@@ -538,7 +542,6 @@ class Gantt:
 
     def workload(self):
         self.startPosition = 400
-        self.canvasTop = 60
         left = self.startPosition
 
         # self.title(title)
@@ -558,28 +561,29 @@ class Gantt:
                 self.endDate = finish
 
         # print(self.fontSize)
-
+        top = self.itemHeight * 4 - 10
         chart = draw.Group(id='workload')
 
         table = draw.Group(id='table')
         table.append_title('表格')
+        # 封顶
         table.append(draw.Line(1, self.canvasTop, self.canvasWidth,
                      self.canvasTop,  stroke='black'))
         table.append(
-            draw.Text('资源', 20, 5, self.canvasTop + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 100, self.canvasTop,
+            draw.Text('资源', 20, 5, top + 20, fill='#555555'))
+        table.append(draw.Line(self.nameTextSize + 100, top,
                      self.nameTextSize + 100, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('开始日期', 20, self.nameTextSize +
-                     100, self.canvasTop + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 200, self.canvasTop,
+                     100, top + 20, fill='#555555'))
+        table.append(draw.Line(self.nameTextSize + 200, top,
                      self.nameTextSize + 200, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('截止日期', 20, self.nameTextSize +
-                     200, self.canvasTop + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 300, self.canvasTop,
+                     200, top + 20, fill='#555555'))
+        table.append(draw.Line(self.nameTextSize + 300, top,
                      self.nameTextSize + 300, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('工时', 20, self.nameTextSize +
-                               300, self.canvasTop + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 400, self.canvasTop,
+                               300, top + 20, fill='#555555'))
+        table.append(draw.Line(self.nameTextSize + 400, top,
                                self.nameTextSize + 400, self.canvasHeight, stroke='grey'))
 
         chart.append(table)
@@ -611,7 +615,7 @@ class Gantt:
 
         # left += self.itemWidth * (begin - 1) + (1 * begin)
         # # 日宽度 + 竖线宽度
-        self.canvasTop = self.itemHeight * 5
+        self.canvasTop = self.itemHeight * 5 - 10
         for resource, row in self.data.items():
 
             # # 工时
@@ -668,8 +672,8 @@ class Gantt:
         length = self.getTextSize(item['name']) - 250
         # print(item['name'], length)
         # 文本表格所占用的宽度
-        if self.nameTextSize  < length:
-        # if self.nameTextSize + self.textIndentSize < length:
+        if self.nameTextSize < length:
+            # if self.nameTextSize + self.textIndentSize < length:
             self.nameTextSize = length
             # print(+ self.textIndent)
 
@@ -711,12 +715,9 @@ class Gantt:
         if not self.isTable:
             self.startPosition = self.nameTextSize + self.resourceTextSize + 250
 
-        if title:
-            self.canvasTop += 50
-
         days = self.endDate - self.beginDate
         self.canvasWidth = self.startPosition + self.unitWidth * \
-            days.days + days.days + self.unitWidth
+            days.days + days.days + self.unitWidth + 2
         self.canvasHeight = self.canvasTop + self.unitHeight * \
             3 + self.unitHeight * lineNumber + lineNumber
         # print(self.canvasTop, self.canvasHeight)
@@ -729,7 +730,6 @@ class Gantt:
         self.calendar()
         self.task()
         self.next()
-        self.legend()
 
     def workloadChart(self, title):
         self.draw = draw.Drawing(self.canvasWidth, self.canvasHeight)
@@ -744,4 +744,12 @@ class Gantt:
             # d.set_render_size(400, 200)  # Alternative to set_pixel_scale
             self.draw.save_svg(filename)
         # self.draw.save_png('example.png')
+        # self.draw.rasterize()
+
+    def export(self, filename=None):
+        if filename:
+            # d.set_pixel_scale(2)  # Set number of pixels per geometry unit
+            # d.set_render_size(400, 200)  # Alternative to set_pixel_scale
+            # self.draw.save_svg(filename)
+            self.draw.save_png('example.png')
         # self.draw.rasterize()

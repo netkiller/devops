@@ -30,7 +30,7 @@ class GanttChart:
 
         self.parser = OptionParser("usage: %prog [options] ")
         self.parser.add_option("-t", "--title", dest="title", help="甘特图标题",
-                               default='甘特图标题', metavar="/path/to/gantt.csv")
+                               default='甘特图标题', metavar="项目甘特图")
         self.parser.add_option("-c", "--csv", dest="csv", help="/path/to/gantt.csv",
                                default=None, metavar="/path/to/gantt.csv")
         self.parser.add_option('-l', '--load', dest='load',
@@ -155,6 +155,7 @@ class GanttChart:
             elif options.gantt:
                 file = 'gantt.svg'
             self.gantt.save(file)
+            # self.gantt.export(file)
 
 
 if __name__ == '__main__':

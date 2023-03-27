@@ -23,7 +23,7 @@ setup(
 		# "License :: OSI Approved :: CC 2.0",
 		"Operating System :: OS Independent",
 	],
-	install_requires = ['opencv-python','drawsvg'],
+	install_requires = ['opencv-python','drawsvg','pyproject.toml','pycairo'],
   	# package_dir={ '': '..' },
 	packages=find_packages('..'),
 
