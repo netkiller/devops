@@ -488,7 +488,7 @@ class Gantt:
     def legend(self):
         top = 10
         self.draw.append(draw.Text("https://www.netkiller.cn - design by netkiller",
-                                   15, self.canvasWidth - 300, top + 30, text_anchor='start', fill='grey'))
+                                   15, self.canvasWidth - 280, top + 30, text_anchor='start', fill='grey'))
         # print(self.linkPosition)
 
     def hideTable(self):
@@ -540,7 +540,7 @@ class Gantt:
                         handover.append(link)
         self.draw.append(handover)
 
-    def workload(self):
+    def workload(self,title):
         self.startPosition = 400
         left = self.startPosition
 
@@ -560,7 +560,20 @@ class Gantt:
             if self.endDate < finish:
                 self.endDate = finish
 
-        # print(self.fontSize)
+        lineNumber = len(self.data)
+        print(lineNumber)
+        days = self.endDate - self.beginDate
+        self.canvasWidth = self.startPosition + self.unitWidth * \
+            days.days + days.days + self.unitWidth + 2
+        self.canvasHeight = self.canvasTop + self.unitHeight * \
+            5 + self.unitHeight * lineNumber + lineNumber + 15
+        print(self.canvasTop, self.canvasHeight)
+
+        self.draw = draw.Drawing(self.canvasWidth, self.canvasHeight)
+        self.draw.append(draw.Rectangle(0, 0, self.canvasWidth - 1,
+                                        self.canvasHeight-1, fill='#eeeeee', stroke='black'))
+        self.title(title)
+
         top = self.itemHeight * 4 - 10
         chart = draw.Group(id='workload')
 
@@ -719,8 +732,8 @@ class Gantt:
         self.canvasWidth = self.startPosition + self.unitWidth * \
             days.days + days.days + self.unitWidth + 2
         self.canvasHeight = self.canvasTop + self.unitHeight * \
-            3 + self.unitHeight * lineNumber + lineNumber
-        # print(self.canvasTop, self.canvasHeight)
+            5 + self.unitHeight * lineNumber + lineNumber + 15
+        print(self.canvasTop, self.canvasHeight)
 
         self.draw = draw.Drawing(self.canvasWidth, self.canvasHeight)
         self.draw.append(draw.Rectangle(0, 0, self.canvasWidth - 1,
@@ -732,11 +745,7 @@ class Gantt:
         self.next()
 
     def workloadChart(self, title):
-        self.draw = draw.Drawing(self.canvasWidth, self.canvasHeight)
-        self.draw.append(draw.Rectangle(0, 0, self.canvasWidth - 1,
-                                        self.canvasHeight-1, fill='#eeeeee', stroke='black'))
-        self.title(title)
-        self.workload()
+        self.workload(title)
 
     def save(self, filename=None):
         if filename:
