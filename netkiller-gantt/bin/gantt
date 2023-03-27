@@ -130,7 +130,7 @@ class GanttChart:
                             item['milestone'] = False
 
                         tmp.add(item['id'], item['name'], item['start'],
-                                item['finish'], item['resource'], item['next'], item['milestone'], item['parent'])
+                                item['finish'], item['resource'], item['predecessor'], item['milestone'], item['parent'])
                     # print(tmp.data)
                     self.data = tmp.data
         if options.debug:
