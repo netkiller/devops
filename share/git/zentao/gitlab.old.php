@@ -6,8 +6,12 @@ $zentao = new Zentao();
 $func = $_GET['func'];
 
 if($func == 'close'){
-
     $zentao->close($id, $type);
+    exit();
+} elseif($func == 'create'){
+    $name = $_GET['name'];
+    $message = $_REQUEST['message'];
+    $zentao->create($type, $name, $message);
     exit();
 }
 
@@ -92,6 +96,32 @@ class Zentao {
                 $status = $this->conn->exec($effort);
             }
         //print("$count rows.\n");
+
+        }
+        catch(PDOException $e){
+            echo $e->getMessage();
+        }
+
+    }
+    function create($type,$name, $message){
+
+        try {
+            $this->conn = new PDO("mysql:host=$this->host;dbname=zentao",$this->username, $this->password);
+            $sql = '';
+            if($type == 'task'){
+                $name = "【监控报警】".$name;
+                $sql = "
+                INSERT INTO `zt_task` (`MYQK`,`group`,`czwt`,`yslt`,`ltsj`,`jkd`,`isbg`,`issjps`,`isfghl`,`issj`,`isfx`,`parent`,`project`,`module`,`story`,`storyVersion`,`fromBug`,`feedback`,`name`,`mbpf`,`type`,`node`,`yqbz`,`pri`,`estimate`,`consumed`,`left`,`trcy`,`tcrq`,`deadline`,`status`,`subStatus`,`color`,`mailto`,`desc`,`openedBy`,`openedDate`,`assignedTo`,`assignedDate`,`estStarted`,`realStarted`,`finishedBy`,`finishedDate`,`finishedList`,`canceledBy`,`canceledDate`,`closedBy`,`closedDate`,`closedReason`,`lastEditedBy`,`lastEditedDate`,`deleted`,`stage`,`tester`) 
+                VALUES ('','4','','','0000-00-00 00:00:00','01',2,2,2,2,2,-1,(SELECT id FROM zentao.zt_project order by id desc limit 1),0,0,1,0,0,'".$name."','','affair',0,'',3,0,0,0,'','0000-00-00 00:00:00','0000-00-00','wait','','',NULL,'".$message."','chenjingfeng',now(),'chenjingfeng',now(),'0000-00-00','0000-00-00 00:00:00','','0000-00-00 00:00:00','','','0000-00-00 00:00:00','','0000-00-00 00:00:00','','','0000-00-00 00:00:00','0','wait','');
+                ";
+            }else{
+                $sql = 'select 1';
+            }
+ 
+            $count = $this->conn->exec($sql);
+  
+            $this->conn->lastInsertId();
+            print("$count: rows.\n");
 
         }
         catch(PDOException $e){

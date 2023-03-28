@@ -45,8 +45,8 @@ class Data:
 
 class Gantt(Canvas):
     draw = None
-    canvasWidth = 1980
-    canvasHeight = 1080
+    canvasWidth = 0
+    canvasHeight = 0
     columeWidth = 30
     splitLine = 1
     canvasTop = 0
@@ -72,6 +72,9 @@ class Gantt(Canvas):
     data = {}
 
     def __init__(self) -> None:
+        super().__init__()
+        self.canvasWidth = self.width
+        self.canvasHeight = self.height
         pass
 
     def title(self, text):
