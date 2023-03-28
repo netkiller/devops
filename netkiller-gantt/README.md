@@ -7,31 +7,62 @@ Best project gantt charts in Python
 
 ## 安装
 
+MacOS 环境
+
 ```bash
 brew install cairo
 brew install pkg-config
 pip3 install pycairo -i https://pypi.tuna.tsinghua.edu.cn/simple
 
+
+```
+
+Linux 环境
+
+```shell
+dnf install -y cairo-devel python3-cairo python3-pillow
+
+```
+
+配置镜像
+
+```bash
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+root@netkiller ~# cat /root/.config/pip/pip.conf
+[global]
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+安装
+
+```shell
 pip install netkiller-gantt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 ## 命令帮助
 
 ```bash
-neo@MacBook-Pro-M2 ~> gantt -h
-
-Usage: gantt [options] message
+root@netkiller ~# gantt 
+Usage: gantt [options] 
 
 Options:
   -h, --help            show this help message and exit
+  -t 项目甘特图, --title=项目甘特图
+                        甘特图标题
+  -c /path/to/gantt.csv, --csv=/path/to/gantt.csv
+                        /path/to/gantt.csv
   -l /path/to/gantt.json, --load=/path/to/gantt.json
                         load data from file.
   -s /path/to/gantt.svg, --save=/path/to/gantt.svg
                         save file
   --stdin               cat gantt.json | gantt -s file.svg
+  -g, --gantt           Gantt chart
+  -w, --workload        Workload chart
   -d, --debug           debug mode
 
+Homepage: https://www.netkiller.cn	Author: Neo <netkiller@msn.com>
+Help: https://github.com/netkiller/devops/blob/master/doc/gantt/index.md
 ```
 
 ## 从标准输出载入json数据生成甘特图
@@ -78,5 +109,5 @@ EOF
 
 ```
 select id, name,estStarted as start, deadline as finish,  assignedTo as resource, parent from zt_task where `group` = 4 order by id desc limit 100;
-select id, name,estStarted as start, deadline as finish,  assignedTo as resource, parent from zt_task where assignedTo in ('chenjingfeng','ligongfa','yuanjianfeng','liqiang') order by id desc limit 100;
+select id, name,estStarted as start, deadline as finish,  assignedTo as resource, parent from zt_task where assignedTo in ('neo','netkiller','tom','jerry') order by id desc limit 100;
 ```
