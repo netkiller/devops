@@ -92,8 +92,8 @@ class Gantt(Canvas):
         top = 10
         self.draw.append(draw.Text("https://www.netkiller.cn - design by netkiller",
                                    15, self.canvasWidth - 280, top + 30, text_anchor='start', fill='grey'))
-        self.draw.append(draw.Rectangle(0, 0, self.canvasWidth - 1,
-                                        self.canvasHeight-1, fill='none', stroke='black'))
+        self.draw.append(draw.Rectangle(0, 0, self.canvasWidth,
+                                        self.canvasHeight, fill='none', stroke='black'))
         # fill='#eeeeee'
 
     def hideTable(self):
@@ -172,12 +172,11 @@ class Gantt(Canvas):
             x = self.weekdayPosition + self.columeWidth * (column) + offsetX
             self.dayPosition[date(year=int(begin.year), month=int(
                 begin.month), day=int(day)).strftime('%Y-%m-%d')] = x
-            if weekday == 6:
-                weekGroups[weekNumber].append(draw.Line(x + self.columeWidth, top + self.itemHeight,
-                                                        x + self.columeWidth, self.canvasHeight, stroke='black'))
+
             if day == beginDay:
                 weekGroups[weekNumber].append(draw.Text(begin.strftime(
                     '%Y年%m月'), 20, x + 4, top + self.itemHeight - 10, fill='#555555'))
+            # 右侧封闭
             if day == endDay:
                 weekGroups[weekNumber].append(draw.Line(x + self.columeWidth, top,
                                                         x + self.columeWidth, self.canvasHeight, stroke='black'))
@@ -198,7 +197,10 @@ class Gantt(Canvas):
                                self.canvasHeight - (top+self.itemHeight*2), fill=color)
             r.append_title(str(day))
             weekGroups[weekNumber].append(r)
-
+            # 周分割线
+            if weekday == 6:
+                weekGroups[weekNumber].append(draw.Line(x + self.columeWidth, top + self.itemHeight,
+                                                        x + self.columeWidth, self.canvasHeight, stroke='black'))
             # 日期
             weekGroups[weekNumber].append(
                 draw.Text(str(day), 20, x + numberOffsetX, top + self.columeWidth * 3 - 10, fill='#555555'))
@@ -459,8 +461,6 @@ class Gantt(Canvas):
         self.startPosition = 400
         left = self.startPosition
 
-        # self.title(title)
-
         for key, value in self.data.items():
             self.fontSize = self.getTextSize(key)
 
@@ -476,17 +476,16 @@ class Gantt(Canvas):
                 self.endDate = finish
 
         lineNumber = len(self.data)
-        print(lineNumber)
+
         days = self.endDate - self.beginDate
         self.canvasWidth = self.startPosition + self.columeWidth * \
             days.days + days.days + self.columeWidth + 2
         self.canvasHeight = self.canvasTop + self.itemHeight * \
             5 + self.itemHeight * lineNumber + lineNumber + 15
-        print(self.canvasTop, self.canvasHeight)
+        # print(self.canvasTop, self.canvasHeight)
 
         self.draw = draw.Drawing(self.canvasWidth, self.canvasHeight)
-        self.draw.append(draw.Rectangle(0, 0, self.canvasWidth - 1,
-                                        self.canvasHeight-1, fill='#eeeeee', stroke='black'))
+
         self.title(title)
 
         top = self.itemHeight * 4 - 10
@@ -511,8 +510,7 @@ class Gantt(Canvas):
                      self.nameTextSize + 300, self.canvasHeight, stroke='grey'))
         table.append(draw.Text('工时', 20, self.nameTextSize +
                                300, top + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 400, top,
-                               self.nameTextSize + 400, self.canvasHeight, stroke='grey'))
+        # table.append(draw.Line(self.nameTextSize + 400, top,                               self.nameTextSize + 400, self.canvasHeight, stroke='grey'))
 
         chart.append(table)
 
@@ -525,14 +523,15 @@ class Gantt(Canvas):
 
         # for key, value in self.__weekday(top).items():
         #     background.append(value)
-
-        chart.append(draw.Line(1, self.canvasTop + 26, self.canvasWidth,
-                               self.canvasTop + 26, stroke='grey'))
-
+        # 月线
+        chart.append(draw.Line(self.startPosition, self.canvasTop + self.itemHeight, self.canvasWidth,
+                               self.canvasTop + self.itemHeight, stroke='grey'))
+        # 周线
         chart.append(draw.Line(1, self.canvasTop + self.itemHeight * 2, self.canvasWidth,
                                self.canvasTop + self.itemHeight * 2, stroke='grey'))
-        chart.append(draw.Line(1, self.canvasTop + self.itemHeight * 3, self.canvasWidth,
-                               self.canvasTop + self.itemHeight * 3, stroke='black'))
+
+        # chart.append(draw.Line(1, self.canvasTop + self.itemHeight * 3, self.canvasWidth,
+        #                        self.canvasTop + self.itemHeight * 3, stroke='black'))
         # 竖线
         chart.append(
             draw.Line(left, self.canvasTop, left, self.canvasHeight, stroke='grey'))
@@ -573,11 +572,14 @@ class Gantt(Canvas):
             chart.append(r)
 
             chart.append(draw.Line(1, top + self.itemHeight, self.canvasWidth,
-                                   top + self.itemHeight, stroke='grey'))
+                         top + self.itemHeight, stroke='grey'))
 
             self.itemLine += 1
 
         self.draw.append(chart)
+        # self.draw.append(draw.Rectangle(1, 1, self.canvasWidth,
+        #                                 self.canvasHeight, fill='none', stroke='black'))
+        self.legend()
 
     def getTextSize(self, text, size=21):
 
@@ -590,8 +592,9 @@ class Gantt(Canvas):
         # size = cv2.getTextSize(text, fontFace, fontScale, thickness)
         # width, height = size[0]
 
-        font = 'AdobeFangsongStd-Regular.otf'
+        # font = 'AdobeFangsongStd-Regular.otf'
         # font = r'Apple Symbols.ttf'
+        font = r'/System/Library/Fonts/Supplemental/Songti.ttc'
         font = ImageFont.truetype(font=font, size=size, encoding="utf-8")
         # font = ImageFont.truetype("symbol.ttf", 16, encoding="symb")
         width, height = font.getsize(text)
