@@ -143,13 +143,14 @@ class Pipeline:
         return self
 
     def template(self, tpl, variable, filepath):
-        file = open(tpl, 'r')
-        temp = Template(file.read())
-        file.close()
+        if os.path.exists(tpl):
+            file = open(tpl, 'r')
+            temp = Template(file.read())
+            file.close()
 
-        file = open(filepath, 'w')
-        file.write(temp.safe_substitute(variable))
-        file.close()
+            file = open(filepath, 'w')
+            file.write(temp.safe_substitute(variable))
+            file.close()
         return self
 
     def nacos(self, server, username, password, namespace, dataid, group, filepath):
