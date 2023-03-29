@@ -107,7 +107,7 @@ class Pipeline:
         if username:
             self.pipelines['container'].append(self.container + " login -u {username} -p{password} {registry}".format(
                 username=username, password=password, registry=self.registry))
-        self.logging.info("docker: %s %s %s" % registry, username, password)
+            self.logging.info("docker: %s %s %s" % registry, username, password)
         return self
 
     def podman(self, registry, username=None, password=None):
@@ -117,7 +117,7 @@ class Pipeline:
         if username:
             self.pipelines['container'].append(self.container + " login -u {username} -p{password} {registry}".format(
                 username=username, password=password, registry=self.registry))
-        self.logging.info("podman: %s %s %s" % registry, username, password)
+            self.logging.info("podman: %s %s %s" % registry, username, password)
         return self
 
     def dockerfile(self, tag=None, dir=None):
@@ -215,7 +215,7 @@ class Pipeline:
             self.pipelines['end'] = script
             self.logging.info("end: %s" % self.pipelines['end'])
 
-        self.logging.info("-"*50, ' execute ', "-"*50)
+        self.logging.info("-"*50)
         try:
             for stage in ['begin', 'init', 'checkout', 'build', 'container', 'dockerfile', 'nacos', 'deploy', 'stop', 'startup', 'end']:
                 if stage in self.pipelines.keys():

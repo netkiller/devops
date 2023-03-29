@@ -256,12 +256,12 @@ class CICD:
 
         from multiprocessing import Pool
         with Pool(5) as p:
-            print(p.map(self.build, projects))
+            self.logging.info(p.map(self.build, projects))
 
     def main(self):
         (options, args) = self.parser.parse_args()
         if options.debug:
-            print(options, args)
+            self.logging.debug(options, args)
         if options.namespace:
             self.namespace = options.namespace
 
