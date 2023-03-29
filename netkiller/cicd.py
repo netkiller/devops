@@ -29,7 +29,7 @@ class CICD:
     template = {}
 
     def __init__(self) -> None:
-       
+
         self.parser = OptionParser("usage: %prog [options] <project>")
         self.parser.add_option("-n",
                                "--namespace",
@@ -105,6 +105,7 @@ class CICD:
                                '--silent',
                                action='store_true',
                                dest="silent",
+                               default=False,
                                help="安静模式")
         self.parser.add_option('',
                                "--destroy",
@@ -119,12 +120,12 @@ class CICD:
         (self.options, self.args) = self.parser.parse_args()
 
         self.logging = logging.getLogger()
-        if self.options.debug :
+        if self.options.debug:
             logging.basicConfig(level=logging.NOTSET, format='[%(levelname)-5s] %(message)s',
-                            datefmt='%Y-%m-%d %H:%M:%S', filename=None, filemode='a')
+                                datefmt='%Y-%m-%d %H:%M:%S', filename=None, filemode='a')
         else:
             logging.basicConfig(level=logging.NOTSET, format='%(asctime)s [%(levelname)-5s] %(message)s',
-                            datefmt='%Y-%m-%d %H:%M:%S', filename=self.options.logfile, filemode='a')
+                                datefmt='%Y-%m-%d %H:%M:%S', filename=self.options.logfile, filemode='a')
 
     def usage(self):
         self.parser.print_help()
@@ -217,7 +218,7 @@ class CICD:
             if not 'deploy' in self.skip:
                 pipeline.deploy(deploy)
             # .startup(['ls'])
-            if self.options.silent :
+            if self.options.silent:
                 pipeline.log('/tmp/{project}.log'.format(project=name))
             pipeline.end()
             # pipeline.debug()
