@@ -217,7 +217,8 @@ class CICD:
             if not 'deploy' in self.skip:
                 pipeline.deploy(deploy)
             # .startup(['ls'])
-            pipeline.log('/tmp/{project}.log'.format(project=name))
+            if self.options.silent :
+                pipeline.log('/tmp/{project}.log'.format(project=name))
             pipeline.end()
             # pipeline.debug()
             # print(project)
