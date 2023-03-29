@@ -38,9 +38,11 @@ class Pipeline:
         self.pipelines = {}
         if not os.path.exists(self.workspace):
             os.mkdir(self.workspace)
+            self.logging.info("make directory: {}".format(self.workspace))
 
     def image(self, name):
         self.image = name
+        self.logging.info("image: {}".format(self.image))
         return self
 
     def begin(self, project):
@@ -50,6 +52,7 @@ class Pipeline:
         self.project = project
         # os.chdir(project)
         self.pipelines['begin'] = []
+        self.logging.info("change directory: {}".format(self.workspace))
         return self
 
     def env(self, key, value):
@@ -64,7 +67,7 @@ class Pipeline:
         return self
 
     def checkout(self, url, branch):
-        self.logging.info("%s = %s" % (url, branch))
+        self.logging.info("checkout: %s = %s" % (url, branch))
         if os.path.exists(self.project):
             git = Git(os.path.join(self.workspace, self.project), self.logging)
             git.fetch().checkout(branch).pull().execute()
@@ -73,7 +76,7 @@ class Pipeline:
             git.option('--branch ' + branch)
             git.clone(url, self.project).execute()
             os.chdir(self.project)
-        self.pipelines['checkout'] = ['pwd']
+        self.pipelines['checkout'] = ['ls']
         return self
 
     def build(self, script):
@@ -104,6 +107,7 @@ class Pipeline:
         if username:
             self.pipelines['container'].append(self.container + " login -u {username} -p{password} {registry}".format(
                 username=username, password=password, registry=self.registry))
+        self.logging.info("docker: %s %s %s" % registry, username, password)
         return self
 
     def podman(self, registry, username=None, password=None):
@@ -113,6 +117,7 @@ class Pipeline:
         if username:
             self.pipelines['container'].append(self.container + " login -u {username} -p{password} {registry}".format(
                 username=username, password=password, registry=self.registry))
+        self.logging.info("podman: %s %s %s" % registry, username, password)
         return self
 
     def dockerfile(self, tag=None, dir=None):
@@ -151,6 +156,7 @@ class Pipeline:
             file = open(filepath, 'w')
             file.write(temp.safe_substitute(variable))
             file.close()
+            self.logging.info("template: %s, %s, %s" % tpl, variable, filepath)
         return self
 
     def nacos(self, server, username, password, namespace, dataid, group, filepath):
@@ -159,6 +165,8 @@ class Pipeline:
             server=server, username=username, password=password, namespace=namespace, dataid=dataid, group=group, filepath=filepath))
         # self.pipelines['nacos'].append("nacos -s {server} -u {username} -p {password} -n {namespace} -d {dataid} --show".format(
         #     server=server, username=username, password=password, namespace=namespace, dataid=dataid))
+        self.logging.info("nacos: %s, %s, %s, %s, %s, %s, %s" %
+                          server, username, password, namespace, dataid, group, filepath)
         return self
 
     def deploy(self, script):
@@ -178,6 +186,8 @@ class Pipeline:
 
     def log(self, file):
         self.logfile = file
+        self.logging.info("logfile: %s" % file)
+        return self
 
     def end(self, script=None):
 
@@ -203,6 +213,9 @@ class Pipeline:
 
         if script:
             self.pipelines['end'] = script
+            self.logging.info("end: %s" % self.pipelines['end'])
+
+        self.logging.info("-"*50, ' execute ', "-"*50)
         try:
             for stage in ['begin', 'init', 'checkout', 'build', 'container', 'dockerfile', 'nacos', 'deploy', 'stop', 'startup', 'end']:
                 if stage in self.pipelines.keys():
@@ -220,5 +233,5 @@ class Pipeline:
         return self
 
     def debug(self):
-        print(self.pipelines)
+        self.logging.debug(self.pipelines)
         return self

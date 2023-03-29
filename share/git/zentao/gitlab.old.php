@@ -3,7 +3,8 @@ $id = $_GET['id'];
 $type = $_GET['type'];
 $zentao = new Zentao();
 
-$func = $_GET['func'];
+// $func = $_GET['func'];
+$func = isset($_GET['func'])?$_GET['func']:"";
 
 if($func == 'close'){
     $zentao->close($id, $type);
@@ -69,7 +70,7 @@ class Zentao {
                 //$comment = "insert into zt_action(objectType,objectID,product,project,execution,actor,action,date,comment,extra,`read`,vision,efforted) select 'task','".$id."',',1,', project, execution, 'gitlab','commented',now(),'".$message."','','1','rnd','0' from zt_task where id=".$id;
                 $comment = "insert into zt_action(objectType,objectID,product,project,actor,action,date,comment,extra,`read`,efforted) select 'task','".$id."',',1,', project, 'gitlab','commented',now(),'".$message."','','1','0' from zt_task where id=".$id;
                 $action = $this->conn->exec($comment);
-                $effort = "insert into zt_effort(objectType,objectID,product,project,account,work,date,`left`,consumed,begin,end) select 'task', id ,'',project,assignedTo,name, now(),0,estimate,'0000','0000' from zt_task where id=".$id;
+                $effort = "insert into zt_effort(objectType,objectID,product,project,account,work,date,`left`,consumed,begin,end) select 'task', id ,'',project,assignedTo,name, now(),0,1,'0000','0000' from zt_task where id=".$id;
                 $effort = $this->conn->exec($effort);
             }
             print("$task, $action, $effort");

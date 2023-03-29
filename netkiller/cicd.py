@@ -283,7 +283,6 @@ class CICD:
                 username=options.username,
                 password=options.password,
                 registry=options.registry)
-            # print(cmd)
             os.system(cmd)
         if options.list:
             self.list()
@@ -295,7 +294,6 @@ class CICD:
         if args:
             if options.skip:
                 self.skip = options.skip.split(',')
-                # print(self.skip)
             for project in args:
                 if options.clean and os.path.exists(self.workspace + '/' +
                                                     project):
