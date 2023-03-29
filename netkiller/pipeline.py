@@ -107,6 +107,8 @@ class Pipeline:
         if username:
             self.pipelines['container'].append(self.container + " login -u {username} -p{password} {registry}".format(
                 username=username, password=password, registry=self.registry))
+            self.logging.info("%s: %s, %s, %s" %
+                              (self.container, registry, username, password))
         self.logging.info("container: %s" % self.container)
         return self
 
@@ -117,6 +119,8 @@ class Pipeline:
         if username:
             self.pipelines['container'].append(self.container + " login -u {username} -p{password} {registry}".format(
                 username=username, password=password, registry=self.registry))
+            self.logging.info("%s: %s, %s, %s" %
+                              (self.container, registry, username, password))
         self.logging.info("container: %s" % self.container)
         return self
 
@@ -156,7 +160,8 @@ class Pipeline:
             file = open(filepath, 'w')
             file.write(temp.safe_substitute(variable))
             file.close()
-            self.logging.info("template: %s, %s, %s" % (tpl, variable, filepath))
+            self.logging.info("template: %s, %s, %s" %
+                              (tpl, variable, filepath))
         return self
 
     def nacos(self, server, username, password, namespace, dataid, group, filepath):
