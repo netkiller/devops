@@ -156,7 +156,7 @@ class Pipeline:
             file = open(filepath, 'w')
             file.write(temp.safe_substitute(variable))
             file.close()
-            self.logging.info("template: %s, %s, %s" % tpl, variable, filepath)
+            self.logging.info("template: %s, %s, %s" % (tpl, variable, filepath))
         return self
 
     def nacos(self, server, username, password, namespace, dataid, group, filepath):
@@ -165,8 +165,8 @@ class Pipeline:
             server=server, username=username, password=password, namespace=namespace, dataid=dataid, group=group, filepath=filepath))
         # self.pipelines['nacos'].append("nacos -s {server} -u {username} -p {password} -n {namespace} -d {dataid} --show".format(
         #     server=server, username=username, password=password, namespace=namespace, dataid=dataid))
-        self.logging.info("nacos: %s, %s, %s, %s, %s, %s, %s" %
-                          server, username, password, namespace, dataid, group, filepath)
+        self.logging.info("nacos: %s, %s, %s, %s, %s, %s, %s" % (
+                          server, username, password, namespace, dataid, group, filepath))
         return self
 
     def deploy(self, script):
