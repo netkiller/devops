@@ -58,7 +58,7 @@ class Pipeline:
     def env(self, key, value):
         os.putenv(key, value)
         # os.environ['JAVA_HOME'] = '/Library/Java/JavaVirtualMachines/jdk1.8.0_341.jdk/Contents/Home'
-        self.logging.info("%s = %s" % (key, value))
+        self.logging.info("env: %s = %s" % (key, value))
         return self
 
     def init(self, script):

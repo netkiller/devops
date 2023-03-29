@@ -261,8 +261,8 @@ class CICD:
     def main(self):
         (options, args) = self.parser.parse_args()
         if options.debug:
-            self.logging.debug("options: {}" % options)
-            self.logging.debug("args: {}" % args)
+            self.logging.debug("options: %s" % options)
+            self.logging.debug("args: %s" % args)
         if options.namespace:
             self.namespace = options.namespace
 

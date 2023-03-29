@@ -16,7 +16,7 @@ class Git():
         self.workspace = os.path.expanduser(workspace)
         if os.path.exists(self.workspace):
             os.chdir(self.workspace)
-            self.logger.info('workspace %s' % self.workspace)
+            self.logger.info('workspace: %s' % self.workspace)
         else:
             self.logger.info("directory doesn't exist %s" % self.workspace)
             exit(0)
