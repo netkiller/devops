@@ -12,9 +12,6 @@ import os
 import sys
 import subprocess
 from datetime import datetime
-import logging
-import logging.handlers
-from logging import basicConfig
 from string import Template
 sys.path.insert(0, '/Users/neo/workspace/devops')
 sys.path.insert(0, '../devops')
@@ -31,18 +28,20 @@ class Pipeline:
     Cnpm = 'cnpm'
     Yarn = 'yarn'
     Gradle = 'gradle'
+    logfile = None
 
-    def __init__(self, workspace, logfile='debug.log'):
-
+    def __init__(self, workspace, logging):
         self.container = 'docker'
         self.registry = None
         self.workspace = workspace
+        self.logging = logging
         self.pipelines = {}
         if not os.path.exists(self.workspace):
             os.mkdir(self.workspace)
-        self.logging = logging.getLogger()
-        logging.basicConfig(level=logging.NOTSET, format='%(asctime)s %(levelname)-8s %(message)s',
-                            datefmt='%Y-%m-%d %H:%M:%S', filename=logfile, filemode='a')
+
+    def image(self, name):
+        self.image = name
+        return self
 
     def begin(self, project):
         self.logging.info("%s %s %s" % ("="*20, project, "=" * 20))
@@ -142,15 +141,17 @@ class Pipeline:
             self.container + ' image rm '+image)
         self.logging.info("dockerfile: %s" % self.pipelines['dockerfile'])
         return self
+
     def template(self, tpl, variable, filepath):
-        file = open(tpl,'r')
-        temp=Template(file.read())
+        file = open(tpl, 'r')
+        temp = Template(file.read())
         file.close()
-        
-        file = open(filepath,'w')
+
+        file = open(filepath, 'w')
         file.write(temp.safe_substitute(variable))
         file.close()
         return self
+
     def nacos(self, server, username, password, namespace, dataid, group, filepath):
         self.pipelines['nacos'] = []
         self.pipelines['nacos'].append("nacos -s {server} -u {username} -p {password} -n {namespace} -d {dataid} -g {group} --push -f {filepath}".format(
@@ -174,26 +175,48 @@ class Pipeline:
         self.logging.info("stop: %s" % script)
         return self
 
+    def log(self, file):
+        self.logfile = file
+
     def end(self, script=None):
+
+        command = """
+        {container} run -it --rm --name pipeline -v ~/.m2:/root/.m2 
+        -v /root/project:/{project} \
+        -w /root/project \
+        {image} \
+        mvn package
+        """.format(container=self.container, project=self.project, image=self.image)
+        # print(command)
+
+        # podman run -it --rm --name maven -v ~/.m2:/root/.m2 \
+        # -v /root/project:/Users/neo/workspace/project \
+        # -w /root/project \
+        # docker.io/netkiller/maven:3-openjdk-18 \
+        # mvn package
+
+        if self.logfile:
+            stdout = open(self.logfile, 'w+')
+        else:
+            stdout = None
+
         if script:
             self.pipelines['end'] = script
         try:
             for stage in ['begin', 'init', 'checkout', 'build', 'container', 'dockerfile', 'nacos', 'deploy', 'stop', 'startup', 'end']:
                 if stage in self.pipelines.keys():
                     for command in self.pipelines[stage]:
-                        rev = subprocess.call(command, shell=True)
+                        rev = subprocess.call(
+                            command, shell=True, stdout=stdout)
                         # rev = subprocess.call(command, shell=True,executable='/bin/bash', env=dict(ENV='/User/neo/.zprofile'))
                         self.logging.info(
                             "command: %s, status: %s" % (command, rev))
-                        # if rev != 0 :
-                        # raise Exception("{} 执行失败".format(command))
+                        if rev != 0:
+                            raise Exception("{} 执行失败".format(command))
         except KeyboardInterrupt as e:
             self.logging.info(e)
         self.logging.info("="*50)
         return self
-
-    def image(self):
-        return (self.image)
 
     def debug(self):
         print(self.pipelines)

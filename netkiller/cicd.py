@@ -15,6 +15,9 @@ try:
     from datetime import datetime
     from optparse import OptionParser, OptionGroup
     from string import Template
+    import logging
+    # import logging.handlers
+    from logging import basicConfig
 except ImportError as err:
     print("Error: %s" % (err))
 
@@ -26,7 +29,7 @@ class CICD:
     template = {}
 
     def __init__(self) -> None:
-
+       
         self.parser = OptionParser("usage: %prog [options] <project>")
         self.parser.add_option("-n",
                                "--namespace",
@@ -64,38 +67,64 @@ class CICD:
                                help="分支",
                                default='master',
                                metavar="master")
-        self.parser.add_option("-s",
+        self.parser.add_option("-g",
+                               "--group",
+                               dest="group",
+                               help="部署组",
+                               default=None,
+                               metavar='')
+        self.parser.add_option('',
                                "--skip",
                                dest="skip",
                                help="跳过步骤",
                                default=None,
                                metavar="build|image|nacos|deploy")
+        self.parser.add_option('',
+                               "--logfile",
+                               dest="logfile",
+                               help="日志文件",
+                               default='/tmp/debug.log',
+                               metavar="/tmp/debug.log")
         self.parser.add_option('-l',
                                "--list",
-                               action="store_true",
+                               action='store_true',
                                dest="list",
                                help="项目列表")
         self.parser.add_option('-a',
                                "--all",
-                               action="store_true",
+                               action='store_true',
                                dest="all",
                                default=True,
                                help="部署所有项目")
         self.parser.add_option('-c',
                                "--clean",
-                               action="store_true",
+                               action='store_true',
                                dest="clean",
                                help="清理构建环境")
+        self.parser.add_option('-s',
+                               '--silent',
+                               action='store_true',
+                               dest="silent",
+                               help="安静模式")
         self.parser.add_option('',
                                "--destroy",
-                               action="store_true",
+                               action='store_true',
                                dest="destroy",
                                help="销毁环境")
         self.parser.add_option('-d',
                                "--debug",
-                               action="store_true",
+                               action='store_true',
                                dest="debug",
                                help="debug mode")
+        (self.options, self.args) = self.parser.parse_args()
+
+        self.logging = logging.getLogger()
+        if self.options.debug :
+            logging.basicConfig(level=logging.NOTSET, format='[%(levelname)-5s] %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S', filename=None, filemode='a')
+        else:
+            logging.basicConfig(level=logging.NOTSET, format='%(asctime)s [%(levelname)-5s] %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S', filename=self.options.logfile, filemode='a')
 
     def usage(self):
         self.parser.print_help()
@@ -108,14 +137,26 @@ class CICD:
         exit()
 
     def list(self):
-        for name, ensd in self.config.items():
-            print(name)
+        lists = {}
+        for name, item in self.config.items():
+            if not item['deployment']['group'] in lists:
+                lists[item['deployment']['group']] = []
+            lists[item['deployment']['group']].append(name)
+        print("组\t项目")
+        print("=" * 50)
+        for group, projects in lists.items():
+            print("{}:".format(group))
+            for project in projects:
+                print("\t{}".format(project))
         exit()
 
     def build(self, name):
+
         if not name in self.config.keys():
             print("%s 项目不存在" % name)
             return
+        # else:
+            # print("==================== {} ====================".format(name))
         project = self.config[name]
 
         ci = project['ci']
@@ -127,17 +168,11 @@ class CICD:
         registry = self.registry+'/' + self.namespace
         image = registry + '/' + name + ':' + time
         tag = time
-        # deploy = 'python3 aliyun.py -u '+latest+' -n '+project['deployment']['group']+' ' + name
+
         # package = ['mvn -U -T 1C clean package']
         # package = 'mvn -U -T 1C clean package -Dautoconfig.skip=true -Dmaven.test.skip=true -Dmaven.test.failure.ignore=true'
         package = ci['build']
         # package = ['ls']
-
-        # podman run -it --rm --name maven -v ~/.m2:/root/.m2 \
-        # -v /root/project:/Users/neo/workspace/ensd-fscs \
-        # -w /root/project \
-        # docker.io/netkiller/maven:3-openjdk-18 \
-        # mvn package
 
         dataid = project['deployment']['name']
         group = 'DEFAULT_GROUP'
@@ -156,34 +191,38 @@ class CICD:
         deploy.append(
             "kubectl -n {namespace} get pod -o wide | grep {project}".format(
                 project=name, namespace=self.namespace))
-
-        pipeline = Pipeline(self.workspace)
-        # pipeline.env('JAVA_HOME','/Library/Java/JavaVirtualMachines/jdk1.8.0_341.jdk/Contents/Home')
-        pipeline.env(
-            'JAVA_HOME',
-            '/Users/neo/Library/Java/JavaVirtualMachines/corretto-1.8.0_362/Contents/Home'
-        )
-        # self.pipeline.env('KUBECONFIG','/Users/neo/workspace/ops/k3s.yaml')
-        pipeline.env('KUBECONFIG', '/root/ops/k3s.yaml')
-        # ["docker images | grep none | awk '{ print $3; }' | xargs docker rmi"]
-        # self.pipeline.begin(name).init(['alias docker=podman']).checkout(ci['url'],self.branch).build(package).podman(registry).dockerfile(tag=tag, dir=module).deploy(deploy).startup(['ls']).end().debug()
-        pipeline.begin(name).init(['alias docker=podman'])
-        if not 'build' in self.skip:
-            pipeline.checkout(ci['url'], self.branch).build(package)
-        if not 'image' in self.skip:
-            pipeline.docker(registry).dockerfile(tag=tag, dir=module)
-        if not 'nacos' in self.skip:
-            if self.template:
-                pipeline.template(template, self.template, filepath)
-            if os.path.exists(filepath):
-                pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
-                               dataid, group, filepath)
-        if not 'deploy' in self.skip:
-            pipeline.deploy(deploy)
-        # .startup(['ls'])
-        pipeline.end()
-        # pipeline.debug()
-        # print(project)
+        try:
+            pipeline = Pipeline(self.workspace, self.logging)
+            pipeline.image('docker.io/netkiller/maven:3-openjdk-18')
+            # pipeline.env('JAVA_HOME','/Library/Java/JavaVirtualMachines/jdk1.8.0_341.jdk/Contents/Home')
+            pipeline.env(
+                'JAVA_HOME',
+                '/Users/neo/Library/Java/JavaVirtualMachines/corretto-1.8.0_362/Contents/Home'
+            )
+            # self.pipeline.env('KUBECONFIG','/Users/neo/workspace/ops/k3s.yaml')
+            pipeline.env('KUBECONFIG', '/root/ops/k3s.yaml')
+            # ["docker images | grep none | awk '{ print $3; }' | xargs docker rmi"]
+            # self.pipeline.begin(name).init(['alias docker=podman']).checkout(ci['url'],self.branch).build(package).podman(registry).dockerfile(tag=tag, dir=module).deploy(deploy).startup(['ls']).end().debug()
+            pipeline.begin(name).init(['alias docker=podman'])
+            if not 'build' in self.skip:
+                pipeline.checkout(ci['url'], self.branch).build(package)
+            if not 'image' in self.skip:
+                pipeline.docker(registry).dockerfile(tag=tag, dir=module)
+            if not 'nacos' in self.skip:
+                if self.template:
+                    pipeline.template(template, self.template, filepath)
+                if os.path.exists(filepath):
+                    pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
+                                   dataid, group, filepath)
+            if not 'deploy' in self.skip:
+                pipeline.deploy(deploy)
+            # .startup(['ls'])
+            pipeline.log('/tmp/{project}.log'.format(project=name))
+            pipeline.end()
+            # pipeline.debug()
+            # print(project)
+        except Exception as err:
+            print(err)
         exit()
 
     def config(self, cfg):
@@ -200,6 +239,22 @@ class CICD:
 
     def template(self, map):
         self.template = map
+
+    def test(self, x):
+        return x*x
+
+    def group(self, name):
+        projects = []
+        for project, item in self.config.items():
+            if item['deployment']['group'] == name:
+                projects.append(project)
+
+        # for project in projects:
+            # self.build(project)
+
+        from multiprocessing import Pool
+        with Pool(5) as p:
+            print(p.map(self.build, projects))
 
     def main(self):
         (options, args) = self.parser.parse_args()
@@ -230,6 +285,10 @@ class CICD:
             os.system(cmd)
         if options.list:
             self.list()
+
+        if options.group:
+            self.group(options.group)
+            exit()
 
         if args:
             if options.skip:
