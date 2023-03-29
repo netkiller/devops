@@ -67,7 +67,7 @@ class Pipeline:
         return self
 
     def checkout(self, url, branch):
-        self.logging.info("checkout: %s = %s" % (url, branch))
+        self.logging.info("checkout: %s, branch: %s" % (url, branch))
         if os.path.exists(self.project):
             git = Git(os.path.join(self.workspace, self.project), self.logging)
             git.fetch().checkout(branch).pull().execute()
@@ -107,7 +107,7 @@ class Pipeline:
         if username:
             self.pipelines['container'].append(self.container + " login -u {username} -p{password} {registry}".format(
                 username=username, password=password, registry=self.registry))
-            self.logging.info("docker: %s %s %s" % registry, username, password)
+        self.logging.info("container: %s" % self.container)
         return self
 
     def podman(self, registry, username=None, password=None):
@@ -117,7 +117,7 @@ class Pipeline:
         if username:
             self.pipelines['container'].append(self.container + " login -u {username} -p{password} {registry}".format(
                 username=username, password=password, registry=self.registry))
-            self.logging.info("podman: %s %s %s" % registry, username, password)
+        self.logging.info("container: %s" % self.container)
         return self
 
     def dockerfile(self, tag=None, dir=None):
