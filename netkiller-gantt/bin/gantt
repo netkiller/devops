@@ -142,7 +142,8 @@ class GanttChart:
             self.usage()
 
         self.gantt.load(self.data)
-        # self.gantt.title(options.title)
+        
+        self.gantt.setWorkweeks(6, True)
         if options.workload:
             self.gantt.workloadChart(options.title)
         elif options.gantt:

@@ -75,6 +75,8 @@ class Gantt(Canvas):
         super().__init__()
         self.canvasWidth = self.width
         self.canvasHeight = self.height
+        self.workweeks = 5
+        self.firstsd = None
         pass
 
     def title(self, text):
@@ -98,6 +100,11 @@ class Gantt(Canvas):
 
     def hideTable(self):
         self.isTable = True
+
+    def setWorkweeks(self, workweeks=5, firstsd=False):
+        # 'five-day','six-day'
+        self.workweeks = workweeks
+        self.firstsd = firstsd
 
     def __table(self, top):
         group = draw.Group(id='table')
@@ -124,6 +131,15 @@ class Gantt(Canvas):
 
         return group
 
+    def weekNumberOfMonth(self, currentDate):
+
+        # firstDay = currentDate.replace(            day=1, hour=0, minute=0, second=0, microsecond=0)
+        firstDay = currentDate.replace(day=1)
+        number = int(currentDate.strftime('%W')) - \
+            int(firstDay.strftime('%W')) + 1
+        # print(currentDate, number)
+        return number
+
     def __weekdays(self, top, begin, end):
         offsetX = 1
         column = 0
@@ -146,25 +162,35 @@ class Gantt(Canvas):
         endDay = end.day
         # print(beginDay, endDay)
 
-        weekNumber = datetime.strptime(
+        weekNumberOfYear = datetime.strptime(
             str(begin.year)+'-'+str(begin.month)+'-01', '%Y-%m-%d').strftime('%W')
-        # weekNumber = begin.strftime('%W')
-        # weekNumber = datetime.date(datetime.now().year,month,1).strftime('%W')
+        # weekNumberOfYear = begin.strftime('%W')
+        # weekNumberOfYear = datetime.date(datetime.now().year,month,1).strftime('%W')
         weekGroups = {}
-        weekGroups[weekNumber] = draw.Group(id='week'+str(weekNumber))
+        weekGroups[weekNumberOfYear] = draw.Group(
+            id='week'+str(weekNumberOfYear))
 
         for day in range(beginDay, endDay+1):
-            # print(day)
+
+            # numberOfWeek = self.weekNumberOfMonth(datetime.strptime(str(begin.year)+'-'+str(begin.month)+'-'+str(day), '%Y-%m-%d').date())
+            # print()
+            # x;qi
             weekday = calendar.weekday(begin.year, begin.month, day)
 
-            currentWeekNumber = datetime.strptime(
+            currentweekNumberOfYear = datetime.strptime(
                 str(begin.year) + '-'+str(begin.month)+'-' + str(day), '%Y-%m-%d').strftime('%W')
-            # print(weekNumber, currentWeekNumber)
-            if currentWeekNumber != weekNumber:
-                weekNumber = currentWeekNumber
-                weekGroups[weekNumber] = draw.Group(id='week'+str(weekNumber))
-
-            if weekday >= 5:
+            # print(weekNumberOfYear, currentweekNumberOfYear)
+            if currentweekNumberOfYear != weekNumberOfYear:
+                weekNumberOfYear = currentweekNumberOfYear
+                weekGroups[weekNumberOfYear] = draw.Group(
+                    id='week'+str(weekNumberOfYear))
+            # if self.firstsd == True:
+            #     self.workweeks = 6
+            #     self.firstsd = False
+            # else:
+            #     self.workweeks = 5
+            #     self.firstsd = True
+            if weekday >= self.workweeks:
                 color = '#dddddd'
             else:
                 color = '#cccccc'
@@ -174,17 +200,17 @@ class Gantt(Canvas):
                 begin.month), day=int(day)).strftime('%Y-%m-%d')] = x
 
             if day == beginDay:
-                weekGroups[weekNumber].append(draw.Text(begin.strftime(
+                weekGroups[weekNumberOfYear].append(draw.Text(begin.strftime(
                     '%Y年%m月'), 20, x + 4, top + self.itemHeight - 10, fill='#555555'))
             # 右侧封闭
             if day == endDay:
-                weekGroups[weekNumber].append(draw.Line(x + self.columeWidth, top,
-                                                        x + self.columeWidth, self.canvasHeight, stroke='black'))
+                weekGroups[weekNumberOfYear].append(draw.Line(x + self.columeWidth, top,
+                                                              x + self.columeWidth, self.canvasHeight, stroke='black'))
 
             # dayName = ["星期一","星期二","星期三","星期四","星期五","星期六","星期日"]
             dayName = ["一", "二", "三", "四", "五", "六", "日"]
 
-            weekGroups[weekNumber].append(
+            weekGroups[weekNumberOfYear].append(
                 draw.Text(dayName[weekday], 20, x + 4, top + self.columeWidth*2-10, fill='#555555'))
             if day < 10:
                 numberOffsetX = 10
@@ -196,13 +222,13 @@ class Gantt(Canvas):
             r = draw.Rectangle(x, top+self.itemHeight*2, self.columeWidth,
                                self.canvasHeight - (top+self.itemHeight*2), fill=color)
             r.append_title(str(day))
-            weekGroups[weekNumber].append(r)
+            weekGroups[weekNumberOfYear].append(r)
             # 周分割线
             if weekday == 6:
-                weekGroups[weekNumber].append(draw.Line(x + self.columeWidth, top + self.itemHeight,
-                                                        x + self.columeWidth, self.canvasHeight, stroke='black'))
+                weekGroups[weekNumberOfYear].append(draw.Line(x + self.columeWidth, top + self.itemHeight,
+                                                              x + self.columeWidth, self.canvasHeight, stroke='black'))
             # 日期
-            weekGroups[weekNumber].append(
+            weekGroups[weekNumberOfYear].append(
                 draw.Text(str(day), 20, x + numberOffsetX, top + self.columeWidth * 3 - 10, fill='#555555'))
 
             # if column:
