@@ -29,6 +29,7 @@ class Pipeline:
     Yarn = 'yarn'
     Gradle = 'gradle'
     logfile = None
+    image = None
 
     def __init__(self, workspace, logging):
         self.container = 'docker'
@@ -196,20 +197,17 @@ class Pipeline:
 
     def end(self, script=None):
 
-        command = """
-        {container} run -it --rm --name pipeline -v ~/.m2:/root/.m2 
-        -v /root/project:/{project} \
-        -w /root/project \
-        {image} \
-        mvn package
-        """.format(container=self.container, project=self.project, image=self.image)
+        # if self.image :
+        #     command = """
+        #     {container} run -it --rm --name pipeline -v ~/.m2:/root/.m2 
+        #     -v /root/project:/{project} \
+        #     -w /root/project \
+        #     {image} \
+        #     /bin/bash
+        #     """.format(container=self.container, project=self.project, image=self.image)
+        #     rev = subprocess.call(
+        #                     command, shell=True, stdin = 'ls')
         # print(command)
-
-        # podman run -it --rm --name maven -v ~/.m2:/root/.m2 \
-        # -v /root/project:/Users/neo/workspace/project \
-        # -w /root/project \
-        # docker.io/netkiller/maven:3-openjdk-18 \
-        # mvn package
 
         if self.logfile:
             stdout = open(self.logfile, 'w+')
