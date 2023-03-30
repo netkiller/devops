@@ -113,6 +113,11 @@ class CICD:
                                dest="destroy",
                                help="销毁环境")
         self.parser.add_option('-d',
+                               "--daemon",
+                               action='store_true',
+                               dest="daemon",
+                               help="后台运行")
+        self.parser.add_option('',
                                "--debug",
                                action='store_true',
                                dest="debug",
@@ -218,7 +223,7 @@ class CICD:
             if not 'deploy' in self.skip:
                 pipeline.deploy(deploy)
             # .startup(['ls'])
-            if not self.options.silent:
+            if self.options.silent:
                 pipeline.log(
                     '{workspace}/{project}.log'.format(workspace=self.workspace, project=name))
             pipeline.end()
@@ -258,7 +263,10 @@ class CICD:
         from multiprocessing import Pool
         with Pool(5) as p:
             self.logging.info(p.map(self.build, projects))
-
+    def daemon(self):
+        pid = os.fork()
+        if pid > 0:
+            sys.exit(0)
     def main(self):
         (options, args) = self.parser.parse_args()
         if options.debug:
@@ -290,10 +298,14 @@ class CICD:
             self.list()
 
         if options.group:
+            if options.daemon:
+                self.daemon()
             self.group(options.group)
             exit()
 
         if args:
+            if options.daemon:
+                self.daemon()
             if options.skip:
                 self.skip = options.skip.split(',')
             for project in args:
