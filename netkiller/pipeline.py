@@ -226,7 +226,7 @@ class Pipeline:
                 if stage in self.pipelines.keys():
                     for command in self.pipelines[stage]:
                         rev = subprocess.call(
-                            command, shell=True, stdout=stdout)
+                            command, shell=True, stdout=stdout, stderr=stdout)
                         # rev = subprocess.call(command, shell=True,executable='/bin/bash', env=dict(ENV='/User/neo/.zprofile'))
                         self.logging.info(
                             "command: %s, status: %s" % (command, rev))
