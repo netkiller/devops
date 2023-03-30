@@ -263,6 +263,12 @@ class CICD:
         from multiprocessing import Pool
         with Pool(5) as p:
             self.logging.info(p.map(self.build, projects))
+    def all(self):
+        from multiprocessing import Pool
+        with Pool(10) as pool:
+            for name, item in self.config.items():
+                self.logging.info(pool.map(self.build, name))
+
     def daemon(self):
         pid = os.fork()
         if pid > 0:
@@ -296,7 +302,11 @@ class CICD:
             os.system(cmd)
         if options.list:
             self.list()
-
+        if options.all:
+            if options.daemon:
+                self.daemon()
+            self.all()
+            exit()
         if options.group:
             if options.daemon:
                 self.daemon()
