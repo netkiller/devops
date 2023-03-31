@@ -48,7 +48,8 @@ class ExcelDiff():
         )
         exit()
 
-    def md5sum(self):
+    def diffFile(self):
+        sheets = []
         print("=" * 40, "md5sum", "=" * 40)
         if platform.system() == 'Darwin':
             os.system(
@@ -58,17 +59,18 @@ class ExcelDiff():
                 file1=self.args[0], file2=self.args[1]))
 
         try:
-            print("=" * 40, self.args[0], "=" * 40)
+            print("=" * 10, self.args[0], "<=>",self.args[1], "=" * 10)
             file1 = pd.read_excel(self.args[0], sheet_name=None, index_col=0)
+            sheets = file1
             print(list(file1))
-            print()
-            print("=" * 40, self.args[1], "=" * 40)
             file2 = pd.read_excel(self.args[1], sheet_name=None, index_col=0)
             print(list(file2))
+            print()
         except FileNotFoundError as err:
             print(err)
+        return sheets
 
-    def sheet(self, name):
+    def diffSheet(self, name):
         print("=" * 40, "工作表 [{name}] 对比结果".format(name=name), "=" * 40)
         file1 = pd.read_excel(self.args[0], name, index_col=0)
         file1.to_csv('/tmp/file1.csv', encoding='utf-8')
@@ -78,8 +80,7 @@ class ExcelDiff():
         if platform.system() in ['Darwin', 'Linux']:
             os.system("sdiff -a -s /tmp/file1.csv /tmp/file2.csv")
         # else:
-        os.system(
-            "/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code --diff /tmp/file1.csv /tmp/file2.csv ")
+        # os.system("/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code --diff /tmp/file1.csv /tmp/file2.csv ")
         # os.system("code -d /tmp/file1.csv /tmp/file2.csv")
 
     def main(self):
@@ -89,10 +90,12 @@ class ExcelDiff():
         if len(self.args) == 2:
             # print(len(self.args))
             if self.options.sheet:
-                self.sheet(self.options.sheet)
+                self.diffSheet(self.options.sheet)
                 exit()
             if self.options.file:
-                self.md5sum()
+                sheets = self.diffFile()
+                for sheet in sheets:
+                    self.diffSheet(sheet)
                 exit()
         self.usage()
 

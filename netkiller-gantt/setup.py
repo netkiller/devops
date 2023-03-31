@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="netkiller-gantt",
-    version="0.0.1",
+    version="0.0.2",
     author="Neo Chen",
     author_email="netkiller@msn.com",
     description="Best Gantt chart in Python",
@@ -24,7 +24,7 @@ setup(
                 # "License :: OSI Approved :: CC 2.0",
                 "Operating System :: OS Independent",
     ],
-    install_requires=['pillow', 'drawsvg', 'pyproject.toml', 'pycairo'],
+    install_requires=['pillow', 'drawsvg', 'pyproject.toml', 'pycairo','mysql-connector-python'],
     #   'opencv-python',
     # package_dir={ '': '..' },
     packages=find_packages('..'),
@@ -33,7 +33,7 @@ setup(
         'bin/gantt',
     ],
     data_files=[
-        ('doc', ['doc/gantt.svg']),
+        ('doc', ['doc/gantt.svg','doc/by-nc-sa.png']),
 
     ]
 )

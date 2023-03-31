@@ -111,3 +111,54 @@ EOF
 select id, name,estStarted as start, deadline as finish,  assignedTo as resource, parent from zt_task where `group` = 4 order by id desc limit 100;
 select id, name,estStarted as start, deadline as finish,  assignedTo as resource, parent from zt_task where assignedTo in ('neo','netkiller','tom','jerry') order by id desc limit 100;
 ```
+
+## 从数据库生成甘特图
+
+### MySQL 5.7
+
+```sql
+
+CREATE TABLE `project` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL COMMENT '任务名称',
+  `start` date NOT NULL COMMENT '开始日期',
+  `finish` date NOT NULL COMMENT '完成日期',
+  `resource` varchar(255) DEFAULT NULL COMMENT '资源',
+  `predecessor` bigint(20) DEFAULT NULL COMMENT '前置任务',
+  `milestone` bit(1) DEFAULT NULL COMMENT '里程碑',
+  `parent` bigint(20) DEFAULT NULL COMMENT '父任务',
+  `status` enum('Enabled','Disabled') DEFAULT 'Enabled' COMMENT '状态',
+  PRIMARY KEY (`id`),
+  KEY `project_has_subproject` (`parent`),
+  CONSTRAINT `project_has_subproject` FOREIGN KEY (`parent`) REFERENCES `project` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4
+
+```
+
+### MySQL 8.0
+
+```sql
+CREATE TABLE `project` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '任务名称',
+  `start` date NOT NULL DEFAULT (curdate()) COMMENT '开始日期',
+  `finish` date NOT NULL DEFAULT (curdate()) COMMENT '完成日期',
+  `resource` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '资源',
+  `predecessor` bigint unsigned DEFAULT NULL COMMENT '前置任务',
+  `milestone` bit(1) DEFAULT NULL COMMENT '里程碑',
+  `parent` bigint unsigned DEFAULT NULL COMMENT '父任务',
+  `status` enum('Enabled','Disabled') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'Enabled' COMMENT '状态',
+  PRIMARY KEY (`id`),
+  KEY `project_has_subproject` (`parent`),
+  KEY `task_has_predecessor_idx` (`predecessor`),
+  CONSTRAINT `project_has_subproject` FOREIGN KEY (`parent`) REFERENCES `project` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+UPDATE `test`.`project` SET `milestone` = b'001'  WHERE (`id` = '11');
+```
+
+```bash
+
+gantt --host mysql.netkiller.cn -u root -p passw0rd --database test -g
+
+```

@@ -19,6 +19,7 @@ try:
     import logging.handlers
     from optparse import OptionParser, OptionGroup
     from datetime import datetime, date
+    from mysql import connector
 except ImportError as err:
     print("Error: %s" % (err))
 
@@ -35,6 +36,17 @@ class GanttChart:
                                default=None, metavar="/path/to/gantt.csv")
         self.parser.add_option('-l', '--load', dest='load',
                                help='load data from file.', default=None, metavar='/path/to/gantt.json')
+        group = OptionGroup(self.parser, "loading data from mysql")
+        group.add_option('', '--host', dest='host', help='',
+                         default=None, metavar='localhost')
+        group.add_option('-u', '--username', dest='username',
+                         help='', default=None, metavar='root')
+        group.add_option('-p', '--password', dest='password',
+                         help='', default=None, metavar='')
+        group.add_option('', '--database', dest='database',
+                         help='', default=None, metavar='test')
+        self.parser.add_option_group(group)
+
         self.parser.add_option('-s', '--save', dest='save',
                                help='save file', default=None, metavar='/path/to/gantt.svg')
         self.parser.add_option(
@@ -82,6 +94,35 @@ class GanttChart:
             else:
                 self.data[item['resource']] = {
                     'resource': item['resource'], 'start': item['start'], 'finish': item['finish']}
+
+    def loadFromMySQL(self, config):
+
+        try:
+            cnx = connector.connect(**config)
+            cursor = cnx.cursor(dictionary=True)
+            query = ("SELECT * FROM project")
+
+            # WHERE hire_date BETWEEN %s AND %s
+            # hire_start = datetime.date(1999, 1, 1)
+            # hire_end = datetime.date(1999, 12, 31)
+            # cursor.execute(query, (hire_start, hire_end))
+            cursor.execute(query)
+            tmp = Data()
+            for row in cursor:
+                # print("{}, {} was hired on {:%d %b %Y}".format(                    last_name, first_name, hire_date))
+                tmp.addFromMySQL(row)
+
+            cursor.close()
+            cnx.close()
+            self.data = tmp.data
+        except connector.Error as err:
+            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                print(err)
+            elif err.errno == errorcode.ER_BAD_DB_ERROR:
+                print("Database does not exist: %s" % config['database'])
+            else:
+                print(err)
+            exit()
 
     def main(self):
         (options, args) = self.parser.parse_args()
@@ -133,6 +174,15 @@ class GanttChart:
                                 item['finish'], item['resource'], item['predecessor'], item['milestone'], item['parent'])
                     # print(tmp.data)
                     self.data = tmp.data
+        elif options.host:
+            config = {
+                'host': options.host,
+                'user': options.username,
+                'password': options.password,
+                'database': options.database,
+                'raise_on_warnings': True
+            }
+            self.loadFromMySQL(config)
         if options.debug:
             print(options, args)
             print(json.dumps(self.data, ensure_ascii=False))
@@ -142,7 +192,7 @@ class GanttChart:
             self.usage()
 
         self.gantt.load(self.data)
-        
+
         self.gantt.setWorkweeks(6, True)
         if options.workload:
             self.gantt.workloadChart(options.title)

@@ -39,6 +39,28 @@ class Data:
         else:
             self.data[id] = item
 
+    def addFromMySQL(self, row):
+
+        # if row['milestone'] == 'TRUE':
+        #     row['milestone'] = True
+        # else:
+        #     row['milestone'] = False
+
+        id = row['id']
+        parent = row['parent']
+        row['start'] = row['start'].strftime('%Y-%m-%d')
+        row['finish'] = row['finish'].strftime('%Y-%m-%d')
+        if not row['resource']:
+            row['resource'] = ''
+        # print(type(parent))
+        if parent and parent > 0:
+            if not 'subitem' in self.data[parent]:
+                self.data[parent]['subitem'] = {}
+            self.data[parent]['subitem'][id] = row
+
+        else:
+            self.data[id] = row
+
     def addDict(self, item):
         pass
 
@@ -97,6 +119,8 @@ class Gantt(Canvas):
         self.draw.append(draw.Rectangle(0, 0, self.canvasWidth,
                                         self.canvasHeight, fill='none', stroke='black'))
         # fill='#eeeeee'
+        self.draw.append(draw.Image(
+            8, 8, 100, 34.99, 'by-nc-sa.png', embed=True))
 
     def hideTable(self):
         self.isTable = True
@@ -642,7 +666,7 @@ class Gantt(Canvas):
             if self.nameTextSize < length:
                 self.nameTextSize = length
 
-        if 'resource' in item:
+        if 'resource' in item and item['resource']:
             length = self.getTextSize(item['resource'])
             if self.resourceTextSize < length:
                 self.resourceTextSize = length
@@ -677,7 +701,8 @@ class Gantt(Canvas):
         # print(self.maxDate, end)
         # print(self.beginDate, self.endDate)
 
-        # self.nameTextSize += self.textIndentSize
+        # 行首加5像素美化
+        self.nameTextSize += 10
 
         if not self.isTable:
             self.startPosition = self.nameTextSize + self.resourceTextSize + 250
