@@ -1,115 +1,120 @@
 {
     "1": {
-        "id":"1",
+        "id": 1,
         "name": "开发需求排期",
-        "start": "2023-02-20",
-        "finish": "2023-03-22",
+        "start": "2023-02-22",
+        "finish": "2023-03-03",
         "subitem": {
             "11": {
-                "id":"11",
+                "id": 11,
                 "name": "用户登录开发",
-                "start": "2023-02-20",
+                "start": "2023-02-22",
                 "finish": "2023-02-24",
                 "progress": 4,
-                "resource": "陈景峰",
-                "next":"22"
+                "resource": "陈景峰"
             },
             "12": {
-                "id":"12",
+                "id": 12,
                 "name": "权限角色开发",
-                "start": "2023-03-01",
+                "start": "2023-02-27",
                 "finish": "2023-03-03",
                 "resource": "Neo",
-                "progress": 5
+                "progress": 5,
+                "predecessor": 11
             }
         }
     },
     "2": {
-        "id":"2",
+        "id": "2",
         "name": "测试任务排期",
-        "start": "2023-03-06",
-        "finish": "2023-03-22",
+        "start": "2023-03-01",
+        "finish": "2023-03-15",
         "subitem": {
             "21": {
-                "id":"21",
+                "id": 21,
                 "name": "用户登陆测试",
-                "start": "2023-03-06",
-                "finish": "2023-03-15",
+                "start": "2023-03-01",
+                "finish": "2023-03-08",
                 "resource": "陈景峰",
                 "progress": 4
             },
             "22": {
-                "id":"22",
+                "id": 22,
                 "name": "权限角色测试",
-                "start": "2023-03-15",
-                "finish": "2023-03-22",
+                "start": "2023-03-09",
+                "finish": "2023-03-15",
                 "resource": "netkiller",
-                "progress": 0
+                "progress": 0,
+                "predecessor": 21
             }
         }
     },
     "3": {
-        "id":"3",
-        "name": "汉字",
+        "id": 3,
+        "name": "任务组测试",
         "start": "2023-02-25",
-        "finish": "2023-04-05",
+        "finish": "2023-03-10",
         "resource": "陈景峰",
-        "progress": 3
-    },
-    "4": {
-        "id":"4",
-        "name": "Java",
-        "start": "2023-02-24",
-        "finish": "2023-02-27",
-        "resource": "司空摘星",
-        "progress": 2,
-        "next": "5"
-    },
-    "5": {
-        "id":"5",
-        "name": "PHP",
-        "start": "2023-03-03",
-        "finish": "2023-03-05",
-        "progress": 5,
-        "next": "7"
-    },
-    "6": {
-        "id":"6",
-        "name": "Go",
-        "start": "2023-03-10",
-        "finish": "2023-03-20",
-        "milestone": true
-    },
-    "7": {
-        "id":"7",
-        "name": "Python",
-        "start": "2023-03-06",
-        "finish": "2023-03-08",
-        "next": "82"
+        "progress": 3,
+        "subitem": {
+            "4": {
+                "id": 4,
+                "name": "Java",
+                "start": "2023-02-24",
+                "finish": "2023-02-27",
+                "resource": "司空摘星",
+                "progress": 2
+            },
+            "5": {
+                "id": 5,
+                "name": "PHP",
+                "start": "2023-03-03",
+                "finish": "2023-03-05",
+                "progress": 5,
+                "predecessor": 4
+            },
+            "6": {
+                "id": "6",
+                "name": "Go",
+                "start": "2023-03-10",
+                "finish": "2023-03-20",
+                "milestone": true
+            },
+            "7": {
+                "id": 7,
+                "name": "Python",
+                "start": "2023-03-06",
+                "finish": "2023-03-08",
+                "predecessor": 5
+            }
+        }
     },
     "8": {
-        "id":"8",
+        "id": 8,
         "name": "Swift",
         "start": "2023-02-27",
-        "finish": "2023-03-18",
+        "finish": "2023-03-16",
         "subitem": {
             "81": {
-                "id":"81",
+                "id": 81,
                 "name": "LLVM",
-                "start": "2023-03-01",
-                "finish": "2023-03-05"
+                "start": "2023-02-28",
+                "finish": "2023-03-06",
+                "predecessor": 4
             },
             "82": {
-                "id":"82",
+                "id": 82,
                 "name": "Clang",
-                "start": "2023-03-09",
-                "finish": "2023-03-14"
+                "start": "2023-03-07",
+                "finish": "2023-03-10",
+                "predecessor": 81
             },
             "83": {
-                "id":"83",
+                "id": 83,
                 "name": "Rust",
                 "start": "2023-03-13",
-                "finish": "2023-03-18"
+                "finish": "2023-03-16",
+                "predecessor": 82
             }
         }
     }

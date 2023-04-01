@@ -30,31 +30,37 @@ class GanttChart:
     def __init__(self) -> None:
 
         self.parser = OptionParser("usage: %prog [options] ")
-        self.parser.add_option("-t", "--title", dest="title", help="甘特图标题",
-                               default='甘特图标题', metavar="项目甘特图")
+
+        self.parser.add_option(
+            '', "--stdin", action="store_true", dest="stdin", help="cat gantt.json | gantt -s file.svg")
         self.parser.add_option("-c", "--csv", dest="csv", help="/path/to/gantt.csv",
                                default=None, metavar="/path/to/gantt.csv")
         self.parser.add_option('-l', '--load', dest='load',
                                help='load data from file.', default=None, metavar='/path/to/gantt.json')
         group = OptionGroup(self.parser, "loading data from mysql")
-        group.add_option('', '--host', dest='host', help='',
+        group.add_option('-H', '--host', dest='host', help='',
                          default=None, metavar='localhost')
         group.add_option('-u', '--username', dest='username',
                          help='', default=None, metavar='root')
         group.add_option('-p', '--password', dest='password',
                          help='', default=None, metavar='')
-        group.add_option('', '--database', dest='database',
+        group.add_option('-D', '--database', dest='database',
                          help='', default=None, metavar='test')
         self.parser.add_option_group(group)
 
-        self.parser.add_option('-s', '--save', dest='save',
-                               help='save file', default=None, metavar='/path/to/gantt.svg')
-        self.parser.add_option(
-            '', "--stdin", action="store_true", dest="stdin", help="cat gantt.json | gantt -s file.svg")
-        self.parser.add_option(
+        group = OptionGroup(self.parser, "Charts")
+        group.add_option("-t", "--title", dest="title", help="甘特图标题",
+                               default='甘特图标题', metavar="项目甘特图")
+        group.add_option("-W", "--workweeks", dest="workweeks", help="workweeks default 5",
+                               default=5, metavar="5")
+        
+        group.add_option(
             '-g', "--gantt", action="store_true", dest="gantt", default=True, help="Gantt chart")
-        self.parser.add_option(
+        group.add_option(
             '-w', "--workload", action="store_true", dest="workload", help="Workload chart")
+        group.add_option('-s', '--save', dest='save',
+                               help='save file', default=None, metavar='/path/to/gantt.svg')
+        self.parser.add_option_group(group)
         self.parser.add_option(
             '-d', "--debug", action="store_true", dest="debug", help="debug mode")
 
@@ -192,8 +198,8 @@ class GanttChart:
             self.usage()
 
         self.gantt.load(self.data)
-
-        self.gantt.setWorkweeks(6, True)
+        if options.workweeks :
+            self.gantt.setWorkweeks(options.workweeks, True)
         if options.workload:
             self.gantt.workloadChart(options.title)
         elif options.gantt:

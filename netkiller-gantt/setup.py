@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="netkiller-gantt",
-    version="0.0.2",
+    version="0.0.3",
     author="Neo Chen",
     author_email="netkiller@msn.com",
     description="Best Gantt chart in Python",
@@ -33,7 +33,7 @@ setup(
         'bin/gantt',
     ],
     data_files=[
-        ('doc', ['doc/gantt.svg','doc/by-nc-sa.png']),
+        ('share/netkiller', ['doc/gantt.svg','doc/by-nc-sa.png']),
 
     ]
 )

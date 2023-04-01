@@ -138,20 +138,20 @@ class Gantt(Canvas):
                      self.itemHeight * 2, fill='#555555'))
         group.append(draw.Line(self.nameTextSize, top + self.itemHeight * 2,
                                self.nameTextSize, self.canvasHeight, stroke='grey'))
-        group.append(draw.Text('开始日期', 20, self.nameTextSize,
+        group.append(draw.Text('开始日期', 20, self.nameTextSize+5,
                                top + 20 + self.itemHeight * 2, fill='#555555'))
         group.append(draw.Line(self.nameTextSize + 100, top + self.itemHeight * 2,
                                self.nameTextSize + 100, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('截止日期', 20, self.nameTextSize +
-                               100, top + 20 + self.itemHeight * 2, fill='#555555'))
+                               100+5, top + 20 + self.itemHeight * 2, fill='#555555'))
         group.append(draw.Line(self.nameTextSize + 200, top+self.itemHeight * 2,
                                self.nameTextSize + 200, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('工时', 20, self.nameTextSize +
-                               200, top + 20 + self.itemHeight * 2, fill='#555555'))
+                               200+5, top + 20 + self.itemHeight * 2, fill='#555555'))
         group.append(draw.Line(self.nameTextSize + 250, top+self.itemHeight * 2,
                                self.nameTextSize + 250, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('资源', 20, self.nameTextSize +
-                               250, top + 20 + self.itemHeight * 2, fill='#555555'))
+                               250+5, top + 20 + self.itemHeight * 2, fill='#555555'))
 
         return group
 
@@ -381,10 +381,10 @@ class Gantt(Canvas):
             # text.append(draw.TSpan(line['begin'], text_anchor='start'))
             # text.append(draw.TSpan(line['end'], text_anchor='start'))
 
-            table.append(draw.Text(line['start'], 20, self.nameTextSize,
+            table.append(draw.Text(line['start'], 20, self.nameTextSize+5,
                                    top + 20, text_anchor='start'))
             table.append(draw.Text(line['finish'], 20, self.nameTextSize +
-                                   100, top + 20, text_anchor='start'))
+                                   100+5, top + 20, text_anchor='start'))
             # if 'progress' in line:
             #     table.append(draw.Text(
             #         str(line['progress']), 20, self.nameTextSize + 200, top + 20, text_anchor='start'))
@@ -393,7 +393,7 @@ class Gantt(Canvas):
                                    210, top + 20, text_anchor='start'))
             if 'resource' in line:
                 table.append(draw.Text(
-                    str(line['resource']), 20, self.nameTextSize + 250, top + 20, text_anchor='start'))
+                    str(line['resource']), 20, self.nameTextSize + 250+5, top + 20, text_anchor='start'))
             lineGroup.append(table)
 
         group = draw.Group(id='item')
@@ -492,20 +492,32 @@ class Gantt(Canvas):
         linkGroup.append(path)
         return linkGroup
 
-    def predecessor(self):
+    def predecessor(self, data):
         handover = draw.Group(id='handover')
-        for id, task in self.data.items():
-            if 'predecessor' in task and task['predecessor'] and int(task['predecessor']) > 0:
+        for id, task in data.items():
+            if 'subitem' in task:
+                self.predecessor(task['subitem'])
+            elif 'predecessor' in task and task['predecessor'] and int(task['predecessor']) > 0:
+                # print(self.linkPosition)
                 link = self.link(
                     self.linkPosition[task['predecessor']], self.linkPosition[task['id']])
                 handover.append(link)
-            if 'subitem' in task:
-                for id, stask in task['subitem'].items():
-                    if 'predecessor' in stask and stask['predecessor'] and int(stask['predecessor']) > 0:
-                        link = self.link(
-                            self.linkPosition[stask['predecessor']], self.linkPosition[stask['id']])
-                        handover.append(link)
+            
         self.draw.append(handover)
+    
+        # handover = draw.Group(id='handover')
+        # for id, task in self.data.items():
+        #     if 'predecessor' in task and task['predecessor'] and int(task['predecessor']) > 0:
+        #         link = self.link(
+        #             self.linkPosition[task['predecessor']], self.linkPosition[task['id']])
+        #         handover.append(link)
+        #     if 'subitem' in task:
+        #         for id, stask in task['subitem'].items():
+        #             if 'predecessor' in stask and stask['predecessor'] and int(stask['predecessor']) > 0:
+        #                 link = self.link(
+        #                     self.linkPosition[stask['predecessor']], self.linkPosition[stask['id']])
+        #                 handover.append(link)
+        # self.draw.append(handover)
 
     def workload(self, title):
         self.startPosition = 400
@@ -718,7 +730,7 @@ class Gantt(Canvas):
         self.title(title)
         self.calendar()
         self.tasks()
-        self.predecessor()
+        self.predecessor(self.data)
         self.legend()
 
     def workloadChart(self, title):
