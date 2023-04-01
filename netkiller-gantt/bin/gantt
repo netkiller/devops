@@ -53,7 +53,7 @@ class GanttChart:
                                default='甘特图标题', metavar="项目甘特图")
         group.add_option("-W", "--workweeks", dest="workweeks", help="workweeks default 5",
                                default=5, metavar="5")
-        
+
         group.add_option(
             '-g', "--gantt", action="store_true", dest="gantt", default=True, help="Gantt chart")
         group.add_option(
@@ -63,8 +63,6 @@ class GanttChart:
         self.parser.add_option_group(group)
         self.parser.add_option(
             '-d', "--debug", action="store_true", dest="debug", help="debug mode")
-
-        
 
     def usage(self):
         self.parser.print_help()
@@ -104,51 +102,20 @@ class GanttChart:
     def main(self):
         (options, args) = self.parser.parse_args()
         if options.stdin:
-            if options.workload:
-                self.data = json.loads(sys.stdin.read())
-            elif options.gantt:
-                self.data = json.loads(sys.stdin.read())
+            self.data = json.loads(sys.stdin.read())
         elif options.csv:
             with open(options.csv) as csvfile:
                 items = csv.DictReader(csvfile)
+                tmp = Data()
+                for item in items:
+                    if item['milestone'] == 'TRUE':
+                        item['milestone'] = True
+                    else:
+                        item['milestone'] = False
 
-                if options.workload:
-                    tmp = {}
-                    beginDate = datetime.now().date()
-                    endDate = datetime.now().date()
-                    for item in items:
-
-                        start = datetime.strptime(
-                            item['start'], '%Y-%m-%d').date()
-                        finish = datetime.strptime(
-                            item['finish'], '%Y-%m-%d').date()
-                        if not item['resource']:
-                            continue
-                            # item['resource'] = 'Null'
-                        if item['resource'] and item['resource'] in tmp.keys():
-                            if tmp[item['resource']]['start'] > start:
-                                tmp[item['resource']]['start'] = start
-                            if tmp[item['resource']]['finish'] < finish:
-                                tmp[item['resource']]['finish'] = finish
-                        else:
-                            tmp[item['resource']] = {
-                                'resource': item['resource'], 'start': start, 'finish': finish}
-                        # print(item['resource'])
-                    # data = json.loads(tmp)
-                    self.data = tmp
-                    # print(tmp)
-                elif options.gantt:
-                    tmp = Data()
-                    for item in items:
-                        if item['milestone'] == 'TRUE':
-                            item['milestone'] = True
-                        else:
-                            item['milestone'] = False
-
-                        tmp.add(item['id'], item['name'], item['start'],
-                                item['finish'], item['resource'], item['predecessor'], item['milestone'], item['parent'])
-                    # print(tmp.data)
-                    self.data = tmp.data
+                    tmp.add(item['id'], item['name'], item['start'],
+                            item['finish'], item['resource'], item['predecessor'], item['milestone'], item['parent'])
+                self.data = tmp.data
         elif options.host:
             config = {
                 'host': options.host,
@@ -165,7 +132,7 @@ class GanttChart:
         if not self.data:
             # else:
             self.usage()
-        
+
         if options.save:
             file = options.save
         else:
@@ -174,18 +141,16 @@ class GanttChart:
             elif options.gantt:
                 file = 'gantt.svg'
 
-        if options.workweeks :
+        if options.workweeks:
             workweeks = options.workweeks
-            
 
         if options.workload:
             workload = Workload()
-            
             workload.load(self.data)
             workload.setWorkweeks(workweeks, True)
             workload.workloadChart(options.title)
             workload.save(file)
-            
+
         elif options.gantt:
             self.gantt = Gantt()
             # self.gantt.hideTable()

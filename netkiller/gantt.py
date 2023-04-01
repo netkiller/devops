@@ -10,6 +10,8 @@ try:
     import drawsvg as draw
     from datetime import datetime, date
     from PIL import ImageFont
+    import requests
+    import os
 except ImportError as err:
     print("Error: %s" % (err))
 
@@ -324,25 +326,40 @@ class Gantt(Calendar):
         pass
 
     def title(self, text):
-        if not self.isTable:
-            if text:
-                self.canvasTop += 50
+        if self.isTable:
+            return
+        if text:
+            self.canvasTop += 50
 
-            group = draw.Group(
-                id='title', onclick="this.style.stroke = 'green'; ")
-            group.append(draw.Text(text, 30, self.canvasWidth / 2,
-                                   25, center=True, text_anchor='middle'))
-            self.draw.append(group)
+        group = draw.Group(
+            id='title', onclick="this.style.stroke = 'green'; ")
+        group.append(draw.Text(text, 30, self.canvasWidth / 2,
+                               25, center=True, text_anchor='middle'))
+        self.draw.append(group)
 
     def legend(self):
+        if self.isTable:
+            return
         top = 10
         self.draw.append(draw.Text("https://www.netkiller.cn - design by netkiller",
                                    15, self.canvasWidth - 280, top + 30, text_anchor='start', fill='grey'))
         self.draw.append(draw.Rectangle(0, 0, self.canvasWidth,
                                         self.canvasHeight, fill='none', stroke='black'))
         # fill='#eeeeee'
+        license = '/var/tmp/by-nc-sa.png'
+        if not os.path.exists(license):
+            # url = 'https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png'
+            url = 'https://www.netkiller.cn/graphics/by-nc-sa.png'
+            # license = wget.download(url, out=license)
+            request = requests.get(url)
+            if request.status_code == 200:
+                file = open(license, 'wb')
+                file.write(request.content)
+                file.flush()
+                file.close()
+
         self.draw.append(draw.Image(
-            8, 8, 100, 34.99, 'by-nc-sa.png', embed=True))
+            8, 8, 100, 34.99, license, embed=True))
 
     def hideTable(self):
         self.isTable = True

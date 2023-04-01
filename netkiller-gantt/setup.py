@@ -1,4 +1,4 @@
-from netkiller import __version__, __author__
+# from netkiller import __version__, __author__
 import os
 import sys
 from setuptools import setup, find_packages
@@ -27,7 +27,7 @@ setup(
     install_requires=['pillow', 'drawsvg', 'pyproject.toml', 'pycairo','mysql-connector-python'],
     #   'opencv-python',
     # package_dir={ '': '..' },
-    packages=find_packages('..'),
+    packages=find_packages('../netkiller'),
 
     scripts=[
         'bin/gantt',

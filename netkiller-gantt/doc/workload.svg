@@ -190,9 +190,9 @@
 <path d="M1,263 L1109,263" stroke="grey" />
 <text x="5" y="284" font-size="18" text-anchor="start">阿不都沙拉木</text>
 <text x="131" y="284" font-size="18" text-anchor="start">2023-03-03</text>
-<text x="231" y="284" font-size="18" text-anchor="start">2023-03-05</text>
-<text x="331" y="284" font-size="18" text-anchor="start">3</text>
-<rect x="706" y="268" width="92" height="20" fill="blue">
+<text x="231" y="284" font-size="18" text-anchor="start">2023-03-15</text>
+<text x="331" y="284" font-size="18" text-anchor="start">13</text>
+<rect x="706" y="268" width="402" height="20" fill="blue">
 <title>阿不都沙拉木</title>
 </rect>
 <path d="M1,294 L1109,294" stroke="grey" />

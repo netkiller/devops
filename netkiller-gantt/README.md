@@ -145,15 +145,28 @@ CREATE TABLE `project` (
   `finish` date NOT NULL DEFAULT (curdate()) COMMENT '完成日期',
   `resource` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '资源',
   `predecessor` bigint unsigned DEFAULT NULL COMMENT '前置任务',
-  `milestone` bit(1) DEFAULT NULL COMMENT '里程碑',
+  `milestone` bit(1) DEFAULT b'0' COMMENT '里程碑',
   `parent` bigint unsigned DEFAULT NULL COMMENT '父任务',
-  `status` enum('Enabled','Disabled') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'Enabled' COMMENT '状态',
   PRIMARY KEY (`id`),
   KEY `project_has_subproject` (`parent`),
   KEY `task_has_predecessor_idx` (`predecessor`),
   CONSTRAINT `project_has_subproject` FOREIGN KEY (`parent`) REFERENCES `project` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+```
 
+#### 测试数据
+
+```sql
+INSERT INTO `project` (`id`,`name`,`start`,`finish`,`resource`,`predecessor`,`milestone`,`parent`) VALUES (1,'任务组','2023-03-26','2023-04-10','小明',NULL,'0',NULL);
+INSERT INTO `project` (`id`,`name`,`start`,`finish`,`resource`,`predecessor`,`milestone`,`parent`) VALUES (2,'任务A','2023-03-26','2023-03-29','小明',NULL,'0',1);
+INSERT INTO `project` (`id`,`name`,`start`,`finish`,`resource`,`predecessor`,`milestone`,`parent`) VALUES (3,'任务B','2023-03-31','2023-04-01','小张',2,'0',1);
+INSERT INTO `project` (`id`,`name`,`start`,`finish`,`resource`,`predecessor`,`milestone`,`parent`) VALUES (4,'任务C','2023-04-02','2023-04-08','小张',3,'0',1);
+INSERT INTO `project` (`id`,`name`,`start`,`finish`,`resource`,`predecessor`,`milestone`,`parent`) VALUES (5,'里程碑','2023-04-06','2023-04-06',NULL,NULL,'1',NULL);
+```
+
+### 数据更新
+
+```sql
 UPDATE `test`.`project` SET `milestone` = b'001'  WHERE (`id` = '11');
 ```
 

@@ -69,10 +69,37 @@
                 "id": 5,
                 "name": "PHP",
                 "start": "2023-03-03",
-                "finish": "2023-03-05",
+                "finish": "2023-03-15",
                 "resource": "阿不都沙拉木",
                 "progress": 5,
-                "predecessor": 4
+                "predecessor": 4,
+                "subitem": {
+                    "83": {
+                        "id": 83,
+                        "name": "V7.0",
+                        "start": "2023-03-03",
+                        "finish": "2023-03-05",
+                        "predecessor": 82,
+                        "subitem": {
+                            "83": {
+                                "id": 83,
+                                "name": "V8.0",
+                                "start": "2023-03-06",
+                                "finish": "2023-03-10",
+                                "predecessor": 82,
+                                "subitem": {
+                                    "83": {
+                                        "id": 83,
+                                        "name": "V8.5",
+                                        "start": "2023-03-13",
+                                        "finish": "2023-03-16",
+                                        "predecessor": 82
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             },
             "6": {
                 "id": "6",
