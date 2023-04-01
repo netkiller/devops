@@ -12,7 +12,7 @@ module = os.path.dirname(os.path.dirname(
 sys.path.insert(0, module)
 
 try:
-    from netkiller.gantt import Gantt, Data
+    from netkiller.gantt import Gantt, Data, Workload
     import json
     import csv
     import logging
@@ -64,42 +64,13 @@ class GanttChart:
         self.parser.add_option(
             '-d', "--debug", action="store_true", dest="debug", help="debug mode")
 
-        self.gantt = Gantt()
-        # self.gantt.hideTable()
+        
 
     def usage(self):
         self.parser.print_help()
         print("\nHomepage: https://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
-        print("Help: https://github.com/netkiller/devops/blob/master/doc/gantt/index.md")
+        print("Help: https://github.com/netkiller/devops/blob/master/netkiller-gantt/doc/gantt/index.md")
         exit()
-
-    def __gantt2workload(self, jsonData):
-
-        for key, item in jsonData.items():
-            if 'subitem' in item:
-                self.__gantt2workload(item['subitem'])
-
-            if not 'resource' in item:
-                continue
-            elif not item['resource']:
-                item['resource'] = 'null'
-
-            if item['resource'] in self.data.keys():
-                # if data.has_key(item['resource']):
-                start = datetime.strptime(
-                    item['start'], '%Y-%m-%d').date()
-                finish = datetime.strptime(
-                    item['finish'], '%Y-%m-%d').date()
-
-                # if not 'start' in tmp[item['resource']]:
-                # tmp[item['resource']]['start']=''
-                if datetime.strptime(self.data[item['resource']]['start'], '%Y-%m-%d').date() > start:
-                    self.data[item['resource']]['start'] = item['start']
-                if datetime.strptime(self.data[item['resource']]['finish'], '%Y-%m-%d').date() < finish:
-                    self.data[item['resource']]['finish'] = item['finish']
-            else:
-                self.data[item['resource']] = {
-                    'resource': item['resource'], 'start': item['start'], 'finish': item['finish']}
 
     def loadFromMySQL(self, config):
 
@@ -132,11 +103,9 @@ class GanttChart:
 
     def main(self):
         (options, args) = self.parser.parse_args()
-
         if options.stdin:
             if options.workload:
-                tmp = json.loads(sys.stdin.read())
-                self.__gantt2workload(tmp)
+                self.data = json.loads(sys.stdin.read())
             elif options.gantt:
                 self.data = json.loads(sys.stdin.read())
         elif options.csv:
@@ -196,21 +165,33 @@ class GanttChart:
         if not self.data:
             # else:
             self.usage()
-
-        self.gantt.load(self.data)
-        if options.workweeks :
-            self.gantt.setWorkweeks(options.workweeks, True)
-        if options.workload:
-            self.gantt.workloadChart(options.title)
-        elif options.gantt:
-            self.gantt.ganttChart(options.title)
+        
         if options.save:
-            self.gantt.save(options.save)
+            file = options.save
         else:
             if options.workload:
                 file = 'workload.svg'
             elif options.gantt:
                 file = 'gantt.svg'
+
+        if options.workweeks :
+            workweeks = options.workweeks
+            
+
+        if options.workload:
+            workload = Workload()
+            
+            workload.load(self.data)
+            workload.setWorkweeks(workweeks, True)
+            workload.workloadChart(options.title)
+            workload.save(file)
+            
+        elif options.gantt:
+            self.gantt = Gantt()
+            # self.gantt.hideTable()
+            self.gantt.load(self.data)
+            self.gantt.setWorkweeks(workweeks, True)
+            self.gantt.ganttChart(options.title)
             self.gantt.save(file)
             # self.gantt.export(file)
 

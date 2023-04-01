@@ -65,24 +65,21 @@ class Data:
         pass
 
 
-class Gantt(Canvas):
+class Calendar(Canvas):
     draw = None
     canvasWidth = 0
     canvasHeight = 0
-    columeWidth = 30
     splitLine = 1
     canvasTop = 0
     canvasLeft = 0
     startPosition = 0
     itemLine = 0
-    itemHeight = 30
-    itemWidth = 30
+    rowHeight = 30
+    columeWidth = 30
     barHeight = 20
     progressHeight = 14
     nameTextSize = 1
     resourceTextSize = 90
-    textIndent = 0
-    textIndentSize = 0
     beginDate = datetime.now().date()
     endDate = datetime.now().date()
     weekdayPosition = 0
@@ -91,67 +88,31 @@ class Gantt(Canvas):
     # 隐藏表格
     isTable = False
 
-    data = {}
-
     def __init__(self) -> None:
         super().__init__()
-        self.canvasWidth = self.width
-        self.canvasHeight = self.height
-        self.workweeks = 5
-        self.firstsd = None
-        pass
-
-    def title(self, text):
-        if not self.isTable:
-            if text:
-                self.canvasTop += 50
-
-            group = draw.Group(
-                id='title', onclick="this.style.stroke = 'green'; ")
-            group.append(draw.Text(text, 30, self.canvasWidth / 2,
-                                   25, center=True, text_anchor='middle'))
-            self.draw.append(group)
-
-    def legend(self):
-        top = 10
-        self.draw.append(draw.Text("https://www.netkiller.cn - design by netkiller",
-                                   15, self.canvasWidth - 280, top + 30, text_anchor='start', fill='grey'))
-        self.draw.append(draw.Rectangle(0, 0, self.canvasWidth,
-                                        self.canvasHeight, fill='none', stroke='black'))
-        # fill='#eeeeee'
-        self.draw.append(draw.Image(
-            8, 8, 100, 34.99, 'by-nc-sa.png', embed=True))
-
-    def hideTable(self):
-        self.isTable = True
-
-    def setWorkweeks(self, workweeks=5, firstsd=False):
-        # 'five-day','six-day'
-        self.workweeks = workweeks
-        self.firstsd = firstsd
 
     def __table(self, top):
         group = draw.Group(id='table')
         group.append_title('表格')
         # group.append(draw.Line(1, 80, self.canvasWidth,                               80,  stroke='black'))
         group.append(draw.Text('任务', 20, 5, top + 20 +
-                     self.itemHeight * 2, fill='#555555'))
-        group.append(draw.Line(self.nameTextSize, top + self.itemHeight * 2,
+                     self.rowHeight * 2, fill='#555555'))
+        group.append(draw.Line(self.nameTextSize, top + self.rowHeight * 2,
                                self.nameTextSize, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('开始日期', 20, self.nameTextSize+5,
-                               top + 20 + self.itemHeight * 2, fill='#555555'))
-        group.append(draw.Line(self.nameTextSize + 100, top + self.itemHeight * 2,
-                               self.nameTextSize + 100, self.canvasHeight, stroke='grey'))
+                               top + 20 + self.rowHeight * 2, fill='#555555'))
+        group.append(draw.Line(self.nameTextSize + 95, top + self.rowHeight * 2,
+                               self.nameTextSize + 95, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('截止日期', 20, self.nameTextSize +
-                               100+5, top + 20 + self.itemHeight * 2, fill='#555555'))
-        group.append(draw.Line(self.nameTextSize + 200, top+self.itemHeight * 2,
-                               self.nameTextSize + 200, self.canvasHeight, stroke='grey'))
+                               100, top + 20 + self.rowHeight * 2, fill='#555555'))
+        group.append(draw.Line(self.nameTextSize + 190, top+self.rowHeight * 2,
+                               self.nameTextSize + 190, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('工时', 20, self.nameTextSize +
-                               200+5, top + 20 + self.itemHeight * 2, fill='#555555'))
-        group.append(draw.Line(self.nameTextSize + 250, top+self.itemHeight * 2,
-                               self.nameTextSize + 250, self.canvasHeight, stroke='grey'))
+                               195, top + 20 + self.rowHeight * 2, fill='#555555'))
+        group.append(draw.Line(self.nameTextSize + 240, top+self.rowHeight * 2,
+                               self.nameTextSize + 240, self.canvasHeight, stroke='grey'))
         group.append(draw.Text('资源', 20, self.nameTextSize +
-                               250+5, top + 20 + self.itemHeight * 2, fill='#555555'))
+                               245, top + 20 + self.rowHeight * 2, fill='#555555'))
 
         return group
 
@@ -167,17 +128,6 @@ class Gantt(Canvas):
     def __weekdays(self, top, begin, end):
         offsetX = 1
         column = 0
-
-        # if month == self.beginDate.month:
-        #     beginDay = self.beginDate.day
-        #     endDay = calendar.monthrange(
-        #         self.beginDate.year, self.beginDate.month)[1]
-        # elif month == self.endDate.month:
-        #     beginDay = 1
-        #     endDay = self.endDate.day
-        # else:
-        #     beginDay = 1
-        #     endDay = calendar.monthrange(datetime.now().year, month)[1]
 
         begin = datetime.strptime(begin, '%Y-%m-%d')
         end = datetime.strptime(end, '%Y-%m-%d')
@@ -197,8 +147,6 @@ class Gantt(Canvas):
         for day in range(beginDay, endDay+1):
 
             # numberOfWeek = self.weekNumberOfMonth(datetime.strptime(str(begin.year)+'-'+str(begin.month)+'-'+str(day), '%Y-%m-%d').date())
-            # print()
-            # x;qi
             weekday = calendar.weekday(begin.year, begin.month, day)
 
             currentweekNumberOfYear = datetime.strptime(
@@ -225,7 +173,7 @@ class Gantt(Canvas):
 
             if day == beginDay:
                 weekGroups[weekNumberOfYear].append(draw.Text(begin.strftime(
-                    '%Y年%m月'), 20, x + 4, top + self.itemHeight - 10, fill='#555555'))
+                    '%Y年%m月'), 20, x + 4, top + self.rowHeight - 10, fill='#555555'))
             # 右侧封闭
             if day == endDay:
                 weekGroups[weekNumberOfYear].append(draw.Line(x + self.columeWidth, top,
@@ -243,13 +191,13 @@ class Gantt(Canvas):
 
             # 日栏位
             # print(self.weekdayPosition)
-            r = draw.Rectangle(x, top+self.itemHeight*2, self.columeWidth,
-                               self.canvasHeight - (top+self.itemHeight*2), fill=color)
+            r = draw.Rectangle(x, top+self.rowHeight*2, self.columeWidth,
+                               self.canvasHeight - (top+self.rowHeight*2), fill=color)
             r.append_title(str(day))
             weekGroups[weekNumberOfYear].append(r)
             # 周分割线
             if weekday == 6:
-                weekGroups[weekNumberOfYear].append(draw.Line(x + self.columeWidth, top + self.itemHeight,
+                weekGroups[weekNumberOfYear].append(draw.Line(x + self.columeWidth, top + self.rowHeight,
                                                               x + self.columeWidth, self.canvasHeight, stroke='black'))
             # 日期
             weekGroups[weekNumberOfYear].append(
@@ -264,7 +212,7 @@ class Gantt(Canvas):
         return weekGroups
 
     def __month(self, top, months):
-        # self.weekdayPosition = self.startPosition
+
         monthGroups = {}
         for begin, end in months:
             month = datetime.strptime(begin, '%Y-%m-%d').month
@@ -303,7 +251,7 @@ class Gantt(Canvas):
         # print(years)
         return years
 
-    def __year(self, top):
+    def calendarYear(self, top):
         self.weekdayPosition = self.startPosition
         yearGroups = {}
         # print(self.beginDate, self.endDate)
@@ -319,6 +267,11 @@ class Gantt(Canvas):
                 yearGroups[year].append(value)
         return yearGroups
 
+    def setWorkweeks(self, workweeks=5, firstsd=False):
+        # 'five-day','six-day'
+        self.workweeks = workweeks
+        self.firstsd = firstsd
+
     def calendar(self):
 
         left = self.startPosition
@@ -328,45 +281,85 @@ class Gantt(Canvas):
         if not self.isTable:
             background.append(self.__table(top))
 
-        for key, value in self.__year(top).items():
+        for key, value in self.calendarYear(top).items():
             background.append(value)
         # for key, value in self.__month(top).items():
         #     background.append(value)
         # 月线
-        background.append(draw.Line(1, top + self.itemHeight, self.canvasWidth,
-                                    top + self.itemHeight, stroke='grey'))
+        background.append(draw.Line(1, top + self.rowHeight, self.canvasWidth,
+                                    top + self.rowHeight, stroke='grey'))
 
         # top = draw.Line(0, 0, self.canvasWidth, 0, stroke='black')
         # right = draw.Line(self.canvasWidth, 0,
         #                   self.canvasWidth, self.canvasHeight, stroke='black')
         # 周线
-        background.append(draw.Line(1, top + self.itemHeight * 2,
-                          self.canvasWidth, top + self.itemHeight * 2, stroke='grey'))
+        background.append(draw.Line(1, top + self.rowHeight * 2,
+                          self.canvasWidth, top + self.rowHeight * 2, stroke='grey'))
         # 日线
-        background.append(draw.Line(1, top + self.itemHeight * 3,
-                          self.canvasWidth, top + self.itemHeight * 3, stroke='grey'))
+        background.append(draw.Line(1, top + self.rowHeight * 3,
+                          self.canvasWidth, top + self.rowHeight * 3, stroke='grey'))
         # 上边封闭
         background.append(
             draw.Line(1, top, self.canvasWidth, top, stroke='grey'))
         # 左边封闭
-        background.append(draw.Line(left, top + self.itemHeight,
+        background.append(draw.Line(left, top + self.rowHeight,
                           left, self.canvasHeight, stroke='grey'))
         self.draw.append(background)
 
+
+class Gantt(Calendar):
+
+    data = {}
+    textIndent = 0
+    textIndentSize = 19
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.canvasWidth = self.width
+        self.canvasHeight = self.height
+        self.workweeks = 5
+        self.firstsd = None
+        self.fontSize = 18
+
+        pass
+
+    def title(self, text):
+        if not self.isTable:
+            if text:
+                self.canvasTop += 50
+
+            group = draw.Group(
+                id='title', onclick="this.style.stroke = 'green'; ")
+            group.append(draw.Text(text, 30, self.canvasWidth / 2,
+                                   25, center=True, text_anchor='middle'))
+            self.draw.append(group)
+
+    def legend(self):
+        top = 10
+        self.draw.append(draw.Text("https://www.netkiller.cn - design by netkiller",
+                                   15, self.canvasWidth - 280, top + 30, text_anchor='start', fill='grey'))
+        self.draw.append(draw.Rectangle(0, 0, self.canvasWidth,
+                                        self.canvasHeight, fill='none', stroke='black'))
+        # fill='#eeeeee'
+        self.draw.append(draw.Image(
+            8, 8, 100, 34.99, 'by-nc-sa.png', embed=True))
+
+    def hideTable(self):
+        self.isTable = True
+
     def items(self, line, subitem=False):
 
-        left = self.startPosition
-        top = self.canvasTop + self.itemHeight * 3 + self.itemLine * \
-            self.itemHeight + self.splitLine * self.itemLine
+        top = self.canvasTop + self.rowHeight * 3 + self.itemLine * \
+            self.rowHeight + self.splitLine * self.itemLine
 
         begin = datetime.strptime(line['start'], '%Y-%m-%d').day
         # end = datetime.strptime(line['end'], '%Y-%m-%d').day
         end = (datetime.strptime(line['finish'], '%Y-%m-%d').date() -
                datetime.strptime(line['start'], '%Y-%m-%d').date()).days
 
-        # left += self.itemWidth * (begin - 1) + (1 * begin)
+        # left += self.columeWidth * (begin - 1) + (1 * begin)
         # # 日宽度 + 竖线宽度
-        right = self.itemWidth * (end + 1) + (1 * end)
+        right = self.columeWidth * (end + 1) + (1 * end)
 
         left = self.dayPosition[line['start']]
         # right = self.dayPosition[line['end']]
@@ -376,24 +369,25 @@ class Gantt(Canvas):
         lineGroup = draw.Group(id='task')
         if not self.isTable:
             table = draw.Group(id='text')
+
             table.append(draw.Text(
-                line['name'], 20, 5 + (self.textIndent * self.itemWidth), top + 20, text_anchor='start'))
+                line['name'], self.fontSize, 5 + (self.textIndent * self.textIndentSize), top + 20, text_anchor='start'))
             # text.append(draw.TSpan(line['begin'], text_anchor='start'))
             # text.append(draw.TSpan(line['end'], text_anchor='start'))
 
-            table.append(draw.Text(line['start'], 20, self.nameTextSize+5,
+            table.append(draw.Text(line['start'], self.fontSize, self.nameTextSize+5,
                                    top + 20, text_anchor='start'))
-            table.append(draw.Text(line['finish'], 20, self.nameTextSize +
-                                   100+5, top + 20, text_anchor='start'))
+            table.append(draw.Text(line['finish'], self.fontSize, self.nameTextSize +
+                                   100, top + 20, text_anchor='start'))
             # if 'progress' in line:
             #     table.append(draw.Text(
             #         str(line['progress']), 20, self.nameTextSize + 200, top + 20, text_anchor='start'))
 
-            table.append(draw.Text(str(end+1), 20, self.nameTextSize +
-                                   210, top + 20, text_anchor='start'))
+            table.append(draw.Text(str(end+1), self.fontSize, self.nameTextSize +
+                                   205, top + 20, text_anchor='start'))
             if 'resource' in line:
                 table.append(draw.Text(
-                    str(line['resource']), 20, self.nameTextSize + 250+5, top + 20, text_anchor='start'))
+                    str(line['resource']), self.fontSize, self.nameTextSize + 245, top + 20, text_anchor='start'))
             lineGroup.append(table)
 
         group = draw.Group(id='item')
@@ -454,29 +448,24 @@ class Gantt(Canvas):
                                            10, left + 5, top + 18, text_anchor='start', fill='black'))
 
         # 分割线
-        group.append(draw.Lines(1, top + self.itemHeight,
-                                self.canvasWidth, top + self.itemHeight, stroke='grey'))
+        group.append(draw.Lines(1, top + self.rowHeight,
+                                self.canvasWidth, top + self.rowHeight, stroke='grey'))
 
         lineGroup.append(group)
         self.itemLine += 1
         return lineGroup
 
-    def tasks(self):
-        self.textIndent = 0
-        taskGroup = draw.Group(id='tasks')
-        for id, line in self.data.items():
+    def tasks(self, data):
+        for id, line in data.items():
             if 'subitem' in line:
                 item = self.items(line, True)
-                taskGroup.append(item)
+                self.taskGroup.append(item)
                 self.textIndent += 1
-                for id, item in line['subitem'].items():
-                    item = self.items(item)
-                    taskGroup.append(item)
+                self.tasks(line['subitem'])
                 self.textIndent -= 1
             else:
                 item = self.items(line)
-                taskGroup.append(item)
-        self.draw.append(taskGroup)
+                self.taskGroup.append(item)
 
     def link(self, fromTask, toTask):
         # print(fromTask, toTask)
@@ -493,7 +482,7 @@ class Gantt(Canvas):
         return linkGroup
 
     def predecessor(self, data):
-        handover = draw.Group(id='handover')
+
         for id, task in data.items():
             if 'subitem' in task:
                 self.predecessor(task['subitem'])
@@ -501,147 +490,7 @@ class Gantt(Canvas):
                 # print(self.linkPosition)
                 link = self.link(
                     self.linkPosition[task['predecessor']], self.linkPosition[task['id']])
-                handover.append(link)
-            
-        self.draw.append(handover)
-    
-        # handover = draw.Group(id='handover')
-        # for id, task in self.data.items():
-        #     if 'predecessor' in task and task['predecessor'] and int(task['predecessor']) > 0:
-        #         link = self.link(
-        #             self.linkPosition[task['predecessor']], self.linkPosition[task['id']])
-        #         handover.append(link)
-        #     if 'subitem' in task:
-        #         for id, stask in task['subitem'].items():
-        #             if 'predecessor' in stask and stask['predecessor'] and int(stask['predecessor']) > 0:
-        #                 link = self.link(
-        #                     self.linkPosition[stask['predecessor']], self.linkPosition[stask['id']])
-        #                 handover.append(link)
-        # self.draw.append(handover)
-
-    def workload(self, title):
-        self.startPosition = 400
-        left = self.startPosition
-
-        for key, value in self.data.items():
-            self.fontSize = self.getTextSize(key)
-
-            # start = datetime.strptime(value['start'], '%Y-%m-%d').date()
-            # finish = datetime.strptime(value['finish'], '%Y-%m-%d').date()
-            start = value['start']
-            finish = value['finish']
-
-            if self.beginDate > start:
-                self.beginDate = start
-
-            if self.endDate < finish:
-                self.endDate = finish
-
-        lineNumber = len(self.data)
-
-        days = self.endDate - self.beginDate
-        self.canvasWidth = self.startPosition + self.columeWidth * \
-            days.days + days.days + self.columeWidth + 2
-        self.canvasHeight = self.canvasTop + self.itemHeight * \
-            5 + self.itemHeight * lineNumber + lineNumber + 15
-        # print(self.canvasTop, self.canvasHeight)
-
-        self.draw = draw.Drawing(self.canvasWidth, self.canvasHeight)
-
-        self.title(title)
-
-        top = self.itemHeight * 4 - 10
-        chart = draw.Group(id='workload')
-
-        table = draw.Group(id='table')
-        table.append_title('表格')
-        # 封顶
-        table.append(draw.Line(1, self.canvasTop, self.canvasWidth,
-                     self.canvasTop,  stroke='black'))
-        table.append(
-            draw.Text('资源', 20, 5, top + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 100, top,
-                     self.nameTextSize + 100, self.canvasHeight, stroke='grey'))
-        table.append(draw.Text('开始日期', 20, self.nameTextSize +
-                     100, top + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 200, top,
-                     self.nameTextSize + 200, self.canvasHeight, stroke='grey'))
-        table.append(draw.Text('截止日期', 20, self.nameTextSize +
-                     200, top + 20, fill='#555555'))
-        table.append(draw.Line(self.nameTextSize + 300, top,
-                     self.nameTextSize + 300, self.canvasHeight, stroke='grey'))
-        table.append(draw.Text('工时', 20, self.nameTextSize +
-                               300, top + 20, fill='#555555'))
-        # table.append(draw.Line(self.nameTextSize + 400, top,                               self.nameTextSize + 400, self.canvasHeight, stroke='grey'))
-
-        chart.append(table)
-
-        # for key, value in self.__month(top).items():
-        #     chart.append(value)
-        for key, value in self.__year(self.canvasTop).items():
-            chart.append(value)
-
-        # print(self.dayPosition)
-
-        # for key, value in self.__weekday(top).items():
-        #     background.append(value)
-        # 月线
-        chart.append(draw.Line(self.startPosition, self.canvasTop + self.itemHeight, self.canvasWidth,
-                               self.canvasTop + self.itemHeight, stroke='grey'))
-        # 周线
-        chart.append(draw.Line(1, self.canvasTop + self.itemHeight * 2, self.canvasWidth,
-                               self.canvasTop + self.itemHeight * 2, stroke='grey'))
-
-        # chart.append(draw.Line(1, self.canvasTop + self.itemHeight * 3, self.canvasWidth,
-        #                        self.canvasTop + self.itemHeight * 3, stroke='black'))
-        # 竖线
-        chart.append(
-            draw.Line(left, self.canvasTop, left, self.canvasHeight, stroke='grey'))
-
-        # begin = datetime.strptime(line['begin'], '%Y-%m-%d').day
-        # # end = datetime.strptime(line['end'], '%Y-%m-%d').day
-        #
-
-        # left += self.itemWidth * (begin - 1) + (1 * begin)
-        # # 日宽度 + 竖线宽度
-        self.canvasTop = self.itemHeight * 5 - 10
-        for resource, row in self.data.items():
-
-            # # 工时
-            top = self.canvasTop + self.itemLine * self.itemHeight + \
-                self.splitLine * self.itemLine
-            # print(resource, row, top)
-            # end = (datetime.strptime(row['finish'], '%Y-%m-%d').date() -
-            #        datetime.strptime(row['start'], '%Y-%m-%d').date()).days
-            end = (row['finish'] - row['start']).days
-            # end = (row['finish'] - row['start']).days
-            right = self.itemWidth * (end + 1) + (1 * end)
-
-            chart.append(draw.Text(resource, 20, 5 + (self.textIndent *
-                         self.itemWidth), top + 20, text_anchor='start'))
-            chart.append(draw.Text(row['start'].strftime('%Y-%m-%d'), 20, self.nameTextSize + 100,
-                                   top + 20, text_anchor='start'))
-            chart.append(draw.Text(row['finish'].strftime('%Y-%m-%d'), 20, self.nameTextSize +
-                                   200, top + 20, text_anchor='start'))
-
-            chart.append(draw.Text(str(end + 1), 20, self.nameTextSize +
-                                   300, top + 20, text_anchor='start'))
-
-            left = self.dayPosition[row['start'].strftime('%Y-%m-%d')]
-            r = draw.Rectangle(left, top + 4, right,
-                               self.barHeight, fill='blue')
-            r.append_title(resource)
-            chart.append(r)
-
-            chart.append(draw.Line(1, top + self.itemHeight, self.canvasWidth,
-                         top + self.itemHeight, stroke='grey'))
-
-            self.itemLine += 1
-
-        self.draw.append(chart)
-        # self.draw.append(draw.Rectangle(1, 1, self.canvasWidth,
-        #                                 self.canvasHeight, fill='none', stroke='black'))
-        self.legend()
+                self.handover.append(link)
 
     def getTextSize(self, text, size=21):
 
@@ -665,43 +514,43 @@ class Gantt(Canvas):
     def load(self, data):
         self.data = data
 
-    def __initialize(self, item):
+    def __initialize(self, data):
 
-        # 计算文字宽度
-        length = self.getTextSize(item['name'])
+        for id, item in data.items():
 
-        # 文本表格所占用的宽度
-        if self.textIndent > 0:
-            if self.nameTextSize < length + self.textIndentSize:
-                self.nameTextSize = length + self.textIndentSize
-        else:
-            if self.nameTextSize < length:
-                self.nameTextSize = length
+            if 'subitem' in item:
+                self.textIndent += 1
+                self.__initialize(item['subitem'])
+                self.lineNumber += len(item['subitem'].keys())
+                self.textIndent -= 1
 
-        if 'resource' in item and item['resource']:
-            length = self.getTextSize(item['resource'])
-            if self.resourceTextSize < length:
-                self.resourceTextSize = length
+            # 计算文字宽度
+            length = self.getTextSize(item['name'])
 
-        # begin = datetime.strptime(item['start'], '%Y-%m-%d').date()
-        self.minDate.append(item['start'])
-        # end = datetime.strptime(item['finish'], '%Y-%m-%d').date()
-        self.maxDate.append(item['finish'])
+            # 文本表格所占用的宽度
+            if self.textIndent > 0:
+                if self.nameTextSize < length + self.textIndentSize:
+                    self.nameTextSize = length + self.textIndentSize
+            else:
+                if self.nameTextSize < length:
+                    self.nameTextSize = length
+
+            if 'resource' in item and item['resource']:
+                length = self.getTextSize(item['resource'])
+                if self.resourceTextSize < length:
+                    self.resourceTextSize = length
+
+            # begin = datetime.strptime(item['start'], '%Y-%m-%d').date()
+            self.minDate.append(item['start'])
+            # end = datetime.strptime(item['finish'], '%Y-%m-%d').date()
+            self.maxDate.append(item['finish'])
 
     def ganttChart(self, title):
         self.maxDate = []
         self.minDate = []
-        lineNumber = len(self.data)
+        self.lineNumber = len(self.data)
 
-        for id, line in self.data.items():
-            self.__initialize(line)
-            if 'subitem' in line:
-                self.textIndent += 1
-                self.textIndentSize = self.columeWidth
-                for id, item in line['subitem'].items():
-                    self.__initialize(item)
-                lineNumber += len(line['subitem'].items())
-                self.textIndent -= 1
+        self.__initialize(self.data)
 
         begin = min(sorted(self.minDate, key=lambda d: datetime.strptime(
             d, "%Y-%m-%d").timestamp()))
@@ -717,24 +566,28 @@ class Gantt(Canvas):
         self.nameTextSize += 10
 
         if not self.isTable:
-            self.startPosition = self.nameTextSize + self.resourceTextSize + 250
+            self.startPosition = self.nameTextSize + self.resourceTextSize + 230
 
         days = self.endDate - self.beginDate
         self.canvasWidth = self.startPosition + self.columeWidth * \
             days.days + days.days + self.columeWidth + 2
-        self.canvasHeight = self.canvasTop + self.itemHeight * \
-            5 + self.itemHeight * lineNumber + lineNumber + 20
+        self.canvasHeight = self.canvasTop + self.rowHeight * \
+            5 + self.rowHeight * self.lineNumber + self.lineNumber + 20
 
         self.draw = draw.Drawing(self.canvasWidth, self.canvasHeight)
 
         self.title(title)
         self.calendar()
-        self.tasks()
-        self.predecessor(self.data)
-        self.legend()
 
-    def workloadChart(self, title):
-        self.workload(title)
+        self.taskGroup = draw.Group(id='tasks')
+        self.tasks(self.data)
+        self.draw.append(self.taskGroup)
+
+        self.handover = draw.Group(id='handover')
+        self.predecessor(self.data)
+        self.draw.append(self.handover)
+
+        self.legend()
 
     def save(self, filename=None):
         if filename:
@@ -747,3 +600,175 @@ class Gantt(Canvas):
     def export(self, filename=None):
         if filename:
             self.draw.save_png('example.png')
+
+
+class Workload(Gantt):
+    def __init__(self) -> None:
+        super().__init__()
+        self.workloadData = {}
+        self.minDate = []
+        self.maxDate = []
+        self.resourceTextSize = 0
+
+    def __gantt2workload(self, data):
+        # self.workloadData = dict()
+        for key, item in data.items():
+            if 'subitem' in item:
+                self.__gantt2workload(item['subitem'])
+
+            if not 'resource' in item:
+                continue
+            elif not item['resource']:
+                item['resource'] = 'null'
+
+            start = datetime.strptime(
+                item['start'], '%Y-%m-%d').date()
+            finish = datetime.strptime(
+                item['finish'], '%Y-%m-%d').date()
+
+            self.minDate.append(start)
+            self.maxDate.append(finish)
+
+            length = self.getTextSize(item['resource'])
+            # print(self.resourceTextSize,length)
+            if self.resourceTextSize < length:
+                self.resourceTextSize = length
+
+            if item['resource'] in self.workloadData.keys():
+                # if data.has_key(item['resource']):
+
+                # if not 'start' in self.workloadData[item['resource']]:
+                # self.workloadData[item['resource']]['start']=''
+                # if datetime.strptime(self.data[item['resource']]['start'], '%Y-%m-%d').date() > start:
+                #     self.workloadData[item['resource']]['start'] = item['start']
+                # if datetime.strptime(self.data[item['resource']]['finish'], '%Y-%m-%d').date() < finish:
+                #     self.workloadData[item['resource']]['finish'] = item['finish']
+
+                # print(self.workloadData)
+
+                if self.workloadData[item['resource']]['start'] > start:
+                    self.workloadData[item['resource']]['start'] = start
+                if self.workloadData[item['resource']]['finish'] < finish:
+                    self.workloadData[item['resource']]['finish'] = finish
+            else:
+                self.workloadData[item['resource']] = {
+                    'resource': item['resource'], 'start': start, 'finish': finish}
+        return self.workloadData
+
+    def workload(self, title):
+        self.data = self.__gantt2workload(self.data)
+
+        self.startPosition = self.resourceTextSize + 300
+        left = self.startPosition
+
+        self.beginDate = min(self.minDate)
+        self.endDate = max(self.maxDate)
+
+        lineNumber = len(self.data)
+
+        days = self.endDate - self.beginDate
+        self.canvasWidth = self.startPosition + self.columeWidth * \
+            days.days + days.days + self.columeWidth + 2
+        self.canvasHeight = self.canvasTop + self.rowHeight * \
+            5 + self.rowHeight * lineNumber + lineNumber + 15
+        # print(self.canvasTop, self.canvasHeight)
+
+        self.draw = draw.Drawing(self.canvasWidth, self.canvasHeight)
+
+        self.title(title)
+
+        top = self.rowHeight * 4 - 10
+        chart = draw.Group(id='workload')
+
+        table = draw.Group(id='table')
+        table.append_title('表格')
+        # 封顶
+        table.append(draw.Line(1, self.canvasTop, self.canvasWidth,
+                     self.canvasTop,  stroke='black'))
+        table.append(
+            draw.Text('资源', 20, 5, top + 20, fill='#555555'))
+        table.append(draw.Line(self.resourceTextSize, top,
+                     self.resourceTextSize, self.canvasHeight, stroke='grey'))
+        table.append(draw.Text('开始日期', 20, self.resourceTextSize +
+                     +5, top + 20, fill='#555555'))
+        table.append(draw.Line(self.resourceTextSize + 100, top,
+                     self.resourceTextSize + 100, self.canvasHeight, stroke='grey'))
+        table.append(draw.Text('截止日期', 20, self.resourceTextSize +
+                     100+5, top + 20, fill='#555555'))
+        table.append(draw.Line(self.resourceTextSize + 200, top,
+                     self.resourceTextSize + 200, self.canvasHeight, stroke='grey'))
+        table.append(draw.Text('工时', 20, self.resourceTextSize +
+                               200+5, top + 20, fill='#555555'))
+        # table.append(draw.Line(self.resourceTextSize + 400, top,                               self.resourceTextSize + 400, self.canvasHeight, stroke='grey'))
+
+        chart.append(table)
+
+        # for key, value in self.__month(top).items():
+        #     chart.append(value)
+        for key, value in super().calendarYear(self.canvasTop).items():
+            chart.append(value)
+
+        # print(self.dayPosition)
+
+        # for key, value in self.__weekday(top).items():
+        #     background.append(value)
+        # 月线
+        chart.append(draw.Line(self.startPosition, self.canvasTop + self.rowHeight, self.canvasWidth,
+                               self.canvasTop + self.rowHeight, stroke='grey'))
+        # 周线
+        chart.append(draw.Line(1, self.canvasTop + self.rowHeight * 2, self.canvasWidth,
+                               self.canvasTop + self.rowHeight * 2, stroke='grey'))
+
+        chart.append(draw.Line(1, self.canvasTop + self.rowHeight * 3, self.canvasWidth,
+                               self.canvasTop + self.rowHeight * 3, stroke='black'))
+        # 竖线
+        chart.append(
+            draw.Line(left, self.canvasTop, left, self.canvasHeight, stroke='grey'))
+
+        # begin = datetime.strptime(line['begin'], '%Y-%m-%d').day
+        # # end = datetime.strptime(line['end'], '%Y-%m-%d').day
+        #
+
+        # left += self.columeWidth * (begin - 1) + (1 * begin)
+        # # 日宽度 + 竖线宽度
+        self.canvasTop = self.rowHeight * 5 - 10
+        for resource, row in self.data.items():
+
+            # # 工时
+            top = self.canvasTop + self.itemLine * self.rowHeight + \
+                self.splitLine * self.itemLine
+            # print(resource, row, top)
+            # end = (datetime.strptime(row['finish'], '%Y-%m-%d').date() -
+            #        datetime.strptime(row['start'], '%Y-%m-%d').date()).days
+            end = (row['finish'] - row['start']).days
+            # end = (row['finish'] - row['start']).days
+            right = self.columeWidth * (end + 1) + (1 * end)
+
+            chart.append(draw.Text(resource, self.fontSize,
+                         5, top + 20, text_anchor='start'))
+            chart.append(draw.Text(row['start'].strftime('%Y-%m-%d'), self.fontSize, self.resourceTextSize + 5,
+                                   top + 20, text_anchor='start'))
+            chart.append(draw.Text(row['finish'].strftime('%Y-%m-%d'), self.fontSize, self.resourceTextSize +
+                                   100+5, top + 20, text_anchor='start'))
+
+            chart.append(draw.Text(str(end + 1), self.fontSize, self.resourceTextSize +
+                                   200+5, top + 20, text_anchor='start'))
+
+            left = self.dayPosition[row['start'].strftime('%Y-%m-%d')]
+            r = draw.Rectangle(left, top + 4, right,
+                               self.barHeight, fill='blue')
+            r.append_title(resource)
+            chart.append(r)
+
+            chart.append(draw.Line(1, top + self.rowHeight, self.canvasWidth,
+                         top + self.rowHeight, stroke='grey'))
+
+            self.itemLine += 1
+
+        self.draw.append(chart)
+        # self.draw.append(draw.Rectangle(1, 1, self.canvasWidth,
+        #                                 self.canvasHeight, fill='none', stroke='black'))
+        self.legend()
+
+    def workloadChart(self, title):
+        self.workload(title)
