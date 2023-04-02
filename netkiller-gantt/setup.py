@@ -1,4 +1,4 @@
-# from netkiller import __version__, __author__
+from netkiller import __version__, __author__
 import os
 import sys
 from setuptools import setup, find_packages
@@ -9,8 +9,8 @@ with open("README.md", "r") as fh:
 
 setup(
     name="netkiller-gantt",
-    version="0.0.3",
-    author="Neo Chen",
+    version=__version__,
+    author=__author__,
     author_email="netkiller@msn.com",
     description="Best Gantt chart in Python",
     long_description=long_description,
@@ -27,13 +27,14 @@ setup(
     install_requires=['pillow', 'drawsvg', 'pyproject.toml', 'pycairo','mysql-connector-python'],
     #   'opencv-python',
     # package_dir={ '': '..' },
-    packages=find_packages('../netkiller'),
+    # packages=find_packages('../netkiller'),
+    packages=find_packages(),
 
     scripts=[
         'bin/gantt',
     ],
     data_files=[
-        ('share/netkiller', ['doc/gantt.svg','doc/by-nc-sa.png']),
+        ('share/netkiller', ['doc/gantt.svg','doc/by-nc-sa.png','font/Songti.ttc']),
 
     ]
 )
