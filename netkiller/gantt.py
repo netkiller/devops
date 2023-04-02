@@ -158,12 +158,11 @@ class Calendar(Canvas):
                 weekNumberOfYear = currentweekNumberOfYear
                 weekGroups[weekNumberOfYear] = draw.Group(
                     id='week'+str(weekNumberOfYear))
-            # if self.firstsd == True:
-            #     self.workweeks = 6
-            #     self.firstsd = False
-            # else:
-            #     self.workweeks = 5
-            #     self.firstsd = True
+            if self.firstsd == True:
+                if (int(weekNumberOfYear) % 2) == 0:
+                    self.workweeks = 6
+                else:
+                    self.workweeks = 5
             if weekday >= self.workweeks:
                 color = '#dddddd'
             else:

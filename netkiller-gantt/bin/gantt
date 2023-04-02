@@ -53,7 +53,8 @@ class GanttChart:
                                default='甘特图标题', metavar="项目甘特图")
         group.add_option("-W", "--workweeks", dest="workweeks", help="workweeks default 5",
                                default=5, metavar="5")
-
+        group.add_option(
+            '-o', "--odd-even", action="store_true", dest="oddeven", default=False, help="odd-even weeks")
         group.add_option(
             '-g', "--gantt", action="store_true", dest="gantt", default=True, help="Gantt chart")
         group.add_option(
@@ -130,7 +131,6 @@ class GanttChart:
             print(json.dumps(self.data, ensure_ascii=False))
 
         if not self.data:
-            # else:
             self.usage()
 
         if options.save:
@@ -147,7 +147,7 @@ class GanttChart:
         if options.workload:
             workload = Workload()
             workload.load(self.data)
-            workload.setWorkweeks(workweeks, True)
+            workload.setWorkweeks(workweeks, False)
             workload.workloadChart(options.title)
             workload.save(file)
 
@@ -155,7 +155,7 @@ class GanttChart:
             self.gantt = Gantt()
             # self.gantt.hideTable()
             self.gantt.load(self.data)
-            self.gantt.setWorkweeks(workweeks, True)
+            self.gantt.setWorkweeks(workweeks, options.oddeven)
             self.gantt.ganttChart(options.title)
             self.gantt.save(file)
             # self.gantt.export(file)
