@@ -67,7 +67,7 @@ class GanttChart:
     def usage(self):
         self.parser.print_help()
         print("\nHomepage: https://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>")
-        print("Help: https://github.com/netkiller/devops/blob/master/netkiller-gantt/doc/gantt/index.md")
+        print("Help: https://pypi.org/project/netkiller-gantt/")
         exit()
 
     def loadFromMySQL(self, config):
