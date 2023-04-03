@@ -6,6 +6,7 @@
 # Data: 2023-03-17
 ##############################################
 import requests
+import os
 
 
 class Nacos():
@@ -52,6 +53,9 @@ class Nacos():
             file.close()
 
     def putConfig(self, filename, dataId, group, type='yaml'):
+
+        if not os.path.exists(filename):
+            return False
 
         url = "{nacos}/cs/configs?accessToken={accessToken}".format(
             nacos=self.nacos, accessToken=self.accessToken)
