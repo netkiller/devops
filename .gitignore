@@ -51,3 +51,4 @@ demo/k8s/ensd
 libexec/Web/Gradle/.settings/
 netkiller-gantt/netkiller/netkiller_gantt.egg-info
 netkiller-gantt/test
+*.xlsx

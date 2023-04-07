@@ -94,7 +94,7 @@ class CICD:
                                "--all",
                                action='store_true',
                                dest="all",
-                               default=True,
+                               default=False,
                                help="部署所有项目")
         self.parser.add_option('-c',
                                "--clean",
@@ -263,6 +263,7 @@ class CICD:
         from multiprocessing import Pool
         with Pool(5) as p:
             self.logging.info(p.map(self.build, projects))
+
     def all(self):
         projects = self.config.keys()
         from multiprocessing import Pool
@@ -274,6 +275,7 @@ class CICD:
         pid = os.fork()
         if pid > 0:
             sys.exit(0)
+
     def main(self):
         (options, args) = self.parser.parse_args()
         if options.debug:
