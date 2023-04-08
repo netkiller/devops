@@ -27,6 +27,7 @@ class CICD:
     basedir = os.getcwd()
     skip = []
     template = {}
+    env = {}
 
     def __init__(self) -> None:
 
@@ -204,7 +205,7 @@ class CICD:
             pipeline = Pipeline(self.workspace, self.logging)
             pipeline.image('docker.io/netkiller/maven:3-openjdk-18')
             # pipeline.env('JAVA_HOME','/Library/Java/JavaVirtualMachines/jdk1.8.0_341.jdk/Contents/Home')
-            for key, value in self.env:
+            for key, value in self.env.items():
                 pipeline.env(key, value)
             # self.pipeline.env('KUBECONFIG','/Users/neo/workspace/ops/k3s.yaml')
             pipeline.env('KUBECONFIG', '/root/ops/k3s.yaml')
