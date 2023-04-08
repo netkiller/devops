@@ -156,6 +156,9 @@ class CICD:
                 print("\t{}".format(project))
         exit()
 
+    def env(self, variable):
+        self.env = variable
+
     def build(self, name):
 
         if not name in self.config.keys():
@@ -201,15 +204,14 @@ class CICD:
             pipeline = Pipeline(self.workspace, self.logging)
             pipeline.image('docker.io/netkiller/maven:3-openjdk-18')
             # pipeline.env('JAVA_HOME','/Library/Java/JavaVirtualMachines/jdk1.8.0_341.jdk/Contents/Home')
-            pipeline.env(
-                'JAVA_HOME',
-                '/Users/neo/Library/Java/JavaVirtualMachines/corretto-1.8.0_362/Contents/Home'
-            )
+            for key, value in self.env:
+                pipeline.env(key, value)
             # self.pipeline.env('KUBECONFIG','/Users/neo/workspace/ops/k3s.yaml')
             pipeline.env('KUBECONFIG', '/root/ops/k3s.yaml')
             # ["docker images | grep none | awk '{ print $3; }' | xargs docker rmi"]
             # self.pipeline.begin(name).init(['alias docker=podman']).checkout(ci['url'],self.branch).build(package).podman(registry).dockerfile(tag=tag, dir=module).deploy(deploy).startup(['ls']).end().debug()
-            pipeline.begin(name).init(['alias docker=podman'])
+            pipeline.begin(name).init(
+                ['alias docker=podman', 'echo $JAVA_HOME'])
             if not 'build' in self.skip:
                 pipeline.checkout(ci['url'], self.branch).build(package)
             if not 'image' in self.skip:
