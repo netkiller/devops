@@ -231,7 +231,6 @@ class CICD:
             # print(project)
         except Exception as err:
             print(err)
-        exit()
 
     def config(self, cfg):
         self.config = cfg
@@ -326,5 +325,6 @@ class CICD:
                                                     project):
                     os.removedirs(self.workspace + '/' + project)
                 self.build(project)
+            exit()
 
         self.usage()
