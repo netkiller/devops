@@ -102,9 +102,11 @@ class Pipeline:
                 command = "{container} run -it --rm --name pipeline -v ~/.m2:/root/.m2 -v {project}:/root/project -v {script}:/root/script.sh -w /root/project {image} /bin/bash /root/script.sh".format(
                     container=self.container, project=self.workspace+'/'+self.project, image=self.image, script=tmp.name)
 
-                print(command)
-                self.logging.info("build: %s" % script)
-                exit()
+                # print(command)
+                self.pipelines['build'] = []
+                self.pipelines['build'].append(command)
+                self.logging.info("build: %s" % command)
+
             else:
                 self.pipelines['build'] = script
                 self.logging.info("build: %s" % script)
