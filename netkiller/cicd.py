@@ -203,7 +203,6 @@ class CICD:
                 project=name, namespace=self.namespace))
         try:
             pipeline = Pipeline(self.workspace, self.logging)
-            pipeline.image('docker.io/netkiller/maven:3-openjdk-18')
             # pipeline.env('JAVA_HOME','/Library/Java/JavaVirtualMachines/jdk1.8.0_341.jdk/Contents/Home')
             if self.env:
                 for key, value in self.env.items():
@@ -214,6 +213,8 @@ class CICD:
             # self.pipeline.begin(name).init(['alias docker=podman']).checkout(ci['url'],self.branch).build(package).podman(registry).dockerfile(tag=tag, dir=module).deploy(deploy).startup(['ls']).end().debug()
             pipeline.begin(name).init(
                 ['alias docker=podman', 'echo $JAVA_HOME'])
+            if 'image' in project['ci']:
+                pipeline.image(project['ci']['image'])
             if not 'build' in self.skip:
                 pipeline.checkout(ci['url'], self.branch).build(package)
             if not 'image' in self.skip:

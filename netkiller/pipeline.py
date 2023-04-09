@@ -10,6 +10,7 @@ from netkiller.git import *
 from netkiller.kubernetes import *
 import os
 import sys
+import tempfile
 import subprocess
 from datetime import datetime
 from string import Template
@@ -86,9 +87,27 @@ class Pipeline:
         #     self.pipelines['build'] = ['maven clean package']
         # elif compiler == self.Npm :
         #     self.pipelines['build'] = ['npm install']
+
         if script:
-            self.pipelines['build'] = script
-        self.logging.info("build: %s" % script)
+            if self.image:
+                scripts = []
+                scripts.append('#!/bin/bash')
+                scripts.extend(script)
+                tmp = tempfile.NamedTemporaryFile(
+                    mode='w+', delete=False)
+                # suffix='.sh', prefix='tmp', dir=self.workspace
+                tmp.writelines([line+'\n' for line in scripts])
+                tmp.close()
+
+                command = "{container} run -it --rm --name pipeline -v ~/.m2:/root/.m2 -v /root/project:/{project} -w /root/project {image} /bin/bash {script}".format(
+                    container=self.container, project=self.project, image=self.image, script=tmp.name)
+
+                print(command)
+                self.logging.info("build: %s" % script)
+                exit()
+            else:
+                self.pipelines['build'] = script
+                self.logging.info("build: %s" % script)
         return self
 
     def package(self, script):
@@ -196,18 +215,6 @@ class Pipeline:
         return self
 
     def end(self, script=None):
-
-        # if self.image :
-        #     command = """
-        #     {container} run -it --rm --name pipeline -v ~/.m2:/root/.m2 
-        #     -v /root/project:/{project} \
-        #     -w /root/project \
-        #     {image} \
-        #     /bin/bash
-        #     """.format(container=self.container, project=self.project, image=self.image)
-        #     rev = subprocess.call(
-        #                     command, shell=True, stdin = 'ls')
-        # print(command)
 
         if self.logfile:
             stdout = open(self.logfile, 'w+')
