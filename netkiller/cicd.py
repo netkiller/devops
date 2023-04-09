@@ -327,7 +327,9 @@ class CICD:
             for project in args:
                 if options.clean and os.path.exists(self.workspace + '/' +
                                                     project):
-                    os.removedirs(self.workspace + '/' + project)
+                    # os.removedirs(self.workspace + '/' + project)
+                    os.system(
+                        "rm -rf {}".format(self.workspace + '/' + project))
                 self.build(project)
             exit()
 
