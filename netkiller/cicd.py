@@ -213,10 +213,13 @@ class CICD:
             # self.pipeline.begin(name).init(['alias docker=podman']).checkout(ci['url'],self.branch).build(package).podman(registry).dockerfile(tag=tag, dir=module).deploy(deploy).startup(['ls']).end().debug()
             pipeline.begin(name).init(
                 ['alias docker=podman', 'echo $JAVA_HOME'])
-            if 'image' in project['ci']:
-                pipeline.image(project['ci']['image'])
+            if not 'checkout' in self.skip:
+                pipeline.checkout(ci['url'], self.branch)
             if not 'build' in self.skip:
-                pipeline.checkout(ci['url'], self.branch).build(package)
+                image = None
+                if 'image' in project['ci']:
+                    image = project['ci']['image']
+                pipeline.build(package, image)
             if not 'image' in self.skip:
                 pipeline.docker(registry).dockerfile(tag=tag, dir=module)
             if not 'nacos' in self.skip:
