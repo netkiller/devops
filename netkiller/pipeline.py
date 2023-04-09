@@ -35,6 +35,7 @@ class Pipeline:
     def __init__(self, workspace, logging):
         self.container = 'docker'
         self.registry = None
+        self.image = None
         self.workspace = workspace
         self.logging = logging
         self.pipelines = {}
@@ -42,10 +43,10 @@ class Pipeline:
             os.mkdir(self.workspace)
             self.logging.info("make directory: {}".format(self.workspace))
 
-    def image(self, name):
-        self.image = name
-        self.logging.info("image: {}".format(self.image))
-        return self
+    # def image(self, name):
+    #     self.image = name
+    #     self.logging.info("image: {}".format(self.image))
+    #     return self
 
     def begin(self, project):
         self.logging.info("%s %s %s" % ("="*20, project, "=" * 20))
@@ -81,12 +82,15 @@ class Pipeline:
         self.pipelines['checkout'] = ['ls']
         return self
 
-    def build(self, script):
+    def build(self, script, image=None):
         #
         # if compiler == self.Maven :
         #     self.pipelines['build'] = ['maven clean package']
         # elif compiler == self.Npm :
         #     self.pipelines['build'] = ['npm install']
+        if image:
+            self.logging.info("image: {}".format(self.image))
+            self.image = image
 
         if script:
             if self.image:
