@@ -83,7 +83,7 @@ class CICD:
         self.parser.add_option('-o',
                                "--only",
                                dest="only",
-                               help="跳过步骤",
+                               help="指定步骤",
                                default=None,
                                metavar="checkout|build|images|nacos")
         self.parser.add_option('',
@@ -207,45 +207,55 @@ class CICD:
         deploy.append(
             "kubectl -n {namespace} get pod -o wide | grep {project}".format(
                 project=name, namespace=self.namespace))
+
+        image = None
+        if 'image' in project['ci']:
+            image = project['ci']['image']
+
         try:
             pipeline = Pipeline(self.workspace, self.logging)
             # pipeline.env('JAVA_HOME','/Library/Java/JavaVirtualMachines/jdk1.8.0_341.jdk/Contents/Home')
+            # self.pipeline.env('KUBECONFIG','/Users/neo/workspace/ops/k3s.yaml')
             if self.env:
                 for key, value in self.env.items():
                     pipeline.env(key, value)
-            # self.pipeline.env('KUBECONFIG','/Users/neo/workspace/ops/k3s.yaml')
             pipeline.env('KUBECONFIG', '/root/ops/k3s.yaml')
             # ["docker images | grep none | awk '{ print $3; }' | xargs docker rmi"]
             # self.pipeline.begin(name).init(['alias docker=podman']).checkout(ci['url'],self.branch).build(package).podman(registry).dockerfile(tag=tag, dir=module).deploy(deploy).startup(['ls']).end().debug()
             pipeline.begin(name).init(
                 ['alias docker=podman', 'echo $JAVA_HOME'])
+            if self.options.only:
+                if 'checkout' == self.options.only:
+                    pipeline.checkout(ci['url'], self.branch)
+                elif 'build' == self.options.only:
+                    pipeline.build(package, image)
+                elif 'image' == self.options.only:
+                    pipeline.docker(registry).dockerfile(tag=tag, dir=module)
+                elif 'nacos' == self.options.only:
+                    if self.template:
+                        pipeline.template(template, self.template, filepath)
+                    if os.path.exists(filepath):
+                        pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
+                                       dataid, group, filepath)
+                pipeline.end()
+                return
+
             if not 'checkout' in self.skip:
                 pipeline.checkout(ci['url'], self.branch)
-                if 'checkout' == self.options.only:
-                    pipeline.end()
-                    return
+
             if not 'build' in self.skip:
-                image = None
-                if 'image' in project['ci']:
-                    image = project['ci']['image']
                 pipeline.build(package, image)
-                if 'build' == self.options.only:
-                    pipeline.end()
-                    return
+
             if not 'image' in self.skip:
                 pipeline.docker(registry).dockerfile(tag=tag, dir=module)
-                if 'image' == self.options.only:
-                    pipeline.end()
-                    return
+
             if not 'nacos' in self.skip:
                 if self.template:
                     pipeline.template(template, self.template, filepath)
                 if os.path.exists(filepath):
                     pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
                                    dataid, group, filepath)
-                if 'nacos' == self.options.only:
-                    pipeline.end()
-                    return
+
             if not 'deploy' in self.skip:
                 pipeline.deploy(deploy)
             # .startup(['ls'])
@@ -254,7 +264,7 @@ class CICD:
                     '{workspace}/{project}.log'.format(workspace=self.workspace, project=name))
             pipeline.end()
             # pipeline.debug()
-            # print(project)
+
         except Exception as err:
             print(err)
 
