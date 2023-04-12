@@ -13,6 +13,11 @@ try:
     import logging.handlers
     import json
     from optparse import OptionParser, OptionGroup
+    import time
+    import hmac
+    import hashlib
+    import base64
+    import urllib.parse
 except ImportError as err:
     print("Error: %s" % (err))
 
@@ -20,13 +25,28 @@ except ImportError as err:
 class Dingtalk():
 
     def __init__(self):
+        self.headers = {'Content-Type': 'application/json'}
+        self.url = "https://oapi.dingtalk.com/robot/send"
+
         usage = "usage: %prog [options] message"
         self.parser = OptionParser(usage)
         self.parser.add_option(
-            "-t", "--token", dest="token", help="access_token", default='', metavar="")
-        self.parser.add_option('-l', '--logfile', dest='logfile', help='logs file.',
+            "-t", "--token", dest="token", help="access_token", default='', metavar="Token")
+        self.parser.add_option('-s', '--secret', dest='secret', help='密钥',
+                               default=None, metavar='')
+        self.parser.add_option('-l', '--logfile', dest='logfile', help='日志文件',
                                default='/var/log/dingtalk.log', metavar='/var/log/dingtalk.log')
+        self.parser.add_option(
+            '', "--stdin", action="store_true", dest="stdin", help="标准输入")
 
+        self.parser.add_option(
+            '', "--text", action="store_true", dest="text", default=False, help="查看配置")
+        group = OptionGroup(self.parser, "配置管理")
+        group.add_option(
+            '', "--markdown", action="store_true", dest="markdown", help="保存配置")
+        group.add_option('', '--title', dest='title', help='标题',
+                         default=None, metavar='')
+        self.parser.add_option_group(group)
         self.parser.add_option(
             "-d", "--debug", action="store_true", dest="debug", help="debug mode")
 
@@ -45,27 +65,82 @@ class Dingtalk():
 
         if options.token:
             self.token = options.token
-
+            self.params = {'access_token': self.token}
+        if options.secret:
+            self.secret(options.secret)
         if args:
             message = ' '.join(args)
-            self.send(message)
-
+        elif options.stdin:
+            message = sys.stdin.read()
         else:
             self.usage()
 
+        if options.text:
+            self.send(message)
+        elif options.markdown:
+            text = sys.stdin.read()
+            self.send_markdown(message, text)
+        else:
+            print(message)
+            self.send(message)
+
+    def secret(self, secret):
+        timestamp = str(round(time.time() * 1000))
+        # secret = 'SEC90485937c351bfaed41fea8eda5f1e155bbf22842d5f9d6871999e05822fd894'
+        secret_enc = secret.encode('utf-8')
+        string_to_sign = '{}n{}'.format(timestamp, secret)
+        string_to_sign_enc = string_to_sign.encode('utf-8')
+        hmac_code = hmac.new(secret_enc, string_to_sign_enc,
+                             digestmod=hashlib.sha256).digest()
+        sign = urllib.parse.quote(base64.b64encode(hmac_code))
+        # print(timestamp)
+        # print(sign)
+        self.params = {'access_token': self.token, "sign": sign}
+        return sign
+
     def send(self, message):
-        url = "https://oapi.dingtalk.com/robot/send?access_token={token}".format(
-            token=self.token)
-        header = {'Content-Type': 'application/json'}
+
         data = json.dumps({
             "msgtype": "text",
             "text": {
                 "content": message
             }
         })
+        print(self.params)
         self.logging.info(data)
-        res = requests.post(url, data=data, headers=header)
+        res = requests.post(url=self.url, data=data,
+                            params=self.params, headers=self.headers)
         self.logging.info(res.json())
+
+    def send_markdown(self, title: object, text: object, atUserIds):
+        """
+        发送markdown
+        """
+        data = {
+            "msgtype": "markdown",
+            "markdown": {
+                "title": title,
+                "text": text
+            },
+            "at": {
+                "atMobiles": [
+                ],
+                "atUserIds": [
+                    *atUserIds
+                ],
+                "isAtAll": False
+            }
+        }
+        self.params["timestamp"] = self.timestamp
+        r = requests.post(
+            url=self.url,
+            data=json.dumps(data),
+            params=self.params,
+            headers=self.headers
+        )
+        print("data:", data)
+        print("-----------------")
+        print(r.json())
 
     def usage(self):
         self.parser.print_help()
@@ -75,4 +150,7 @@ class Dingtalk():
 
 
 if __name__ == '__main__':
-    dingtalk = Dingtalk()
+    try:
+        dingtalk = Dingtalk()
+    except PermissionError as err:
+        print(err)

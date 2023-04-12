@@ -80,6 +80,12 @@ class CICD:
                                help="跳过步骤",
                                default=None,
                                metavar="build|image|nacos|deploy")
+        self.parser.add_option('-o',
+                               "--only",
+                               dest="only",
+                               help="跳过步骤",
+                               default=None,
+                               metavar="checkout|build|images|nacos")
         self.parser.add_option('',
                                "--logfile",
                                dest="logfile",
@@ -215,19 +221,31 @@ class CICD:
                 ['alias docker=podman', 'echo $JAVA_HOME'])
             if not 'checkout' in self.skip:
                 pipeline.checkout(ci['url'], self.branch)
+                if 'checkout' == self.options.only:
+                    pipeline.end()
+                    return
             if not 'build' in self.skip:
                 image = None
                 if 'image' in project['ci']:
                     image = project['ci']['image']
                 pipeline.build(package, image)
+                if 'build' == self.options.only:
+                    pipeline.end()
+                    return
             if not 'image' in self.skip:
                 pipeline.docker(registry).dockerfile(tag=tag, dir=module)
+                if 'image' == self.options.only:
+                    pipeline.end()
+                    return
             if not 'nacos' in self.skip:
                 if self.template:
                     pipeline.template(template, self.template, filepath)
                 if os.path.exists(filepath):
                     pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
                                    dataid, group, filepath)
+                if 'nacos' == self.options.only:
+                    pipeline.end()
+                    return
             if not 'deploy' in self.skip:
                 pipeline.deploy(deploy)
             # .startup(['ls'])
