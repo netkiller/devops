@@ -103,7 +103,7 @@ class Pipeline:
                 tmp.writelines([line+'\n' for line in scripts])
                 tmp.close()
 
-                command = "{container} run -it --rm --name pipeline -v ~/.m2:/root/.m2 -v ~/.gradle:/root/.gradle -v {project}:/root/project -v {script}:/root/script.sh -w /root/project {image} /bin/bash /root/script.sh".format(
+                command = "{container} run -it --rm --name pipeline -v ~/.m2:/root/.m2 -v ~/.gradle:/root/.gradle -v {project}:/root/project -v {script}:/root/script.sh -w /root/project {image} /bin/sh /root/script.sh".format(
                     container=self.container, project=self.workspace+'/'+self.project, image=self.image, script=tmp.name)
 
                 # print(command)
