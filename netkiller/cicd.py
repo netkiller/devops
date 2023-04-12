@@ -238,7 +238,7 @@ class CICD:
                         pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
                                        dataid, group, filepath)
                         pipeline.startup(
-                            ['kubectl rollout restart deployment {project}'.format(project=name)])
+                            ['kubectl rollout restart deployment {project} -n {namespace} '.format(project=name, namespace=self.namespace)])
                 pipeline.end()
                 return
 
