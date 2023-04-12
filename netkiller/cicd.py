@@ -237,6 +237,8 @@ class CICD:
                     if os.path.exists(filepath):
                         pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
                                        dataid, group, filepath)
+                        pipeline.startup(
+                            ['kubectl rollout restart deployment {project}'.format(project=name)])
                 pipeline.end()
                 return
 
@@ -258,7 +260,6 @@ class CICD:
 
             if not 'deploy' in self.skip:
                 pipeline.deploy(deploy)
-            # .startup(['ls'])
             if self.options.silent:
                 pipeline.log(
                     '{workspace}/{project}.log'.format(workspace=self.workspace, project=name))
