@@ -128,7 +128,7 @@ class Git():
 
         self.cmd = []
 
-        return 0
+        return ret.stdout
 
 
 class GitBranch(Git):
