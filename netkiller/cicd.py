@@ -127,7 +127,7 @@ class CICD:
         self.parser.add_option('',
                                "--parallel",
                                dest="parallel",
-                               help="日志文件",
+                               help="并行部署",
                                default=None,
                                metavar="5")
         self.parser.add_option('',
