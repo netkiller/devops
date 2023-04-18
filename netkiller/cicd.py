@@ -125,6 +125,12 @@ class CICD:
                                dest="daemon",
                                help="后台运行")
         self.parser.add_option('',
+                               "--parallel",
+                               dest="parallel",
+                               help="日志文件",
+                               default=None,
+                               metavar="5")
+        self.parser.add_option('',
                                "--debug",
                                action='store_true',
                                dest="debug",
@@ -293,12 +299,13 @@ class CICD:
             if item['deployment']['group'] == name:
                 projects.append(project)
 
-        # for project in projects:
-            # self.build(project)
-
-        from multiprocessing import Pool
-        with Pool(5) as p:
-            self.logging.info(p.map(self.build, projects))
+        if self.options.parallel:
+            from multiprocessing import Pool
+            with Pool(self.options.parallel) as p:
+                self.logging.info(p.map(self.build, projects))
+        else:
+            for project in projects:
+                self.build(project)
 
     def all(self):
         projects = self.config.keys()
