@@ -248,23 +248,23 @@ class CICD:
                 pipeline.end()
                 return
 
-            if not 'checkout' in self.skip:
+            if 'checkout' in self.skip:
                 pipeline.checkout(ci['url'], self.branch)
 
-            if not 'build' in self.skip:
+            if 'build' in self.skip:
                 pipeline.build(package, image)
 
-            if not 'image' in self.skip:
+            if 'image' in self.skip:
                 pipeline.docker(self.registry).dockerfile(tag=tag, dir=module)
 
-            if not 'nacos' in self.skip:
+            if 'nacos' in self.skip:
                 if self.template:
                     pipeline.template(template, self.template, filepath)
                 if os.path.exists(filepath):
                     pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
                                    dataid, group, filepath)
 
-            if not 'deploy' in self.skip:
+            if 'deploy' in self.skip:
                 pipeline.deploy(deploy)
             if self.options.silent:
                 pipeline.log(
