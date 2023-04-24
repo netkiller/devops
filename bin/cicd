@@ -8,6 +8,7 @@ import sys
 
 sys.path.insert(0, '/Users/neo/workspace/Github/devops')
 sys.path.insert(1, '../devops')
+sys.path.insert(3, '.')
 
 from netkiller.cicd import *
 from config import *
