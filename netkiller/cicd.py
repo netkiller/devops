@@ -309,8 +309,7 @@ class CICD:
         projects = self.config.keys()
         from multiprocessing import Pool
         with Pool(10) as pool:
-            for name, item in self.config.items():
-                self.logging.info(pool.map(self.build, projects))
+            self.logging.info(pool.map(self.build, projects))
 
     def daemon(self):
         pid = os.fork()
