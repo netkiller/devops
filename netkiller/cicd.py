@@ -176,10 +176,12 @@ class CICD:
 
         if not name in self.config.keys():
             print("%s 项目不存在" % name)
+            self.logging.info("%s 项目不存在" % name)
             return
         # else:
             # print("==================== {} ====================".format(name))
         if name in self.skip:
+            self.logging.info("skip ".format(name))
             return
         project = self.config[name]
 
