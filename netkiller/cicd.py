@@ -245,7 +245,7 @@ class CICD:
                     pipeline.build(package, image)
                 elif 'image' == self.options.only:
                     pipeline.docker(self.registry).dockerfile(
-                        tag=tag, dir=module)
+                        tag=tag, dir=module, latest=True)
                 elif 'nacos' == self.options.only:
                     if self.template:
                         pipeline.template(template, self.template, filepath)
