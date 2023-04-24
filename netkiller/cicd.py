@@ -77,9 +77,9 @@ class CICD:
         self.parser.add_option('',
                                "--skip",
                                dest="skip",
-                               help="跳过步骤",
+                               help="跳过部署项目",
                                default=None,
-                               metavar="build|image|nacos|deploy")
+                               metavar="project1,project2")
         self.parser.add_option('-o',
                                "--only",
                                dest="only",
@@ -179,6 +179,8 @@ class CICD:
             return
         # else:
             # print("==================== {} ====================".format(name))
+        if name in self.skip:
+
         project = self.config[name]
 
         ci = project['ci']
@@ -230,13 +232,18 @@ class CICD:
             # self.pipeline.begin(name).init(['alias docker=podman']).checkout(ci['url'],self.branch).build(package).podman(self.registry).dockerfile(tag=tag, dir=module).deploy(deploy).startup(['ls']).end().debug()
             pipeline.begin(name).init(
                 ['alias docker=podman', 'echo $JAVA_HOME'])
+            if self.options.silent:
+                pipeline.log(
+                    '{workspace}/{project}.log'.format(workspace=self.workspace, project=name))
+
             if self.options.only:
                 if 'checkout' == self.options.only:
                     pipeline.checkout(ci['url'], self.branch)
                 elif 'build' == self.options.only:
                     pipeline.build(package, image)
                 elif 'image' == self.options.only:
-                    pipeline.docker(self.registry).dockerfile(tag=tag, dir=module)
+                    pipeline.docker(self.registry).dockerfile(
+                        tag=tag, dir=module)
                 elif 'nacos' == self.options.only:
                     if self.template:
                         pipeline.template(template, self.template, filepath)
@@ -248,27 +255,16 @@ class CICD:
                 pipeline.end()
                 return
 
-            if 'checkout' in self.skip:
-                pipeline.checkout(ci['url'], self.branch)
-
-            if 'build' in self.skip:
-                pipeline.build(package, image)
-
-            if 'image' in self.skip:
-                pipeline.docker(self.registry).dockerfile(tag=tag, dir=module)
-
-            if 'nacos' in self.skip:
-                if self.template:
-                    pipeline.template(template, self.template, filepath)
+            pipeline.checkout(ci['url'], self.branch)
+            pipeline.build(package, image)
+            pipeline.docker(self.registry).dockerfile(tag=tag, dir=module)
+            if self.template:
+                pipeline.template(template, self.template, filepath)
                 if os.path.exists(filepath):
                     pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
                                    dataid, group, filepath)
 
-            if 'deploy' in self.skip:
-                pipeline.deploy(deploy)
-            if self.options.silent:
-                pipeline.log(
-                    '{workspace}/{project}.log'.format(workspace=self.workspace, project=name))
+            pipeline.deploy(deploy)
             pipeline.end()
             # pipeline.debug()
 
