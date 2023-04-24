@@ -218,7 +218,7 @@ class CICD:
             "kubectl -n {namespace} get pod -o wide | grep {project}".format(
                 project=name, namespace=self.namespace))
 
-        # image = None
+        image = None
         if 'image' in project['ci']:
             image = project['ci']['image']
 

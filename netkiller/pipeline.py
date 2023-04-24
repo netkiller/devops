@@ -150,7 +150,7 @@ class Pipeline:
         self.logging.info("container: %s" % self.container)
         return self
 
-    def dockerfile(self, tag=None, dir=None):
+    def dockerfile(self, tag=None, dir=None, latest=False):
         self.pipelines['dockerfile'] = []
         if self.registry:
             image = os.path.join(self.registry, self.project)
@@ -165,15 +165,15 @@ class Pipeline:
         if dir:
             os.chdir(dir)
 
-        self.pipelines['dockerfile'].append(
-            self.container + ' build -t '+tag+' .')
-        self.pipelines['dockerfile'].append(
-            self.container + ' tag '+tag+' '+image)
+        self.pipelines['dockerfile'].append(self.container + ' build -t '+tag+' .')
         self.pipelines['dockerfile'].append(self.container + ' push '+tag)
-        self.pipelines['dockerfile'].append(self.container + ' push '+image)
         self.pipelines['dockerfile'].append(self.container + ' image rm '+tag)
-        self.pipelines['dockerfile'].append(
-            self.container + ' image rm '+image)
+
+        if latest :
+            self.pipelines['dockerfile'].append(self.container + ' tag '+tag+' '+image+':latest')
+            self.pipelines['dockerfile'].append(self.container + ' push '+image+':latest')
+            self.pipelines['dockerfile'].append(self.container + ' image rm '+image+':latest')
+
         self.logging.info("dockerfile: %s" % self.pipelines['dockerfile'])
         return self
 
