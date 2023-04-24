@@ -180,7 +180,7 @@ class CICD:
         # else:
             # print("==================== {} ====================".format(name))
         if name in self.skip:
-
+            return
         project = self.config[name]
 
         ci = project['ci']
