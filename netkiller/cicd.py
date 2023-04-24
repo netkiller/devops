@@ -187,8 +187,8 @@ class CICD:
             module = ci['module']
 
         time = datetime.now().strftime('%Y%m%d-%H%M')
-        registry = self.registry+'/' + self.namespace
-        image = registry + '/' + name + ':' + time
+        # registry = self.registry+'/' + self.namespace
+        image = self.registry + '/' + name + ':' + time
         tag = time
 
         # package = ['mvn -U -T 1C clean package']
@@ -214,7 +214,7 @@ class CICD:
             "kubectl -n {namespace} get pod -o wide | grep {project}".format(
                 project=name, namespace=self.namespace))
 
-        image = None
+        # image = None
         if 'image' in project['ci']:
             image = project['ci']['image']
 
@@ -225,9 +225,9 @@ class CICD:
             if self.env:
                 for key, value in self.env.items():
                     pipeline.env(key, value)
-            pipeline.env('KUBECONFIG', '/root/ops/k3s.yaml')
+            # pipeline.env('KUBECONFIG', '/root/ops/k3s.yaml')
             # ["docker images | grep none | awk '{ print $3; }' | xargs docker rmi"]
-            # self.pipeline.begin(name).init(['alias docker=podman']).checkout(ci['url'],self.branch).build(package).podman(registry).dockerfile(tag=tag, dir=module).deploy(deploy).startup(['ls']).end().debug()
+            # self.pipeline.begin(name).init(['alias docker=podman']).checkout(ci['url'],self.branch).build(package).podman(self.registry).dockerfile(tag=tag, dir=module).deploy(deploy).startup(['ls']).end().debug()
             pipeline.begin(name).init(
                 ['alias docker=podman', 'echo $JAVA_HOME'])
             if self.options.only:
@@ -236,7 +236,7 @@ class CICD:
                 elif 'build' == self.options.only:
                     pipeline.build(package, image)
                 elif 'image' == self.options.only:
-                    pipeline.docker(registry).dockerfile(tag=tag, dir=module)
+                    pipeline.docker(self.registry).dockerfile(tag=tag, dir=module)
                 elif 'nacos' == self.options.only:
                     if self.template:
                         pipeline.template(template, self.template, filepath)
@@ -255,7 +255,7 @@ class CICD:
                 pipeline.build(package, image)
 
             if not 'image' in self.skip:
-                pipeline.docker(registry).dockerfile(tag=tag, dir=module)
+                pipeline.docker(self.registry).dockerfile(tag=tag, dir=module)
 
             if not 'nacos' in self.skip:
                 if self.template:
