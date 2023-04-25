@@ -192,7 +192,7 @@ class CICD:
             module = ci['module']
 
         time = datetime.now().strftime('%Y%m%d-%H%M')
-        # registry = self.registry+'/' + self.namespace
+        # registry = self.registry+'/' + self.options.namespace
         image = self.registry + '/' + name + ':' + time
         tag = time
 
@@ -211,13 +211,13 @@ class CICD:
         deploy = []
         deploy.append(
             "kubectl set image deployment/{project} {project}={image} -n {namespace}"
-            .format(project=name, image=image, namespace=self.namespace))
+            .format(project=name, image=image, namespace=self.options.namespace))
         deploy.append(
             "kubectl -n {namespace} get deployment/{project} -o wide".format(
-                namespace=self.namespace, project=name))
+                namespace=self.options.namespace, project=name))
         deploy.append(
             "kubectl -n {namespace} get pod -o wide | grep {project}".format(
-                project=name, namespace=self.namespace))
+                project=name, namespace=self.options.namespace))
 
         image = None
         if 'image' in project['ci']:
@@ -251,10 +251,10 @@ class CICD:
                     if self.template:
                         pipeline.template(template, self.template, filepath)
                     if os.path.exists(filepath):
-                        pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
+                        pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.options.namespace,
                                        dataid, group, filepath)
                         pipeline.startup(
-                            ['kubectl rollout restart deployment {project} -n {namespace} '.format(project=name, namespace=self.namespace)])
+                            ['kubectl rollout restart deployment {project} -n {namespace} '.format(project=name, namespace=self.options.namespace)])
                 pipeline.end()
                 return
 
@@ -264,7 +264,7 @@ class CICD:
             if self.template:
                 pipeline.template(template, self.template, filepath)
                 if os.path.exists(filepath):
-                    pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.namespace,
+                    pipeline.nacos(self.nacos['server'], self.nacos['username'], self.nacos['password'], self.options.namespace,
                                    dataid, group, filepath)
 
             pipeline.deploy(deploy)
@@ -322,8 +322,6 @@ class CICD:
         if self.options.debug:
             self.logging.debug("options: %s" % self.options)
             self.logging.debug("args: %s" % self.args)
-        # if options.namespace:
-        #     self.namespace = options.namespace
 
         if self.options.destroy:
             user_input = input(
