@@ -28,6 +28,7 @@ class CICD:
     skip = []
     template = {}
     env = {}
+    workspace = os.path.expanduser("~/.netkiller/project")
 
     def __init__(self) -> None:
 
@@ -42,8 +43,8 @@ class CICD:
                                '--workspace',
                                dest='workspace',
                                help='工作空间',
-                               default='/var/tmp/workspace',
-                               metavar='/var/tmp/workspace')
+                               default=self.workspace,
+                               metavar=self.workspace)
         self.parser.add_option('-r',
                                '--registry',
                                dest='registry',
@@ -96,7 +97,7 @@ class CICD:
                                "--list",
                                action='store_true',
                                dest="list",
-                               help="项目列表")
+                               help="查看项目列表")
         self.parser.add_option('-a',
                                "--all",
                                action='store_true',
@@ -223,7 +224,7 @@ class CICD:
             image = project['ci']['image']
 
         try:
-            pipeline = Pipeline(self.workspace, self.logging)
+            pipeline = Pipeline(self.options.workspace, self.logging)
             # pipeline.env('JAVA_HOME','/Library/Java/JavaVirtualMachines/jdk1.8.0_341.jdk/Contents/Home')
             # self.pipeline.env('KUBECONFIG','/Users/neo/workspace/ops/k3s.yaml')
             if self.env:
@@ -231,16 +232,16 @@ class CICD:
                     pipeline.env(key, value)
             # pipeline.env('KUBECONFIG', '/root/ops/k3s.yaml')
             # ["docker images | grep none | awk '{ print $3; }' | xargs docker rmi"]
-            # self.pipeline.begin(name).init(['alias docker=podman']).checkout(ci['url'],self.branch).build(package).podman(self.registry).dockerfile(tag=tag, dir=module).deploy(deploy).startup(['ls']).end().debug()
+            # self.pipeline.begin(name).init(['alias docker=podman']).checkout(ci['url'],self.options.branch).build(package).podman(self.registry).dockerfile(tag=tag, dir=module).deploy(deploy).startup(['ls']).end().debug()
             pipeline.begin(name).init(
                 ['alias docker=podman', 'echo $JAVA_HOME'])
             if self.options.silent:
                 pipeline.log(
-                    '{workspace}/{project}.log'.format(workspace=self.workspace, project=name))
+                    '{workspace}/{project}.log'.format(workspace=self.options.workspace, project=name))
 
             if self.options.only:
                 if 'checkout' == self.options.only:
-                    pipeline.checkout(ci['url'], self.branch)
+                    pipeline.checkout(ci['url'], self.options.branch)
                 elif 'build' == self.options.only:
                     pipeline.build(package, image)
                 elif 'image' == self.options.only:
@@ -257,7 +258,7 @@ class CICD:
                 pipeline.end()
                 return
 
-            pipeline.checkout(ci['url'], self.branch)
+            pipeline.checkout(ci['url'], self.options.branch)
             pipeline.build(package, image)
             pipeline.docker(self.registry).dockerfile(tag=tag, dir=module)
             if self.template:
@@ -317,56 +318,52 @@ class CICD:
             sys.exit(0)
 
     def main(self):
-        (options, args) = self.parser.parse_args()
-        if options.debug:
-            self.logging.debug("options: %s" % options)
-            self.logging.debug("args: %s" % args)
-        if options.namespace:
-            self.namespace = options.namespace
+        # (options, args) = self.parser.parse_args()
+        if self.options.debug:
+            self.logging.debug("options: %s" % self.options)
+            self.logging.debug("args: %s" % self.args)
+        # if options.namespace:
+        #     self.namespace = options.namespace
 
-        if options.destroy:
+        if self.options.destroy:
             user_input = input(
-                "你确认要销毁 {namespace} 环境吗？请输入(yes/no): ".format(namespace=self.namespace)).lower()
+                "你确认要销毁 {namespace} 环境吗？请输入(yes/no): ".format(namespace=self.options.namespace)).lower()
             if user_input == 'yes':
                 cmd = "kubectl delete namespace {namespace}".format(
-                    namespace=self.namespace)
+                    namespace=self.options.namespace)
                 os.system(cmd)
             exit()
 
-        if options.workspace:
-            self.workspace = options.workspace
-        if options.branch:
-            self.branch = options.branch
-        if options.username and options.password:
+        if self.options.username and self.options.password:
             cmd = "docker login -u {username} -p{password} {registry}".format(
-                username=options.username,
-                password=options.password,
-                registry=options.registry)
+                username=self.options.username,
+                password=self.options.password,
+                registry=self.options.registry)
             os.system(cmd)
-        if options.list:
+        if self.options.list:
             self.list()
-        if options.all:
-            if options.daemon:
+        if self.options.all:
+            if self.options.daemon:
                 self.daemon()
             self.all()
             exit()
-        if options.group:
-            if options.daemon:
+        if self.options.group:
+            if self.options.daemon:
                 self.daemon()
-            self.group(options.group)
+            self.group(self.options.group)
             exit()
 
-        if args:
-            if options.daemon:
+        if self.args:
+            if self.options.daemon:
                 self.daemon()
-            if options.skip:
-                self.skip = options.skip.split(',')
-            for project in args:
-                if options.clean and os.path.exists(self.workspace + '/' +
-                                                    project):
-                    # os.removedirs(self.workspace + '/' + project)
+            if self.options.skip:
+                self.skip = self.options.skip.split(',')
+            for project in self.args:
+                if self.options.clean and os.path.exists(self.options.workspace + '/' +
+                                                         project):
+                    # os.removedirs(self.options.workspace + '/' + project)
                     os.system(
-                        "rm -rf {}".format(self.workspace + '/' + project))
+                        "rm -rf {}".format(self.options.workspace + '/' + project))
                 self.build(project)
             exit()
 
