@@ -191,8 +191,7 @@ class CICD:
         if 'module' in ci:
             module = ci['module']
 
-        time = datetime.now().strftime('%Y%m%d-%H%M')
-        tag = self.options.branch + '-'+time
+        tag = self.options.branch + '-' + datetime.now().strftime('%Y%m%d-%H%M')
 
         # package = ['mvn -U -T 1C clean package']
         # package = 'mvn -U -T 1C clean package -Dautoconfig.skip=true -Dmaven.test.skip=true -Dmaven.test.failure.ignore=true'
@@ -205,6 +204,7 @@ class CICD:
         filepath = self.basedir + '/nacos/' + group + '/' + project[
             'deployment']['name']
 
+        image = self.registry + '/' + name + ':' + tag
         deploy = []
         deploy.append(
             "kubectl set image deployment/{project} {project}={image} -n {namespace}"
@@ -315,7 +315,7 @@ class CICD:
             sys.exit(0)
 
     def main(self):
-        
+
         if self.options.debug:
             self.logging.debug("options: %s" % self.options)
             self.logging.debug("args: %s" % self.args)
