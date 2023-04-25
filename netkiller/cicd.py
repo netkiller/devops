@@ -192,14 +192,11 @@ class CICD:
             module = ci['module']
 
         time = datetime.now().strftime('%Y%m%d-%H%M')
-        # registry = self.registry+'/' + self.options.namespace
-        image = self.registry + '/' + name + ':' + time
-        tag = time
+        tag = self.options.branch + '-'+time
 
         # package = ['mvn -U -T 1C clean package']
         # package = 'mvn -U -T 1C clean package -Dautoconfig.skip=true -Dmaven.test.skip=true -Dmaven.test.failure.ignore=true'
         package = ci['build']
-        # package = ['ls']
 
         dataid = project['deployment']['name']
         group = 'DEFAULT_GROUP'
@@ -318,7 +315,7 @@ class CICD:
             sys.exit(0)
 
     def main(self):
-        # (options, args) = self.parser.parse_args()
+        
         if self.options.debug:
             self.logging.debug("options: %s" % self.options)
             self.logging.debug("args: %s" % self.args)
