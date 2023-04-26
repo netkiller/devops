@@ -85,6 +85,11 @@ class Merge():
                          help='hotfix branch from master', default=None, metavar='hotfix/0001')
         self.parser.add_option_group(group)
 
+        group = OptionGroup(self.parser, "Cherry-pick")
+        group.add_option('', '--cherry-pick', dest='cherrypick',
+                         help='', default=None, metavar='9f308d2c')
+        self.parser.add_option_group(group)
+
         (self.options, self.args) = self.parser.parse_args()
 
         try:
@@ -159,9 +164,15 @@ class Merge():
     def push(self):
         git = Git(self.project, self.logger)
         git.push(True).execute()
+
     def changelist(self, since):
         git = Git(self.project, self.logger)
         git.log('--since="'+since+'" --no-merges --pretty=format:"%h %an %ai %s"')
+        git.execute()
+
+    def cherryPick(self, commits, branch):
+        git = Git(self.project, self.logger)
+        git.switch(branch).pull().cherryPick(commits).push()
         git.execute()
 
     def main(self):
@@ -176,7 +187,7 @@ class Merge():
         else:
             self.project = os.getcwd()
 
-        if self.options.changelist :
+        if self.options.changelist:
             self.changelist(self.options.changelist)
             exit()
 
@@ -220,6 +231,16 @@ class Merge():
             self.merge('staging', 'master')
             exit()
 
+        if self.options.cherrypick:
+            if self.options.pipeline:
+                for branch in self.options.pipeline.split('-'):
+                    self.cherryPick(self.options.cherrypick, branch)
+                    self.logger.info("cherry-pick={commit} to {branch}".format(
+                        commit=self.options.cherrypick, branch=branch))
+            else:
+                print("需要配合 pipeline 参数一起使用")
+            exit()
+
         if self.options.pipeline:
             steps = self.options.pipeline.split('-')
             print(self.options.pipeline.replace('-', ' -> '))
@@ -234,6 +255,7 @@ class Merge():
                 self.logger.info("merge {source} to {target}".format(
                     source=source, target=target))
             exit()
+
         self.logger.info('-' * 50)
 
         self.usage()

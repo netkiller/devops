@@ -106,6 +106,14 @@ class Git():
         self.cmd.append('reset HEAD .')
         return (self)
 
+    def switch(self, branch):
+        self.cmd.append('switch %s' % (branch))
+        return (self)
+
+    def cherryPick(self, commits):
+        self.cmd.append('cherry-pick %s' % (commits))
+        return (self)
+
     def command(self, cmd, argument):
         self.cmd.append('%s %s' % (cmd, argument))
 
