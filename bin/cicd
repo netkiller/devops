@@ -4,15 +4,18 @@
 # Home	: https://www.netkiller.cn
 # Author: Neo <netkiller@msn.com>
 ##############################################
-import os
-from config import *
-from netkiller.cicd import *
 import sys
 
-sys.path.insert(0, '/Users/neo/workspace/Github/devops')
-sys.path.insert(1, '../devops')
-sys.path.insert(3, '.')
+sys.path.insert(0, '.')
+sys.path.insert(1, '/Users/neo/workspace/Github/devops')
+sys.path.insert(2, '../devops')
 
+try:
+    import os
+    from config import *
+    from netkiller.cicd import *
+except ImportError as err:
+    print("Error: %s" % (err))
 
 if __name__ == '__main__':
     try:
