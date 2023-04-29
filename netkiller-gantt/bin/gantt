@@ -6,10 +6,10 @@
 ##############################################
 import os
 import sys
-module = os.path.dirname(os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))))
-# print(module)
-sys.path.insert(0, module)
+
+module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ".")
+sys.path.insert(1, module)
 
 try:
     from netkiller.gantt import Gantt, Data, Workload
@@ -22,48 +22,35 @@ try:
     from mysql import connector
 except ImportError as err:
     print("Error: %s" % (err))
+    exit()
 
 
 class GanttChart:
     data = {}
 
     def __init__(self) -> None:
-
         self.parser = OptionParser("usage: %prog [options] ")
 
-        self.parser.add_option(
-            '', "--stdin", action="store_true", dest="stdin", help="cat gantt.json | gantt -s file.svg")
-        self.parser.add_option("-c", "--csv", dest="csv", help="/path/to/gantt.csv",
-                               default=None, metavar="/path/to/gantt.csv")
-        self.parser.add_option('-l', '--load', dest='load',
-                               help='load data from file.', default=None, metavar='/path/to/gantt.json')
+        self.parser.add_option("", "--stdin", action="store_true", dest="stdin", help="cat gantt.json | gantt -s file.svg")
+        self.parser.add_option("-c", "--csv", dest="csv", help="/path/to/gantt.csv", default=None, metavar="/path/to/gantt.csv")
+        self.parser.add_option("-l", "--load", dest="load", help="load data from file.", default=None, metavar="/path/to/gantt.json")
         group = OptionGroup(self.parser, "loading data from mysql")
-        group.add_option('-H', '--host', dest='host', help='',
-                         default=None, metavar='localhost')
-        group.add_option('-u', '--username', dest='username',
-                         help='', default=None, metavar='root')
-        group.add_option('-p', '--password', dest='password',
-                         help='', default=None, metavar='')
-        group.add_option('-D', '--database', dest='database',
-                         help='', default=None, metavar='test')
+        group.add_option("-H", "--host", dest="host", help="", default=None, metavar="localhost")
+        group.add_option("-u", "--username", dest="username", help="", default=None, metavar="root")
+        group.add_option("-p", "--password", dest="password", help="", default=None, metavar="")
+        group.add_option("-D", "--database", dest="database", help="", default=None, metavar="test")
         self.parser.add_option_group(group)
 
         group = OptionGroup(self.parser, "Charts")
-        group.add_option("-t", "--title", dest="title", help="甘特图标题",
-                               default='甘特图标题', metavar="项目甘特图")
-        group.add_option("-W", "--workweeks", dest="workweeks", help="workweeks default 5",
-                               default=5, metavar="5")
-        group.add_option(
-            '-o', "--odd-even", action="store_true", dest="oddeven", default=False, help="odd-even weeks")
-        group.add_option(
-            '-g', "--gantt", action="store_true", dest="gantt", default=True, help="Gantt chart")
-        group.add_option(
-            '-w', "--workload", action="store_true", dest="workload", help="Workload chart")
-        group.add_option('-s', '--save', dest='save',
-                               help='save file', default=None, metavar='/path/to/gantt.svg')
+        group.add_option("-t", "--title", dest="title", help="甘特图标题", default="甘特图标题", metavar="项目甘特图")
+        group.add_option("-n", "--name", dest="name", help="项目名称", default="Netkiller Python 手札", metavar="Netkiller Python 手札")
+        group.add_option("-W", "--workweeks", dest="workweeks", help="workweeks default 5", default=5, metavar="5")
+        group.add_option("-o", "--odd-even", action="store_true", dest="oddeven", default=False, help="odd-even weeks")
+        group.add_option("-g", "--gantt", action="store_true", dest="gantt", default=True, help="Gantt chart")
+        group.add_option("-w", "--workload", action="store_true", dest="workload", help="Workload chart")
+        group.add_option("-s", "--save", dest="save", help="save file", default=None, metavar="/path/to/gantt.svg")
         self.parser.add_option_group(group)
-        self.parser.add_option(
-            '-d', "--debug", action="store_true", dest="debug", help="debug mode")
+        self.parser.add_option("-d", "--debug", action="store_true", dest="debug", help="debug mode")
 
     def usage(self):
         self.parser.print_help()
@@ -72,11 +59,10 @@ class GanttChart:
         exit()
 
     def loadFromMySQL(self, config):
-
         try:
             cnx = connector.connect(**config)
             cursor = cnx.cursor(dictionary=True)
-            query = ("SELECT * FROM project")
+            query = "SELECT * FROM project"
 
             # WHERE hire_date BETWEEN %s AND %s
             # hire_start = datetime.date(1999, 1, 1)
@@ -95,7 +81,7 @@ class GanttChart:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 print(err)
             elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                print("Database does not exist: %s" % config['database'])
+                print("Database does not exist: %s" % config["database"])
             else:
                 print(err)
             exit()
@@ -109,22 +95,15 @@ class GanttChart:
                 items = csv.DictReader(csvfile)
                 tmp = Data()
                 for item in items:
-                    if item['milestone'] == 'TRUE':
-                        item['milestone'] = True
+                    if item["milestone"] == "TRUE":
+                        item["milestone"] = True
                     else:
-                        item['milestone'] = False
+                        item["milestone"] = False
 
-                    tmp.add(item['id'], item['name'], item['start'],
-                            item['finish'], item['resource'], item['predecessor'], item['milestone'], item['parent'])
+                    tmp.add(item["id"], item["name"], item["start"], item["finish"], item["resource"], item["predecessor"], item["milestone"], item["parent"])
                 self.data = tmp.data
         elif options.host:
-            config = {
-                'host': options.host,
-                'user': options.username,
-                'password': options.password,
-                'database': options.database,
-                'raise_on_warnings': True
-            }
+            config = {"host": options.host, "user": options.username, "password": options.password, "database": options.database, "raise_on_warnings": True}
             self.loadFromMySQL(config)
         if options.debug:
             print(options, args)
@@ -137,9 +116,9 @@ class GanttChart:
             file = options.save
         else:
             if options.workload:
-                file = 'workload.svg'
+                file = "workload.svg"
             elif options.gantt:
-                file = 'gantt.svg'
+                file = "gantt.svg"
 
         if options.workweeks:
             workweeks = options.workweeks
@@ -147,6 +126,7 @@ class GanttChart:
         if options.workload:
             workload = Workload()
             workload.load(self.data)
+            workload.name(options.name)
             workload.setWorkweeks(workweeks, False)
             workload.workloadChart(options.title)
             workload.save(file)
@@ -155,12 +135,13 @@ class GanttChart:
             self.gantt = Gantt()
             # self.gantt.hideTable()
             self.gantt.load(self.data)
+            self.gantt.name(options.name)
             self.gantt.setWorkweeks(workweeks, options.oddeven)
             self.gantt.ganttChart(options.title)
             self.gantt.save(file)
             # self.gantt.export(file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     ganttChart = GanttChart()
     ganttChart.main()
