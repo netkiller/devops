@@ -352,6 +352,10 @@ class Services(Common):
         self.service[self.name]["user"] = value
         return self
 
+    def healthcheck(self, value):
+        self.service[self.name]["healthcheck"] = value
+        return self
+
     def dump(self):
         yaml = self.yaml.dump(self.service)
         # self.logger.debug(yaml)
@@ -844,11 +848,15 @@ class Docker(Common):
 
     def dump(self):
         if self.options.environment and self.options.environment in self.composes:
-            composes = self.composes[self.options.environment]
-            print(composes.dump())
+            compose = self.composes[self.options.environment]
+            compose.dump()
+            # if compose:
+            #     print(compose)
         else:
             for env, value in self.composes.items():
-                print(value.dump())
+                compose = value.dump()
+                if compose:
+                    print(compose)
 
     def save_all(self):
         if self.options.environment and self.options.environment in self.composes:
