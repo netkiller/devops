@@ -299,8 +299,11 @@ class Services(Common):
             self.service[self.name]["entrypoint"] = " ".join(obj)
         return self
 
-    def command(self, array=[]):
-        self.service[self.name]["command"] = array
+    def command(self, obj):
+        if type(obj) == str:
+            self.service[self.name]["command"] = obj
+        elif type(obj) == list:
+            self.service[self.name]["command"] = " ".join(obj)
         return self
 
     def depends_on(self, obj):
