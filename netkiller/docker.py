@@ -888,7 +888,6 @@ class Docker(Common):
         else:
             for env, obj in self.composes.items():
                 obj.exec(service, cmd)
-        return self
 
     def usage(self):
         print("Python controls the docker manager.")
@@ -920,7 +919,7 @@ class Docker(Common):
             self.usage()
 
         if len(self.args) > 1:
-            self.service = " ".join(self.args[1:])
+            self.service = " ".join(self.args[1:2])
         else:
             self.service = ""
         self.logger.debug("service: " + self.service)
