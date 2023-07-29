@@ -488,6 +488,11 @@ class Composes(Common):
         self.daemon = daemon
         return self
 
+    def ls(self):
+        command = self.__command("ls")
+        self.execute(command)
+        return self
+
     def up(self, service=""):
         self.save()
         d = ""
@@ -738,6 +743,17 @@ class Docker(Common):
         self.logger.info("-" * 50)
         return self
 
+    def ls(
+        self,
+    ):
+        if self.options.environment and self.options.environment in self.composes:
+            composes = self.composes[self.options.environment]
+            composes.ls()
+        else:
+            for env, obj in self.composes.items():
+                obj.ls()
+        return self
+
     def up(self, service=""):
         if self.options.environment and self.options.environment in self.composes:
             composes = self.composes[self.options.environment]
@@ -927,7 +943,9 @@ class Docker(Common):
             self.service = ""
         self.logger.debug("service: " + self.service)
 
-        if self.args[0] == "up":
+        if self.args[0] == "ls":
+            self.ls()
+        elif self.args[0] == "up":
             self.up(self.service)
         elif self.args[0] == "down":
             self.down(self.service)
