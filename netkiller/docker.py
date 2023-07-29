@@ -364,16 +364,15 @@ class Services(Common):
         return self
 
     def file(self, filename, text):
-        dirname = self.workdir
-        path = dirname + "/" + filename
+        dirname = os.path.dirname(filename)
         try:
             if not os.path.isdir(dirname):
                 os.makedirs(dirname)
                 self.logger.info("Create directory %s" % dirname)
-            with open(path, "w") as file:
+            with open(filename, "w") as file:
                 file.writelines(text)
-                self.logger.info("Create file %s" % path)
-            return path
+                self.logger.info("Create file %s" % filename)
+            return filename
         except Exception as err:
             self.logging.error("Remote connect %s" % err)
         return None
