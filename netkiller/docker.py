@@ -230,6 +230,9 @@ class Services(Common):
             self.service[self.name]["environment"].append(obj)
         elif type(obj) == list:
             self.service[self.name]["environment"].extend(obj)
+        elif type(obj) == dict:
+            for key, value in obj.items():
+                self.service[self.name]["environment"].append(f"{key}={value}")
         else:
             self.service[self.name]["environment"] = obj
         return self
