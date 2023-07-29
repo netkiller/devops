@@ -374,7 +374,7 @@ class Services(Common):
                 self.logger.info("Create file %s" % filename)
             return filename
         except Exception as err:
-            self.logging.error("Remote connect %s" % err)
+            self.logger.error(f"Create file {filename} {repr(err)}")
         return None
 
     def dump(self):
