@@ -288,6 +288,10 @@ class Services(Common):
         self.service[self.name]["networks"] = array
         return self
 
+    def network_mode(self, mode):
+        self.service[self.name]["network_mode"] = mode
+        return self
+
     def sysctls(self, array):
         self.service[self.name]["sysctls"] = array
         return self
@@ -358,6 +362,21 @@ class Services(Common):
     def healthcheck(self, value):
         self.service[self.name]["healthcheck"] = value
         return self
+
+    def file(self, filename, text):
+        dirname = self.workdir
+        path = dirname + "/" + filename
+        try:
+            if not os.path.isdir(dirname):
+                os.makedirs(dirname)
+                self.logger.info("Create directory %s" % dirname)
+            with open(path, "w") as file:
+                file.writelines(text)
+                self.logger.info("Create file %s" % path)
+            return path
+        except Exception as err:
+            self.logging.error("Remote connect %s" % err)
+        return None
 
     def dump(self):
         yaml = self.yaml.dump(self.service)
@@ -715,13 +734,6 @@ class Docker(Common):
             self.logger.info(cmd)
             os.system(cmd)
         self.logger.info("-" * 50)
-        return self
-
-    def createfile(self, filename, text):
-        path = self.workdir + "/" + filename
-        with open(path, "w") as file:
-            file.writelines(text)
-        self.logger.info("Create file %s" % path)
         return self
 
     def up(self, service=""):
