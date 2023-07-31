@@ -428,9 +428,6 @@ class Composes(Common):
         if isinstance(obj, Services):
             if obj.dockerfile:
                 self.dockerfile[obj.name] = obj.dockerfile
-                # dockerfile = '%s/%s/Dockerfile' % (self.basedir,obj.name)
-                # obj.dockerfile.save(dockerfile)
-                # self.logger.info("Create Dockerfile %s" % (dockerfile))
             self.compose["services"].update(obj.service)
         return self
 
@@ -465,19 +462,18 @@ class Composes(Common):
 
         try:
             for service, dockerfile in self.dockerfile.items():
-                dockerfile.save(
-                    "%s/%s/%s/Dockerfile" % (self.basedir, self.name, service)
-                )
-                self.compose["services"][service]["build"] = "%s/%s/%s/" % (
-                    self.basedir,
-                    self.name,
-                    service,
-                )
+                filepath = f"{self.basedir}/{self.name}/{service}/Dockerfile"
+                dockerfile.save(filepath)
+
+                self.compose["services"][service]["build"] = {
+                    "context": os.getcwd(),
+                    "dockerfile": filepath,
+                }
+                # self.logger.debug("Dockerfile")
 
             file = open(filename, "w")
             self.yaml.dump(self.compose, stream=file)
             self.logger.info("Save compose file %s" % (filename))
-            # self.logger.debug(self.compose)
         except Exception as e:
             self.logger.error(e)
             print(e)
