@@ -295,8 +295,15 @@ class Services(Common):
         self.service[self.name]["network_mode"] = mode
         return self
 
-    def sysctls(self, array):
-        self.service[self.name]["sysctls"] = array
+    def sysctls(self, obj):
+        if not "sysctls" in self.service[self.name].keys():
+            self.service[self.name]["sysctls"] = []
+        if type(obj) == str:
+            self.service[self.name]["sysctls"].append(obj)
+        elif type(obj) == list:
+            self.service[self.name]["sysctls"].extend(obj)
+        else:
+            self.service[self.name]["sysctls"] = obj
         return self
 
     def entrypoint(self, obj):
