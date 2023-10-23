@@ -698,7 +698,7 @@ class Docker(Common):
             self.env(env)
 
     def none(self):
-        cmd = "docker images|grep none|awk '{print $3}'|xargs docker rmi -f"
+        cmd = "docker images|grep none|awk '{print $3}'|xargs docker rmi -f > /dev/null 2>&1"
         os.system(cmd)
         return self
 
