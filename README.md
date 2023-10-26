@@ -48,6 +48,11 @@ Deployment
 	python36 setup.py sdist
   	python36 setup.py install --prefix=/srv/devops
 
+### Deploy Pypi
+
+	$ python3 setup.py sdist bdist_wheel
+	$ twine upload dist/netkiller-devops-x.x.x.tar.gz 
+
 Backup
 ------
 [Data backup tools](https://github.com/netkiller/devops/blob/master/doc/backup.md).	
