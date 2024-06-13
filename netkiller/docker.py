@@ -436,9 +436,9 @@ class Composes(Common):
         if isinstance(obj, Services):
             if obj.dockerfile:
                 self.dockerfile[obj.name] = obj.dockerfile
-            # service = obj.service.copy()
+            service = obj.service.copy()
             # service = dict(obj.service)
-            service = copy.deepcopy(obj.service)
+            # service = copy.deepcopy(obj.service)
             # obj.dump()
             self.compose["services"].update(service)
             # print(self.compose["services"])
@@ -720,7 +720,7 @@ class Docker(Common):
             self.env(env)
 
     def none(self):
-        cmd = "docker images|grep none|awk '{print $3}'|xargs docker rmi -f > /dev/null 2>&1"
+        cmd = "docker images|grep none|awk '{print $3}'|xargs -r docker rmi -f > /dev/null 2>&1"
         os.system(cmd)
         return self
 

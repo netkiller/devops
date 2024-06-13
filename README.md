@@ -50,7 +50,8 @@ Deployment
 
 ### Deploy Pypi
 
-	$ python3 setup.py sdist bdist_wheel
+	$ pip install setuptools wheel twine
+	$ python setup.py sdist bdist_wheel
 	$ twine upload dist/netkiller-devops-x.x.x.tar.gz 
 
 Backup

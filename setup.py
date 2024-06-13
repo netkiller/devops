@@ -9,13 +9,13 @@ with open("README.md", "r") as fh:
 
 setup(
     name="netkiller-devops",
-    version="0.7.2",
+    version="0.7.3",
     author="Neo Chen",
     author_email="netkiller@msn.com",
     description="DevOps of useful deployment and automation",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/oscm/devops",
+    url="https://www.netkiller.cn",
     license="BSD",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
