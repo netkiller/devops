@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
+import copy
 import json
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import PreservedScalarString as pss
@@ -388,7 +389,7 @@ class Services(Common):
         return None
 
     def dump(self):
-        yaml = self.yaml.dump(self.service)
+        yaml = self.yaml.dump(self.service[self.name], sys.stdout)
         # self.logger.debug(yaml)
         return yaml
 
@@ -435,19 +436,26 @@ class Composes(Common):
         if isinstance(obj, Services):
             if obj.dockerfile:
                 self.dockerfile[obj.name] = obj.dockerfile
-            self.compose["services"].update(obj.service)
+            # service = obj.service.copy()
+            # service = dict(obj.service)
+            service = copy.deepcopy(obj.service)
+            # obj.dump()
+            self.compose["services"].update(service)
+            # print(self.compose["services"])
         return self
 
     def networks(self, obj):
-        self.compose["networks"] = obj.networks
+        self.compose["networks"] = copy.deepcopy(obj.networks)
         return self
 
     def volumes(self, obj):
-        self.compose["volumes"] = obj.volumes
+        self.compose["volumes"] = copy.deepcopy(obj.volumes)
         return self
 
     def debug(self):
-        jsonformat = json.dumps(self.compose, sort_keys=True, indent=4, separators=(",", ":"))
+        jsonformat = json.dumps(
+            self.compose, sort_keys=True, indent=4, separators=(",", ":")
+        )
         return jsonformat
 
     def dump(self):
@@ -499,7 +507,9 @@ class Composes(Common):
         d = ""
         if self.daemon:
             d = "-d"
-        command = self.__command("up {daemon} {service}".format(daemon=d, service=service))
+        command = self.__command(
+            "up {daemon} {service}".format(daemon=d, service=service)
+        )
         self.execute(command)
         return self
 
@@ -552,12 +562,16 @@ class Composes(Common):
         tail = ""
         if follow:
             tail = "-f --tail=50"
-        command = self.__command("logs {follow} {service}".format(follow=tail, service=service))
+        command = self.__command(
+            "logs {follow} {service}".format(follow=tail, service=service)
+        )
         self.execute(command)
         return self
 
     def exec(self, service, cmd):
-        command = self.__command("exec {service} {cmd}".format(service=service, cmd=cmd))
+        command = self.__command(
+            "exec {service} {cmd}".format(service=service, cmd=cmd)
+        )
         self.execute(command)
         return self
 
@@ -624,7 +638,9 @@ class Docker(Common):
 
         usage = "usage: %prog [options] up|rm|start|stop|restart|logs|top|images|exec <service>"
         self.parser = OptionParser(usage)
-        self.parser.add_option("", "--debug", action="store_true", dest="debug", help="debug mode")
+        self.parser.add_option(
+            "", "--debug", action="store_true", dest="debug", help="debug mode"
+        )
         self.parser.add_option(
             "-e",
             "--environment",
@@ -632,8 +648,12 @@ class Docker(Common):
             help="environment",
             metavar="development|testing|production",
         )
-        self.parser.add_option("-d", "--daemon", dest="daemon", action="store_true", help="run as daemon")
-        self.parser.add_option("", "--logfile", dest="logfile", help="logs file.", default="debug.log")
+        self.parser.add_option(
+            "-d", "--daemon", dest="daemon", action="store_true", help="run as daemon"
+        )
+        self.parser.add_option(
+            "", "--logfile", dest="logfile", help="logs file.", default="debug.log"
+        )
         self.parser.add_option(
             "-l",
             "--list",
@@ -669,7 +689,9 @@ class Docker(Common):
             action="store_true",
             help="build docker image",
         )
-        self.parser.add_option("", "--local", dest="local", action="store_true", help="local docker")
+        self.parser.add_option(
+            "", "--local", dest="local", action="store_true", help="local docker"
+        )
         (self.options, self.args) = self.parser.parse_args()
         if self.options.daemon:
             self.daemon = True
@@ -705,7 +727,9 @@ class Docker(Common):
     def env(self, default):
         # if not self.environ :
         self.environ = default
-        self.logger.info("%s %s %s" % ("-" * 10, "default environment variable", "-" * 10))
+        self.logger.info(
+            "%s %s %s" % ("-" * 10, "default environment variable", "-" * 10)
+        )
         self.logger.info(self.environ)
         self.logger.info("-" * 50)
         return self
@@ -720,6 +744,7 @@ class Docker(Common):
             compose.env(self.environ)
             self.logger.info("Override [%s] environ: %s" % (compose.name, self.environ))
         compose.workdir(self.workdir)
+        # print(compose.dump())
         self.composes[compose.name] = compose
         self.logger.info("Add environment: %s" % (compose.name))
         return self
@@ -872,12 +897,11 @@ class Docker(Common):
             compose = self.composes[self.options.environment]
             compose.dump()
             # if compose:
-            #     print(compose)
         else:
-            for env, value in self.composes.items():
-                compose = value.dump()
+            for env, compose in self.composes.items():
+                print(f"---------- {env} ----------")
                 if compose:
-                    print(compose)
+                    print(compose.dump())
 
     def save_all(self):
         if self.options.environment and self.options.environment in self.composes:
@@ -899,20 +923,24 @@ class Docker(Common):
     def usage(self):
         print("Python controls the docker manager.")
         self.parser.print_help()
-        print("\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>\nHelp: https://github.com/netkiller/devops/blob/master/doc/docker.md")
+        print(
+            "\nHomepage: http://www.netkiller.cn\tAuthor: Neo <netkiller@msn.com>\nHelp: https://github.com/netkiller/devops/blob/master/doc/docker.md"
+        )
         exit()
 
     def main(self):
-        if self.options.export:
-            self.save_all()
-            exit()
         if self.options.compose:
             self.dump()
             exit()
-        if self.options.list:
-            self.list()
 
-        if not self.options.environment and len(self.composes) > 1:
+        # if not self.options.environment and len(self.composes) > 1:
+        #     self.list()
+
+        if self.options.export:
+            self.save_all()
+            exit()
+
+        if self.options.list:
             self.list()
 
         if self.options.build:
@@ -920,43 +948,46 @@ class Docker(Common):
             self.build(self.service)
             exit()
 
-        if not self.args:
-            self.usage()
+        if self.options.environment:
+            if not self.args:
+                self.list()
 
-        if len(self.args) > 1:
-            self.service = " ".join(self.args[1:2])
-        else:
-            self.service = ""
-        self.logger.debug("service: " + self.service)
+            if len(self.args) > 1:
+                self.service = " ".join(self.args[1:2])
+            else:
+                self.service = ""
+            self.logger.debug("service: " + self.service)
 
-        if self.args[0] == "ls":
-            self.ls()
-        elif self.args[0] == "up":
-            self.up(self.service)
-        elif self.args[0] == "down":
-            self.down(self.service)
-            self.logger.info("down " + self.service)
-        elif self.args[0] == "rm":
-            self.rm(self.service)
-            self.logger.info("rm " + self.service)
-        elif self.args[0] == "start":
-            self.start(self.service)
-            self.logger.info("start " + self.service)
-        elif self.args[0] == "stop":
-            self.stop(self.service)
-            self.logger.info("stop " + self.service)
-        elif self.args[0] == "restart":
-            self.restart(self.service)
-            self.logger.info("restart" + self.service)
-        elif self.args[0] == "ps":
-            self.ps(self.service)
-        elif self.args[0] == "top":
-            self.top(self.service)
-        elif self.args[0] == "images":
-            self.images(self.service)
-        elif self.args[0] == "logs":
-            self.logs(self.service, self.options.follow)
-        elif self.args[0] == "exec":
-            self.exec(self.service, self.args[2:])
+            if self.args[0] == "ls":
+                self.ls()
+            elif self.args[0] == "up":
+                self.up(self.service)
+            elif self.args[0] == "down":
+                self.down(self.service)
+                self.logger.info("down " + self.service)
+            elif self.args[0] == "rm":
+                self.rm(self.service)
+                self.logger.info("rm " + self.service)
+            elif self.args[0] == "start":
+                self.start(self.service)
+                self.logger.info("start " + self.service)
+            elif self.args[0] == "stop":
+                self.stop(self.service)
+                self.logger.info("stop " + self.service)
+            elif self.args[0] == "restart":
+                self.restart(self.service)
+                self.logger.info("restart" + self.service)
+            elif self.args[0] == "ps":
+                self.ps(self.service)
+            elif self.args[0] == "top":
+                self.top(self.service)
+            elif self.args[0] == "images":
+                self.images(self.service)
+            elif self.args[0] == "logs":
+                self.logs(self.service, self.options.follow)
+            elif self.args[0] == "exec":
+                self.exec(self.service, self.args[2:])
+            else:
+                self.usage()
         else:
-            self.usage()
+            self.list()
