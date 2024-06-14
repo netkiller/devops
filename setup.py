@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="netkiller-devops",
-    version="0.7.3",
+    version="0.7.4",
     author="Neo Chen",
     author_email="netkiller@msn.com",
     description="DevOps of useful deployment and automation",

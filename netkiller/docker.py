@@ -436,12 +436,8 @@ class Composes(Common):
         if isinstance(obj, Services):
             if obj.dockerfile:
                 self.dockerfile[obj.name] = obj.dockerfile
-            service = obj.service.copy()
-            # service = dict(obj.service)
-            # service = copy.deepcopy(obj.service)
-            # obj.dump()
+            service = copy.deepcopy(obj.service)
             self.compose["services"].update(service)
-            # print(self.compose["services"])
         return self
 
     def networks(self, obj):

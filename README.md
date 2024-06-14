@@ -54,6 +54,10 @@ Deployment
 	$ python setup.py sdist bdist_wheel
 	$ twine upload dist/netkiller-devops-x.x.x.tar.gz 
 
+指定镜像
+
+	$ pip3 install netkiller-devops --upgrade -i https://pypi.org/project
+
 Backup
 ------
 [Data backup tools](https://github.com/netkiller/devops/blob/master/doc/backup.md).	
