@@ -587,7 +587,6 @@ class Composes(Common):
         return self
 
     def build(self, service=""):
-        self.save()
         command = self.__command("build {service}".format(service=service))
         self.execute(command)
         return self
@@ -606,7 +605,8 @@ class Composes(Common):
         return " ".join(command)
 
     def execute(self, command):
-        # self.logger.debug(self.environ)
+        self.save()
+        self.logger.debug(f"execute {command}")
         if self.environ:
             self.logger.debug("set %s" % self.environ)
             os.environ.update(self.environ)
