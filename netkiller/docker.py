@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+#========================================
+# Author: netkiller@msn.com
+# Home: https://www.netkiller.cn
+# Callsign: BG7NYT
+#========================================
 import os, sys
 import copy
 import json
@@ -401,6 +406,7 @@ class Composes(Common):
     compose = {}
     daemon = False
     basedir = "."
+    files = {}
 
     def __init__(self, name):
         super().__init__()
@@ -413,6 +419,7 @@ class Composes(Common):
         self.environ = None
         self.projectName = None
         self.envFile = None
+        self.files = {}
 
     def env(self, default):
         # if not self.environ :
@@ -448,6 +455,10 @@ class Composes(Common):
         self.compose["volumes"] = copy.deepcopy(obj.volumes)
         return self
 
+    def file(self, filename, text):
+        self.files[filename]=text
+        return self
+
     def debug(self):
         jsonformat = json.dumps(
             self.compose, sort_keys=True, indent=4, separators=(",", ":")
@@ -461,6 +472,20 @@ class Composes(Common):
         return self.basedir + "/" + self.name + "/" + "compose.yaml"
 
     def save(self, filename=None):
+
+        for filepath, content in self.files.items():
+            dirname = os.path.dirname(filepath)
+            try:
+                if not os.path.isdir(dirname):
+                    os.makedirs(dirname)
+                    self.logger.info("Create directory %s" % dirname)
+                with open(filepath, "w") as file:
+                    file.writelines(content)
+                    self.logger.info("Create file %s" % filepath)
+
+            except Exception as e:
+                self.logger.error(f"Create file {filepath} {repr(e)}")
+
         if not filename:
             filename = self.filename()
 
