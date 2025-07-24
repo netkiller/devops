@@ -479,13 +479,12 @@ class Composes(Common):
         if isinstance(obj, Services):
             if obj.dockerfile:
                 self.dockerfile[obj.name] = obj.dockerfile
-                filepath = f"{self.basedir}/{self.name}/{obj.name}/Dockerfile"
                 build = {}
                 if obj.dockerfile.context:
                     build["context"] = obj.dockerfile.context
                 else:
                     build["context"] = os.getcwd()
-                build["dockerfile"] = filepath
+                build["dockerfile"] = f"{obj.dockerfile.context}/Dockerfile"
                 obj.build(build)
             service = copy.deepcopy(obj.service)
             self.compose["services"].update(service)
@@ -521,6 +520,11 @@ class Composes(Common):
 
     def filename(self):
         return self.basedir + "/" + self.name + "/" + "compose.yaml"
+    def mkdirs(self, filepath):
+        dirname = os.path.dirname(filepath)
+        if not os.path.isdir(dirname):
+            os.makedirs(dirname)
+            self.logger.info("Create directory %s" % (dirname))
 
     def save(self, filename=None):
 
@@ -540,16 +544,15 @@ class Composes(Common):
         if not filename:
             filename = self.filename()
 
-        dirname = os.path.dirname(filename)
-        if not os.path.isdir(dirname):
-            os.makedirs(dirname)
-            self.logger.info("Create directory %s" % (dirname))
+        self.mkdirs(filename)
 
         try:
             for service, dockerfile in self.dockerfile.items():
-                filepath = self.compose['services'][service]['build']['dockerfile']
-                print(filepath)
+                filepath = f"{self.basedir}/{self.name}/{service}/Dockerfile"
+                # filepath = self.compose['services'][service]['build']['dockerfile']
+                self.mkdirs(filepath)
                 dockerfile.save(filepath)
+                self.compose['services'][service]['build']['dockerfile']=filepath
                 # self.logger.debug("Dockerfile")
 
             file = open(filename, "w")
@@ -965,7 +968,6 @@ class Docker(Common):
         if self.options.environment and self.options.environment in self.composes:
             compose = self.composes[self.options.environment]
             compose.dump()
-            # if compose:
         else:
             for env, compose in self.composes.items():
                 print(f"---------- {env} ----------")
