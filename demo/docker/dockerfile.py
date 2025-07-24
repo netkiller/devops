@@ -13,61 +13,59 @@ try:
 except ImportError as err:
 	print("%s" %(err))
 
-nginx = Dockerfile() 
-nginx.image('nginx:latest').volume(['/etc/nginx','/var/log/nginx']).run('apt update -y && apt install -y procps').expose(['80','443']).workdir('/opt')
-nginx.show()
+# nginx = Dockerfile()
+# nginx.image('nginx:latest').volume(['/etc/nginx','/var/log/nginx']).run('apt update -y && apt install -y procps').expose(['80','443']).workdir('/opt')
+# nginx.show()
 
 # exit()
 
-nginx = Dockerfile()
-# 基于什么镜像
-nginx.image('nginx:latest')
-# 挂载卷
-nginx.volume(['/etc/nginx','/var/log/nginx','/opt'])
-# 运行脚本
-nginx.run('apt update -y && apt install -y procps')
-# 暴漏端口
-nginx.expose(['80','443'])
-# 工作目录
-nginx.workdir('/opt')
-# 打印 Dockerfile
-nginx.show()
-
-
-
+# nginx = Dockerfile()
+# # 基于什么镜像
+# nginx.image('nginx:latest')
+# # 挂载卷
+# nginx.volume(['/etc/nginx','/var/log/nginx','/opt'])
+# # 运行脚本
+# nginx.run('apt update -y && apt install -y procps')
+# # 暴漏端口
+# nginx.expose(['80','443'])
+# # 工作目录
+# nginx.workdir('/opt')
+# # 打印 Dockerfile
+# nginx.show()
+#
 # exit()
 
-
-dockerfile = Dockerfile() 
-dockerfile.label({'org.opencontainers.image.authors':'netkiller'})
-dockerfile.image('openjdk:8-jdk-alpine')
-dockerfile.copy('test.txt','/tmp')
-# dockerfile.run('ls /')
-dockerfile.run(['aa','bb','cc'])
-# dockerfile.expose('9000')
-dockerfile.expose(['80','443'])
-dockerfile.volume([
-	'/usr/local'
-])
-dockerfile.volume([
-	'/etc/nginx',
-	'/var/www'
-])
-dockerfile.env({'JAVA_HOME':'/lib/jvm'})
-# dockerfile.cmd('startup.sh')
-dockerfile.cmd(['sh','/startup.sh','-e sss'])
-# dockerfile.entrypoint('startup.sh')
-dockerfile.entrypoint(['sh','/startup.sh','-e sss'])
-dockerfile.user('nginx:nginx')
-dockerfile.workdir('/srv')
-dockerfile.show()
-dockerfile.save('/tmp/Dockerfile')
-
-exit()
-
-dockerfile = Dockerfile() 
-dockerfile.label({'org.opencontainers.image.authors':'netkiller'})
-dockerfile.image('openjdk:8-jdk-alpine')
+#
+# dockerfile = Dockerfile()
+# dockerfile.label({'cn.netkiller.authors':'netkiller'})
+# dockerfile.image('openjdk:8-jdk-alpine')
+# dockerfile.copy('neo.txt','/tmp')
+# # dockerfile.run('ls /')
+# dockerfile.run(['aa','bb','cc'])
+# # dockerfile.expose('9000')
+# dockerfile.expose(['80','443'])
+# dockerfile.volume([
+# 	'/usr/local'
+# ])
+# dockerfile.volume([
+# 	'/etc/nginx',
+# 	'/var/www'
+# ])
+# dockerfile.env({'JAVA_HOME':'/lib/jvm'})
+# # dockerfile.cmd('startup.sh')
+# dockerfile.cmd(['sh','/startup.sh','-e sss'])
+# # dockerfile.entrypoint('startup.sh')
+# dockerfile.entrypoint(['sh','/startup.sh','-e sss'])
+# dockerfile.user('nginx:nginx')
+# dockerfile.workdir('/srv')
+# dockerfile.show()
+# dockerfile.save('/tmp/Dockerfile')
+#
+# exit()
+#
+# dockerfile = Dockerfile()
+# dockerfile.label({'org.opencontainers.image.authors':'netkiller'})
+# dockerfile.image('openjdk:8-jdk-alpine')
 # dockerfile.copy('/tmp/test.txt','/tmp')
 # dockerfile.run('ls /')
 # dockerfile.run(['aa','bb','cc'])

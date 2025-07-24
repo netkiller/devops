@@ -7,6 +7,8 @@
 import os, sys
 import copy
 import json
+from io import StringIO
+
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import PreservedScalarString as pss
 import logging, logging.handlers
@@ -20,85 +22,95 @@ class Common:
 
 
 class Dockerfile(Common):
-    def __init__(self):
+    def __init__(self,namespace:str,context:str=None,target:str=None):
         super().__init__()
-        self.dockerfile = []
+        self.namespace = namespace
+        self.dockerfile = {}
+        self.dockerfile[self.namespace] = []
+        self.context = context
+        self.target = target
 
     def label(self, map):
         for key, value in map.items():
-            self.dockerfile.append('LABEL %s="%s"' % (key, value))
+            self.dockerfile[self.namespace].append('LABEL %s="%s"' % (key, value))
 
-    def image(self, value):
-        self.dockerfile.append("FROM %s" % value)
+    def image(self, value,target:str=None):
+        if target:
+            self.dockerfile[self.namespace].append("FROM %s AS %s" % (value,target))
+        else:
+            self.dockerfile[self.namespace].append("FROM %s" % value)
         return self
 
     def env(self, obj):
         if type(obj) == dict:
             for key, value in obj.items():
-                self.dockerfile.append("ENV %s %s" % (key, value))
+                self.dockerfile[self.namespace].append("ENV %s %s" % (key, value))
         return self
 
     def arg(self, obj):
         if type(obj) == dict:
             for key, value in obj.items():
-                self.dockerfile.append("ARG %s=%s" % (key, value))
+                self.dockerfile[self.namespace].append("ARG %s=%s" % (key, value))
         return self
 
     def run(self, obj):
         if type(obj) == str:
-            self.dockerfile.append("RUN %s" % obj)
+            self.dockerfile[self.namespace].append("RUN %s" % obj)
         elif type(obj) == list:
-            self.dockerfile.append("RUN %s" % " ".join(obj))
+            self.dockerfile[self.namespace].append("RUN %s" % " ".join(obj))
         else:
             pass
         return self
 
     def volume(self, obj):
         if type(obj) == str:
-            self.dockerfile.append("VOLUME %s" % obj)
+            self.dockerfile[self.namespace].append("VOLUME %s" % obj)
         elif type(obj) == list:
-            self.dockerfile.append('VOLUME ["%s"]' % '","'.join(obj))
+            self.dockerfile[self.namespace].append('VOLUME ["%s"]' % '","'.join(obj))
             # for vol in obj :
             # self.dockerfile.append('VOLUME %s' % vol)
         return self
 
     def expose(self, obj):
         if type(obj) == str:
-            self.dockerfile.append("EXPOSE %s" % obj)
+            self.dockerfile[self.namespace].append("EXPOSE %s" % obj)
         elif type(obj) == list:
-            self.dockerfile.append("EXPOSE %s" % " ".join(obj))
+            self.dockerfile[self.namespace].append("EXPOSE %s" % " ".join(obj))
             # for port in obj :
             # self.dockerfile.append('EXPOSE %s' % port)
         return self
 
-    def copy(self, source, target):
-        self.dockerfile.append("COPY %s %s" % (source, target))
+    def copy(self, file, to, target:str = None):
+        if target:
+            self.dockerfile[self.namespace].append("COPY --from=%s %s %s" % (target,file, to))
+        else:
+            self.dockerfile[self.namespace].append("COPY %s %s" % (file, to))
         return self
 
     def entrypoint(self, obj):
         if type(obj) == str:
-            self.dockerfile.append("ENTRYPOINT %s" % obj)
+            self.dockerfile[self.namespace].append("ENTRYPOINT %s" % obj)
         elif type(obj) == list:
-            self.dockerfile.append("ENTRYPOINT %s" % " ".join(obj))
+            self.dockerfile[self.namespace].append("ENTRYPOINT %s" % " ".join(obj))
         else:
             pass
         return self
 
     def cmd(self, obj):
         if type(obj) == str:
-            self.dockerfile.append("CMD %s" % obj)
+            self.dockerfile[self.namespace].append("CMD %s" % obj)
         elif type(obj) == list:
-            self.dockerfile.append("CMD %s" % " ".join(obj))
+            self.dockerfile[self.namespace].append("CMD %s" % " ".join(obj))
         else:
             pass
         return self
 
     def workdir(self, value):
-        self.dockerfile.append("WORKDIR %s" % value)
+        self.dockerfile[self.namespace].append("WORKDIR %s" % value)
         return self
 
     def user(self, value):
-        self.dockerfile.append("USER %s" % value)
+        self.dockerfile[self.namespace].append("USER %s" % value)
         return self
 
     def save(self, path=None):
@@ -108,18 +120,18 @@ class Dockerfile(Common):
             self.logger.info("Create Dockerfile directory %s" % (dirname))
         # os.makedirs( path,exist_ok=True);
         with open(path, "w") as file:
-            file.writelines("\r\n".join(self.dockerfile))
+            file.writelines("\r\n".join(self.dockerfile[self.namespace]))
             file.write("\r\n")
 
         self.logger.info("Dockerfile %s" % path)
-        self.logger.debug(self.dockerfile)
+        self.logger.debug(self.dockerfile[self.namespace])
         return self
 
     def debug(self):
-        print(self.dockerfile)
+        print(self.dockerfile[self.namespace])
 
     def show(self):
-        print("\r\n".join(self.dockerfile))
+        print("\r\n".join(self.dockerfile[self.namespace]))
 
 
 class Networks(Common):
@@ -191,12 +203,20 @@ class Services(Common):
         if isinstance(obj, Dockerfile):
             self.service[self.name]["build"] = {
                 "context": ".",
-                "dockerfile": "Dockerfile",
-                "target": "dev",
+                "dockerfile": "Dockerfile"
+                # "target": "dev",
             }
+            if obj.target :
+                self.service[self.name]["build"]["target"] = obj.target
             self.dockerfile = obj
         elif type(obj) == dict:
             self.service[self.name]["build"] = obj
+        else:
+            self.service[self.name]["build"] = {
+                "context": ".",
+                "dockerfile": "Dockerfile",
+                # "target": "dev",
+            }
         return self
 
     def image(self, name):
@@ -378,7 +398,19 @@ class Services(Common):
     def healthcheck(self, value):
         self.service[self.name]["healthcheck"] = value
         return self
-
+    def security_opt(self, obj):
+        if not "security_opt" in self.service[self.name].keys():
+            self.service[self.name]["security_opt"] = []
+        if type(obj) == str:
+            self.service[self.name]["security_opt"].append(obj)
+        elif type(obj) == list:
+            self.service[self.name]["security_opt"].extend(obj)
+        elif type(obj) == dict:
+            for key, value in obj.items():
+                self.service[self.name]["security_opt"].append(f"{key}={value}")
+        else:
+            self.service[self.name]["security_opt"] = obj
+        return self
     def file(self, filename, text):
         dirname = os.path.dirname(filename)
         try:
@@ -394,9 +426,13 @@ class Services(Common):
         return None
 
     def dump(self):
-        yaml = self.yaml.dump(self.service[self.name], sys.stdout)
+        self.yaml.dump(self.service[self.name], sys.stdout)
         # self.logger.debug(yaml)
-        return yaml
+    def show(self):
+        stream = StringIO()
+        self.yaml.dump(self.service[self.name], stream)
+        yml = stream.getvalue()
+        print(yml)
 
     def debug(self):
         print(self.service)
@@ -443,6 +479,14 @@ class Composes(Common):
         if isinstance(obj, Services):
             if obj.dockerfile:
                 self.dockerfile[obj.name] = obj.dockerfile
+                filepath = f"{self.basedir}/{self.name}/{obj.name}/Dockerfile"
+                build = {}
+                if obj.dockerfile.context:
+                    build["context"] = obj.dockerfile.context
+                else:
+                    build["context"] = os.getcwd()
+                build["dockerfile"] = filepath
+                obj.build(build)
             service = copy.deepcopy(obj.service)
             self.compose["services"].update(service)
         return self
@@ -460,13 +504,20 @@ class Composes(Common):
         return self
 
     def debug(self):
-        jsonformat = json.dumps(
-            self.compose, sort_keys=True, indent=4, separators=(",", ":")
-        )
-        return jsonformat
+        # jsonformat = json.dumps(
+        #     self.compose, sort_keys=True, indent=4, separators=(",", ":")
+        # )
+        # return jsonformat
+        print(self.compose)
 
     def dump(self):
-        return self.yaml.dump(self.compose, sys.stdout)
+        self.yaml.dump(self.compose, sys.stdout)
+
+    def show(self):
+        stream = StringIO()
+        self.yaml.dump(self.compose, stream)
+        yml = stream.getvalue()
+        print(yml)
 
     def filename(self):
         return self.basedir + "/" + self.name + "/" + "compose.yaml"
@@ -496,13 +547,9 @@ class Composes(Common):
 
         try:
             for service, dockerfile in self.dockerfile.items():
-                filepath = f"{self.basedir}/{self.name}/{service}/Dockerfile"
+                filepath = self.compose['services'][service]['build']['dockerfile']
+                print(filepath)
                 dockerfile.save(filepath)
-
-                self.compose["services"][service]["build"] = {
-                    "context": os.getcwd(),
-                    "dockerfile": filepath,
-                }
                 # self.logger.debug("Dockerfile")
 
             file = open(filename, "w")
@@ -687,6 +734,7 @@ class Docker(Common):
             "--follow",
             dest="follow",
             action="store_true",
+            default=True,
             help="following logging",
         )
         self.parser.add_option(
