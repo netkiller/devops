@@ -579,7 +579,7 @@ class Composes(Common):
         if self.daemon:
             d = "-d"
         command = self.__command(
-            "up {daemon} {service}".format(daemon=d, service=service)
+            "up {daemon} {service} --remove-orphans".format(daemon=d, service=service)
         )
         self.execute(command)
         return self
