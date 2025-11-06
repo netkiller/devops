@@ -53,3 +53,5 @@ netkiller-gantt/netkiller/netkiller_gantt.egg-info
 netkiller-gantt/test
 *.xlsx
 /.idea
+/netkiller/network/wg0.conf
+/netkiller/network/*.conf

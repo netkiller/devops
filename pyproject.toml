@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netkiller-devops"
+version = "0.7.12"
+authors = [
+    { name = "Neo", email = "netkiller@msn.com" },
+]
+description = "DevOps of useful deployment and automation"
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+dependencies = [
+    "ruamel.yaml",
+    "requests",
+    "redis",
+    "pyttsx3",
+    "simple_term_menu",
+    "prompt_toolkit",
+]
+
+[project.urls]
+Homepage = "https://www.netkiller.cn"
+Issues = "https://github.com/netkiller/netkiller-devops/issues"
+
+
+
+#[project.scripts]
+#gantt = "netkiller.gantt:main"
+#mindmap = "netkiller.mindmap:main"

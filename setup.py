@@ -54,7 +54,7 @@ setup(
         "bin/logviewer.kubectl",
         "bin/merge",
         "bin/dingtalk",
-        # 'bin/gantt',
+        'bin/wireguard',
         "bin/nacos",
         "bin/exceldiff",
         "bin/cicd",
