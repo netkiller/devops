@@ -52,7 +52,7 @@ PrivateKey = {privateKey}
             peers.append(f"""[Peer]
 PublicKey = {peerPublicKey}
 AllowedIPs = {peerAddress}
-            """)
+""")
             n+=1
         conf = interface + "\n".join(peers)
 
@@ -83,7 +83,7 @@ PublicKey = {publicKey}
 Endpoint = {endpoint}
 AllowedIPs = 0.0.0.0/0
 PersistentKeepalive = 25
-                    """
+"""
 
             with open(f'client{n}.conf', 'w') as file:
                 file.write(conf)
