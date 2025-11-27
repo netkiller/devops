@@ -1,0 +1,62 @@
+  - job_name: 'blackbox_http_2xx' # 配置get请求检测
+    scrape_interval: 30s
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:         # 测试如下的请求是否可以访问的通
+        - 127.0.0.1:10005
+        - http://127.0.0.1:10005/hello/zhangsan
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 127.0.0.1:9098 # blackbox-exporter 服务所在的机器和端口
+  - job_name: 'blackbox_http_post_2xx' # 配置post请求检测
+    scrape_interval: 30s
+    metrics_path: /probe
+    params:
+      module: [http_post_2xx]
+    static_configs:
+      - targets:              # 测试如下的post请求是否可以访问的通，该post请求不带参数
+        - 127.0.0.1:10005
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 127.0.0.1:9098 # blackbox-exporter 服务所在的机器和端口
+  - job_name: 'blackbox_http_ping' # 检测是否可以ping通某些机器
+    scrape_interval: 30s
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    static_configs:
+      - targets:
+        - 127.0.0.1
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 127.0.0.1:9098 # blackbox-exporter 服务所在的机器和端口
+  - job_name: 'blackbox_tcp_connect' # 检测某些端口是否在线
+    scrape_interval: 30s
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets:
+        - 127.0.0.1:10006
+        - 127.0.0.1:10005
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 127.0.0.1:9098 # blackbox-exporter 服务所在的机器和端口    

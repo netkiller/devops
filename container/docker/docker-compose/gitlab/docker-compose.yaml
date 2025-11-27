@@ -1,0 +1,34 @@
+version: '3.9'
+services:
+    gitlab:
+      image: 'gitlab/gitlab-ce:latest'
+      container_name: gitlab
+      restart: unless-stopped
+      privileged: true
+      hostname: 'gitlab.netkiller.cn'
+      environment:
+        TZ: 'Asia/Shanghai'
+        GITLAB_OMNIBUS_CONFIG: |
+          external_url 'https://gitlab.netkiller.cn'
+          gitlab_rails['time_zone'] = 'Asia/Shanghai'
+          gitlab_rails['gitlab_shell_ssh_port'] = 22
+      ports:
+        - '80:80'
+        - '443:443'
+        - '22:22'
+      volumes:
+        - /opt/gitlab/config:/etc/gitlab
+        - /opt/gitlab/logs:/var/log/gitlab
+        - /opt/gitlab/data:/var/opt/gitlab
+
+  gitlab-runner:
+    image: gitlab/gitlab-runner:alpine
+    container_name: gitlab-runner
+    restart: unless-stopped
+    depends_on:
+      - gitlab
+    privileged: true
+    volumes:
+      - ./config/gitlab-runner:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /bin/docker:/bin/docker

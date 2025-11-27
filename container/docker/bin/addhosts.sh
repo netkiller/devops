@@ -1,0 +1,1 @@
+su - root -c "echo '192.168.3.6 registry.netkiller.cn' >> /etc/hosts; cat /etc/hosts"

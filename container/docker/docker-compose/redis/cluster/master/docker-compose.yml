@@ -1,0 +1,72 @@
+version: "3.7"
+services:
+  redis-master:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - node=master
+    # image: redis:latest
+    container_name: redis-master
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-master:/data
+      # - ./docker-entrypoint.sh:/docker-entrypoint.sh:ro
+      # - "/etc/timezone:/etc/timezone:ro"
+      # - "/etc/localtime:/etc/localtime:ro"
+    links:
+      - redis-slave1
+      - redis-slave2
+    networks:
+      - redis
+    privileged: true
+    sysctls:
+      net.core.somaxconn: '511'
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    # entrypoint: /docker-entrypoint.sh
+    depends_on:
+      - redis-slave1
+      - redis-slave2
+
+  redis-slave1:
+    image: redis:latest
+    container_name: redis-slave1
+    restart: always
+    ports:
+      - "6377:6379"
+    volumes:
+      - redis-slave1:/data
+    networks:
+      - redis
+    privileged: true
+    sysctls:
+      net.core.somaxconn: '511'
+
+  redis-slave2:
+    image: redis:latest
+    container_name: redis-slave2
+    restart: always
+    ports:
+      - "6378:6379"
+    volumes:
+      - redis-slave2:/data
+    networks:
+      - redis
+    privileged: true
+    sysctls:
+      net.core.somaxconn: '511'
+
+networks:
+  redis:
+    driver: bridge
+
+volumes:
+  redis-master:
+  redis-slave1:   
+  redis-slave2:      

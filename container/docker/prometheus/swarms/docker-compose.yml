@@ -1,0 +1,69 @@
+version: '3.8'
+networks:
+  monitor:
+    driver: bridge
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    hostname: prometheus
+    restart: always
+    volumes:
+      - ${PWD}/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /var/lib/prometheus:/prometheus
+      - ${PWD}/node-exporter.json:/etc/prometheus/targets/node-exporter.json
+    command:
+    # args: 
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      # - "--storage.local.path=/prometheus"
+      # - "--storage.local.memory-chunks=10000"
+      # - '--storage.tsdb.path=/prometheus'
+      # - '--storage.tsdb.retention=15d'
+      # - '--log.level=info'
+      # - '--web.listen-address=0.0.0.0:9090'
+      # - '--query.max-concurrency=50'
+    ports:
+      - '9090:9090'
+    networks:
+      - monitor      
+    expose:
+      - "9090"
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    hostname: node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    ports:
+      - '9100:9100'
+    networks:
+      - monitor
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - --collector.filesystem.ignored-mount-points
+      - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+    depends_on:
+      - prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    hostname: grafana
+    restart: always
+    volumes:
+      - /var/log/grafana:/var/log/grafana
+      - /var/lib/grafana:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=passw0rd
+    ports:
+      - "3000:3000"
+    networks:
+      - monitor
+    depends_on:
+      - prometheus

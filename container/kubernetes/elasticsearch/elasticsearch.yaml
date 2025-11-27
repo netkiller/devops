@@ -1,0 +1,239 @@
+---
+# Elasticsearch deployment itself
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch-master
+  # namespace: logging
+  labels:
+    app: elasticsearch
+    # version: v6.2.5
+    # kubernetes.io/cluster-service: "true"
+    # addonmanager.kubernetes.io/mode: Reconcile
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: elasticsearch
+      # version: v6.2.5
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+        role: master
+        # version: v6.2.5
+        # kubernetes.io/cluster-service: "true"
+    spec:
+      serviceAccountName: logging
+      containers:
+      - name: elasticsearch-master
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+        # lifecycle:
+        #   postStart:
+        #     exec:
+        #       command: ["/bin/bash", "-c", "sysctl -w vm.max_map_count=262144; ulimit -l unlimited;"]
+        resources:
+          # need more cpu upon initialization, therefore burstable class
+          limits:
+            cpu: 1000m
+          requests:
+            cpu: 100m
+        ports:
+        - containerPort: 9200
+          name: restful
+          protocol: TCP
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: elasticsearch
+          mountPath: /data
+        env:
+        - name: "NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: "cluster.name"
+          value: "elasticsearch-cluster"
+        - name: "bootstrap.memory_lock"
+          value: "true"
+        - name: "discovery.zen.ping.unicast.hosts"
+          value: "elasticsearch-discovery"
+        - name: "discovery.zen.minimum_master_nodes"
+          value: "2"
+        - name: "discovery.zen.ping_timeout"
+          value: "5s"
+        - name: "node.master"
+          value: "true"
+        - name: "node.data"
+          value: "false"
+        - name: "node.ingest"
+          value: "false"
+        - name: "ES_JAVA_OPTS"
+          value: "-Xms256m -Xmx256m"
+      # securityContext:
+      #   privileged: true
+      volumes:
+      - name: elasticsearch
+        emptyDir: {}
+      # Elasticsearch requires vm.max_map_count to be at least 262144.
+      # If your OS already sets up this number to a higher value, feel free
+      # to remove this init container.
+      initContainers:
+      - image: alpine:latest
+        command: ["/sbin/sysctl", "-w", "vm.max_map_count=262144"]
+        name: elasticsearch-init
+        securityContext:
+          privileged: true
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:  
+#   name: elasticsearch-restful
+#   # namespace: logging  
+#   labels:    
+#     app: elasticsearch
+#     # kubernetes.io/cluster-service: "true"    
+#     # addonmanager.kubernetes.io/mode: Reconcile    
+#     kubernetes.io/name: "Elasticsearch"
+# spec:  
+#   ports:  
+#   - port: 9200    
+#     protocol: TCP    
+#     targetPort: restful
+#   selector: 
+#     app: elasticsearch
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: elasticsearch
+  name: elasticsearch-discovery
+  # namespace: logging
+spec:
+  ports:
+    - port: 9300
+      targetPort: 9300
+  selector:
+    app: elasticsearch
+    role: master
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: elasticsearch-data
+ namespace: ns-elastic
+ labels:
+   app: elasticsearch
+   role: data
+spec:
+ ports:
+   - port: 9200
+     name: outer
+   - port: 9300
+     name: inner
+ clusterIP: None
+ selector:
+   app: elasticsearch
+   role: data
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: elasticsearch
+    role: data
+  name: elasticsearch-data
+  # namespace: logging
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  serviceName: elasticsearch-data
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+        role: data
+    spec:
+      containers:
+        - name: elasticsearch-data
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+          # lifecycle:
+          #   postStart:
+          #     exec:
+          #       command: ["/bin/bash", "-c", "sysctl -w vm.max_map_count=262144; ulimit -l unlimited;"]
+          ports:
+            - containerPort: 9200
+              protocol: TCP
+            - containerPort: 9300
+              protocol: TCP
+          env:
+            - name: "cluster.name"
+              value: "elasticsearch-cluster"
+            - name: "bootstrap.memory_lock"
+              value: "true"
+            - name: "discovery.zen.ping.unicast.hosts"
+              value: "elasticsearch-discovery"
+            - name: "node.master"
+              value: "false"
+            - name: "node.data"
+              value: "true"
+            - name: "ES_JAVA_OPTS"
+              value: "-Xms256m -Xmx256m"
+          volumeMounts:
+            - name: esdata
+              mountPath: /usr/share/elasticsearch/data              
+      securityContext:
+        privileged: true
+      volumes:
+        - name: esdata
+          emptyDir: {}
+      serviceAccountName: logging
+      # tolerations:
+      #   - key: node-role.kubernetes.io/master
+      #     effect: NoSchedule
+  # volumeClaimTemplates:
+  #  - metadata:
+  #      name: esdata
+  #    spec:
+  #      accessModes: ["ReadWriteOnce"]
+  #      storageClassName: "vsphere-volume-sc"
+  #      resources:
+  #        requests:
+  #          storage: 15Gi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: elasticsearch
+  name: elasticsearch-service
+  # namespace: logging
+spec:
+  ports:
+    - port: 9200
+      targetPort: 9200
+  selector:
+    app: elasticsearch
+  type: NodePort  
+
+# ---
+# apiVersion: extensions/v1beta1
+# kind: Ingress
+# metadata:
+#  labels:
+#    app: elasticsearch
+#  name: elasticsearch-ingress
+#  namespace: ns-elastic
+# spec:
+#  rules:
+#    - host: es.netkiller.cn
+#      http:
+#        paths:
+#          - backend:
+#              serviceName: elasticsearch-service  

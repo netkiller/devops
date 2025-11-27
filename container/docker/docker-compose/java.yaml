@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  api:
+    image: openjdk:8
+    container_name: api
+    restart: always
+    hostname: api.netkiller.cn
+    extra_hosts:
+      - www.netkiller.cn:192.168.30.10
+      - admin.netkiller.cn:192.168.30.10
+      - explorer.netkiller.cn:192.168.30.10
+      - cfca.netkiller.cn:192.168.30.10
+      - eos.netkiller.cn:192.168.30.10
+      - db.netkiller.cn:192.168.30.10
+      - redis.netkiller.cn:192.168.30.10
+      - mongo.netkiller.cn:192.168.30.5
+    environment:
+      TZ: Asia/Shanghai
+      JAVA_OPTS: -Xms256m -Xmx2048m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m
+    ports:
+      - 8088:8080
+    volumes:
+      - /opt/netkiller.cn/api.netkiller.cn:/app
+      - /opt/netkiller.cn/api.netkiller.cn/logs:/app/logs
+      - /opt/netkiller.cn/api.netkiller.cn/CFCA:/CFCA
+    working_dir: /app
+    entrypoint: java -jar /app/zito-admin.jar
+    command: --spring.profiles.active=test
+      --server.port=8080
+      --logging.file.name=/app/logs/spring.log

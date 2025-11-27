@@ -1,0 +1,116 @@
+version: '3.8'
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=elasticsearch-cluster
+      - bootstrap.memory_lock=true
+      - discovery.zen.ping.unicast.hosts=es01,es02,es03
+      - discovery.zen.minimum_master_nodes=2
+      - discovery.zen.ping_timeout=5s
+      - node.master=true
+      - node.data=true
+      - node.ingest=false
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+
+      # - node.name=elasticsearch
+      # - cluster.name=es-docker-cluster
+      # - discovery.seed_hosts=es02,es03
+      # - cluster.initial_master_nodes=elasticsearch,es02,es03
+      # - bootstrap.memory_lock=true
+      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - elastic
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    container_name: es02
+    environment:
+      - node.name=es02
+      - cluster.name=elasticsearch-cluster
+      - bootstrap.memory_lock=true
+      - discovery.zen.ping.unicast.hosts=es01,es02,es03
+      - discovery.zen.minimum_master_nodes=2
+      - discovery.zen.ping_timeout=5s
+      - node.master=true
+      - node.data=true
+      - node.ingest=false
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+      
+      # - node.name=es02
+      # - cluster.name=es-docker-cluster
+      # - discovery.seed_hosts=elasticsearch,es03
+      # - cluster.initial_master_nodes=elasticsearch,es02,es03
+      # - bootstrap.memory_lock=true
+      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data02:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+    depends_on:
+      - es01  
+  es03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    container_name: es03
+    environment:
+      - node.name=es03
+      - cluster.name=elasticsearch-cluster
+      - bootstrap.memory_lock=true
+      - discovery.zen.ping.unicast.hosts=es01,es02,es03
+      - discovery.zen.minimum_master_nodes=2
+      - discovery.zen.ping_timeout=5s
+      - node.master=true
+      - node.data=true
+      - node.ingest=true
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data03:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+    depends_on:
+      - es01
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.9.2
+    container_name: kibana
+    environment:
+      # SERVER_NAME: kibana.example.org
+      ELASTICSEARCH_HOSTS: http://es01:9200
+    ports:
+      - 5601:5601
+    # volumes:
+      # - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    networks:
+      - elastic
+    depends_on:
+      - es01
+volumes:
+  data01:
+    driver: local
+  data02:
+    driver: local
+  data03:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge
+
+# curl "http://localhost:9200/_cat/nodes?v&pretty"    

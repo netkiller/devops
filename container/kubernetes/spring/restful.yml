@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: restful
+  namespace: default
+  labels:
+    app: springboot
+spec:
+  selector:
+    app: restful
+  type: ClusterIP
+  ports: 
+  - name: http
+    protocol: TCP 
+    port: 8080
+    targetPort: 8080
+  clusterIP: 10.10.0.5
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: restful
+  labels:
+    app: restful
+data:
+  bootstrap.properties: |-
+    spring.cloud.config.name=restful
+    spring.cloud.config.profile=dev
+    spring.cloud.config.label=master
+    spring.cloud.config.uri=http://config.cluster:8888
+    spring.cloud.config.username=config
+    spring.cloud.config.password=s3cr3t
+
+    # statefulSetName-{0..N-1}.serviceName.namespace.svc.cluster.local
+    eureka.client.serviceUrl.defaultZone=http://eureka:s3cr3t@eureka-0.eureka:8761/eureka/,http://eureka:s3cr3t@eureka-1.eureka:8761/eureka/
+    # eureka.client.serviceUrl.defaultZone=${EUREKA_SERVER:http://127.0.0.1:8761/eureka/}
+    # eureka.instance.hostname=eureka.cluster
+    # eureka.instance.preferIpAddress=true
+    # eureka.instance.non-secure-port-enabled=false
+    # eureka.instance.secure-port-enabled=true
+    # eureka.instance.securePort=${server.port}
+  application.properties: |-
+    spring.application.name=microservice-restful
+    server.port=8080
+    logging.file=/tmp/spring.log
+
+    #management.security.enabled=false
+    #management.endpoints.enabled-by-default=false
+    #management.endpoint.info.enabled=true
+    #management.endpoints.web.exposure.include=*
+    #management.endpoints.web.exposure.include=health,info,env,metrics,prometheus
+    #management.endpoint.health.show-details=always
+
+    logging.level.org.springframework.web.bind.annotation.RequestMapping=DEBUG
+    # logging.level.org.springframework.web=DEBUG
+    # logging.level.root=DEBUG
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restful
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: restful
+  template:
+    metadata:
+      labels:
+        app: restful
+    spec:
+      hostAliases:
+      - ip: "10.10.0.2"
+        hostnames: 
+        - "config.cluster"
+      - ip: "10.10.0.3"
+        hostnames:
+        - "eureka.cluster"
+      containers: 
+      - name: restful
+        #image: netkiller/eureka:latest
+        #image: 127.0.0.1:5000/netkiller/eureka:latest
+        image: registry.netkiller.cn:5000/netkiller/restful:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        # resources:
+        #   limits:
+        #     cpu: 2000m
+        #     memory: 2Gi
+        #   requests:
+        #     cpu: 1000m
+        #     memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        env:
+        - name: JAVA_OPTS
+          value: -server -Xms128m -Xmx512m
+        #   valueFrom:
+        #     resourceFieldRef:
+        #       resource: limits.memory
+        #       divisor: 1Mi
+        # - name: JAVA_OPTS
+        #   value: -server -Xms512m -Xmx4096m -Duser.timezone="Asia/Shanghai" -Djava.security.egd=file:/dev/./urandom
+        - name: SPRING_OPTS
+          value: --spring.cloud.bootstrap.location=/srv/bootstrap.properties --spring.config.location=/srv/application.properties
+        # - name: EUREKA_SERVER
+          # value: http://eureka:s3cr3t@eureka-0.eureka:8761/eureka/,http://eureka:s3cr3t@eureka-1.eureka:8761/eureka/
+        volumeMounts:
+        - name: config
+          mountPath:  /srv/bootstrap.properties
+          subPath: bootstrap.properties
+        - name: config
+          mountPath:  /srv/application.properties
+          subPath: application.properties
+        # - name: logfile
+        #   mountPath: /tmp
+      volumes:
+      # - name: logfile
+      #   emptyDir: {} 
+      - name: config
+        configMap:
+          name: restful
+      imagePullSecrets:
+        - name: docker-hub

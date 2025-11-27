@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: filebeat
+  name: filebeat-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: filebeat
+  template:
+    metadata:
+      labels:
+        app: filebeat
+    spec:
+      containers:
+        - name: filebeat-daemonset
+          image: 'elastic/filebeat:7.9.2'
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /usr/share/filebeat/filebeat.yml
+              name: volume-configmap
+              subPath: filebeat.yml
+            - mountPath: /var/lib/docker/containers
+              name: volume-containerlog
+      volumes:
+        - name: volume-configmap
+          configMap:
+            defaultMode: 420
+            name: filebeat-configmap
+        - name: volume-containerlog
+          hostPath:
+            path: /var/lib/docker/containers
+---
+apiVersion: v1
+data:
+  filebeat.yml: |-
+    filebeat.config:
+      modules:
+        path: ${path.config}/modules.d/*.yml
+        reload.enabled: false
+    processors:
+      - add_cloud_metadata: ~
+      - add_docker_metadata: ~
+    filebeat.inputs:
+    - type: docker
+      containers:
+        path: "/var/lib/docker/containers"
+        json.keys_under_root: true
+        ids:
+          - "*"
+    output.elasticsearch:
+      hosts: ["elasticsearch-service:9200"]
+      username: "elastic"
+      password: "xxx"
+    setup.kibana:
+      host: "kibana-service:5601"
+kind: ConfigMap
+metadata:
+  name: filebeat-configmap

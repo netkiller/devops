@@ -1,0 +1,144 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: openfeign
+  namespace: default
+  labels:
+    app: springboot
+spec:
+  selector:
+    app: openfeign
+  type: NodePort
+  ports: 
+  - name: http
+    protocol: TCP 
+    port: 8080
+    targetPort: 8080
+    nodePort: 30080
+  clusterIP: 10.10.0.6
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openfeign
+  labels:
+    app: openfeign
+data:
+  bootstrap.properties: |-
+    spring.cloud.config.name=webflux
+    spring.cloud.config.profile=dev
+    spring.cloud.config.label=master
+    spring.cloud.config.uri=http://config.cluster:8888
+    spring.cloud.config.username=config
+    spring.cloud.config.password=s3cr3t
+
+    # eureka.client.register-with-eureka=false
+    eureka.client.serviceUrl.defaultZone=http://eureka:s3cr3t@eureka:8761/eureka/
+    # eureka.instance.hostname=eureka.cluster
+    # eureka.instance.preferIpAddress=false
+    # eureka.instance.non-secure-port-enabled=false
+    # eureka.instance.secure-port-enabled=true
+    # eureka.instance.securePort=${server.port}
+
+    #feign.client.feignName=restful
+    feign.client.connectTimeout=5000
+    feign.client.readTimeout=5000
+    feign.client.loggerLevel=full
+    feign.httpclient.enabled=true
+    # feign.httpclient.disable-ssl-validation=true
+    feign.httpclient.disableSslValidation=true
+    feign.client.compression.response.enabled=true
+    feign.client.compression.request.enabled=true
+    feign.client.compression.request.mime-types=text/xml,application/xml,application/json
+    feign.client.compression.request.min-request-size=2048
+
+  application.properties: |-
+    spring.application.name=openfeign
+    server.port=8080
+
+    logging.file=/tmp/spring.log
+
+    web.ribbon.listOfServers=localhost:7900,localhost:7901,localhost:7902
+
+    ribbon.ReadTimeout=300000
+    ribbon.ConnectTimeout=300000
+    eureka-server.ribbon.listOfServers=http://eureka:s3cr3t@eureka:8761/eureka/
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openfeign
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openfeign
+  template:
+    metadata:
+      labels:
+        app: openfeign
+    spec:
+      hostAliases:
+      - ip: "10.10.0.2"
+        hostnames: 
+        - "config.cluster"
+      - ip: "10.10.0.3"
+        hostnames:
+        - "eureka.cluster"
+      containers: 
+      - name: openfeign
+        #image: netkiller/eureka:latest
+        #image: 127.0.0.1:5000/netkiller/eureka:latest
+        image: registry.netkiller.cn:5000/netkiller/openfeign:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        # resources:
+        #   limits:
+        #     cpu: 2000m
+        #     memory: 2Gi
+        #   requests:
+        #     cpu: 1000m
+        #     memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 12
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 12
+        env:
+        - name: JAVA_OPTS
+          value: -server -Xms128m -Xmx512m
+        #   valueFrom:
+        #     resourceFieldRef:
+        #       resource: limits.memory
+        #       divisor: 1Mi
+        # - name: JAVA_OPTS
+        #   value: -server -Xms512m -Xmx4096m -Duser.timezone="Asia/Shanghai" -Djava.security.egd=file:/dev/./urandom
+        - name: SPRING_OPTS
+          value: --spring.cloud.bootstrap.location=/srv/bootstrap.properties --spring.config.location=/srv/application.properties
+        volumeMounts:
+        - name: config
+          mountPath:  /srv/bootstrap.properties
+          subPath: bootstrap.properties
+        - name: config
+          mountPath:  /srv/application.properties
+          subPath: application.properties
+        # - name: logfile
+        #   mountPath: /tmp
+      volumes:
+      # - name: logfile
+      #   emptyDir: {} 
+      - name: config
+        configMap:
+          name: openfeign
+      imagePullSecrets:
+        - name: docker-hub

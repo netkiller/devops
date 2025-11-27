@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  registry:
+    image: registry:latest
+    #restart: always
+    container_name: registry
+    ports:
+      - 0.0.0.0:5000:5000
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
+    volumes:
+      - /var/lib/registry:/var/lib/registry

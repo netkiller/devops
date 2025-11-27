@@ -1,0 +1,15 @@
+{{ define "email.from" }}xxxxxxxx@qq.com{{ end }}
+{{ define "email.to" }}xxxxxxxx@qq.com{{ end }}
+{{ define "email.to.html" }}
+{{ range .Alerts }}
+=========start==========<br>
+告警程序: prometheus_alert <br>
+告警级别: {{ .Labels.severity }} 级 <br>
+告警类型: {{ .Labels.alertname }} <br>
+故障主机: {{ .Labels.instance }} <br>
+告警主题: {{ .Annotations.summary }} <br>
+告警详情: {{ .Annotations.description }} <br>
+触发时间: {{ .StartsAt.Format "2019-08-04 16:58:15" }} <br>
+=========end==========<br>
+{{ end }}
+{{ end }}
