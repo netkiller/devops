@@ -444,10 +444,13 @@ class Composes(Common):
     basedir = "."
     files = {}
 
-    def __init__(self, name):
+    def __init__(self, namespace):
         super().__init__()
         self.compose = {}
-        self.name = name
+        if namespace:
+            self.namespace = namespace
+        else:
+            self.namespace = "default"
         self.compose["services"] = {}
         self.dockerfile = {}
         # self.context = 'default'
@@ -461,15 +464,15 @@ class Composes(Common):
         # if not self.environ :
         self.environ = default
         self.logger.info("%s %s %s" % ("-" * 20, " environment", "-" * 20))
-        self.logger.info("%s: %s" % (self.name, self.environ))
+        self.logger.info("%s: %s" % (self.namespace, self.environ))
         self.logger.info("-" * 50)
         return self
 
     def env_file(self, file):
         self.envFile = file
 
-    def project_name(self, name):
-        self.projectName = name
+    # def project_name(self, name):
+    #     self.projectName = name
 
     def version(self, version):
         self.compose["version"] = str(version)
@@ -519,7 +522,7 @@ class Composes(Common):
         print(yml)
 
     def filename(self):
-        return self.basedir + "/" + self.name + "/" + "compose.yaml"
+        return self.basedir + "/" + self.namespace + "/" + "compose.yaml"
     def mkdirs(self, filepath):
         dirname = os.path.dirname(filepath)
         if not os.path.isdir(dirname):
@@ -548,7 +551,7 @@ class Composes(Common):
 
         try:
             for service, dockerfile in self.dockerfile.items():
-                filepath = f"{self.basedir}/{self.name}/{service}/Dockerfile"
+                filepath = f"{self.basedir}/{self.namespace}/{service}/Dockerfile"
                 # filepath = self.compose['services'][service]['build']['dockerfile']
                 self.mkdirs(filepath)
                 dockerfile.save(filepath)
@@ -669,8 +672,8 @@ class Composes(Common):
     def __command(self, cmd):
         command = []
         command.append("docker compose")
-        if self.projectName:
-            command.append("--project-name %s" % self.projectName)
+        if self.namespace:
+            command.append("--project-name %s" % self.namespace)
         if self.envFile:
             command.append("--env-file %s" % self.envFile)
         if self.context:
