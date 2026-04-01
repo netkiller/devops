@@ -817,11 +817,11 @@ class Docker(Common):
             compose.env(None)
         elif self.environ:
             compose.env(self.environ)
-            self.logger.info("Override [%s] environ: %s" % (compose.name, self.environ))
+            self.logger.info("Override [%s] environ: %s" % (compose.namespace, self.environ))
         compose.workdir(self.workdir)
         # print(compose.dump())
-        self.composes[compose.name] = compose
-        self.logger.info("Add environment: %s" % (compose.name))
+        self.composes[compose.namespace] = compose
+        self.logger.info("Add environment: %s" % (compose.namespace))
         return self
 
     def sysctl(self, conf):

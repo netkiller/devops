@@ -1,17 +1,19 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "netkiller-devops"
-version = "0.7.14"
+version = "0.7.16"
 authors = [
-    { name = "Neo", email = "netkiller@msn.com" },
+    { name = "Neo Chen", email = "netkiller@msn.com" },
 ]
 description = "DevOps of useful deployment and automation"
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
@@ -31,8 +33,11 @@ dependencies = [
 Homepage = "https://www.netkiller.cn"
 Issues = "https://github.com/netkiller/netkiller-devops/issues"
 
+[tool.setuptools]
+packages = ["netkiller"]
 
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.yml", "*.ini", "*.cfg", "*.json"]
 
-#[project.scripts]
-#gantt = "netkiller.gantt:main"
-#mindmap = "netkiller.mindmap:main"
+# 注意: scripts 和 data_files 在 pyproject.toml 中不支持
+# 需要通过 setup.cfg 或单独的安装脚本处理

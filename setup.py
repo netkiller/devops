@@ -1,8 +1,5 @@
-import os, sys
+import os
 from setuptools import setup, find_packages
-
-sys.path.insert(0, os.path.abspath("lib"))
-from netkiller import __version__, __author__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -21,7 +18,6 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
     install_requires=[
