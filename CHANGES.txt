@@ -1,6 +1,0 @@
-# Changes
-## v0.3.0
-
-Add - Kubernetes compose
-## v0.4.0
-Add - Dockerfile
