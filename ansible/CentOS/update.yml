@@ -1,6 +1,0 @@
----
-- hosts: all
-  user: root
-  tasks:
-  - name: YUM Update
-    yum: name=* state=latest

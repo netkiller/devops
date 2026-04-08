@@ -24,6 +24,9 @@ class Common:
 class Dockerfile(Common):
     def __init__(self,namespace:str,context:str=None,target:str=None):
         super().__init__()
+        if not namespace:
+            raise Exception("namespace cannot be None")
+            exit()
         self.namespace = namespace
         self.dockerfile = {}
         self.dockerfile[self.namespace] = []
@@ -447,10 +450,7 @@ class Composes(Common):
     def __init__(self, namespace):
         super().__init__()
         self.compose = {}
-        if namespace:
-            self.namespace = namespace
-        else:
-            self.namespace = "default"
+        self.namespace = namespace
         self.compose["services"] = {}
         self.dockerfile = {}
         # self.context = 'default'
@@ -471,8 +471,8 @@ class Composes(Common):
     def env_file(self, file):
         self.envFile = file
 
-    # def project_name(self, name):
-    #     self.projectName = name
+    def project_name(self, name):
+        self.projectName = name
 
     def version(self, version):
         self.compose["version"] = str(version)
@@ -672,8 +672,8 @@ class Composes(Common):
     def __command(self, cmd):
         command = []
         command.append("docker compose")
-        if self.namespace:
-            command.append("--project-name %s" % self.namespace)
+        if self.projectName:
+            command.append("--project-name %s" % self.projectName)
         if self.envFile:
             command.append("--env-file %s" % self.envFile)
         if self.context:

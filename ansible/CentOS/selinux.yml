@@ -1,6 +1,0 @@
----
-- hosts: all
-  user: root
-  tasks:
-  - name: no selinux
-    action: command /usr/sbin/setenforce 0

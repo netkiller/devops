@@ -1,6 +1,0 @@
----
-- hosts: all
-  user: root
-  tasks:
-  - name: Install The NTP daemon and utilities
-    yum: name=ntp state=present

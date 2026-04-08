@@ -1,6 +1,0 @@
----
-- hosts: all
-  user: root
-  tasks:
-  - name: Silm CentOS
-    yum: name=dhclient state=absent
