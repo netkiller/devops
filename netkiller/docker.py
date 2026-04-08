@@ -194,11 +194,13 @@ class Volumes(Common):
 class Services(Common):
     def __init__(self, name):
         super().__init__()
-        self.service = {}
         self.name = name
+        self.service = {}
         self.service[self.name] = {}
         self.dockerfile = None
         self.container_name(self.name)
+        self.files = {}
+        self.files[self.name] = {}
 
     def build(self, obj):
         if not "build" in self.service[self.name].keys():
@@ -415,18 +417,9 @@ class Services(Common):
             self.service[self.name]["security_opt"] = obj
         return self
     def file(self, filename, text):
-        dirname = os.path.dirname(filename)
-        try:
-            if not os.path.isdir(dirname):
-                os.makedirs(dirname)
-                self.logger.info("Create directory %s" % dirname)
-            with open(filename, "w") as file:
-                file.writelines(text)
-                self.logger.info("Create file %s" % filename)
-            return filename
-        except Exception as err:
-            self.logger.error(f"Create file {filename} {repr(err)}")
-        return None
+        self.files[self.name][filename] = text
+        # self.files[filename] = text
+        return self
 
     def dump(self):
         self.yaml.dump(self.service[self.name], sys.stdout)
@@ -491,6 +484,10 @@ class Composes(Common):
                 obj.build(build)
             service = copy.deepcopy(obj.service)
             self.compose["services"].update(service)
+
+            if obj.files:
+                for filename, text in obj.files[obj.name].items():
+                    self.files[filename] = text
         return self
 
     def networks(self, obj):
@@ -543,6 +540,7 @@ class Composes(Common):
 
             except Exception as e:
                 self.logger.error(f"Create file {filepath} {repr(e)}")
+                print(f"Create file {filepath} {repr(e)}")
 
         if not filename:
             filename = self.filename()
@@ -683,7 +681,6 @@ class Composes(Common):
         return " ".join(command)
 
     def execute(self, command):
-        self.save()
         self.logger.debug(f"execute {command}")
         if self.environ:
             self.logger.debug("set %s" % self.environ)
@@ -1003,6 +1000,10 @@ class Docker(Common):
         exit()
 
     def main(self):
+        # print(self.args, self.args.__len__())
+        # if self.args.__len__() == 0:
+        #     self.usage()
+
         if self.options.compose:
             self.dump()
             exit()
@@ -1023,8 +1024,8 @@ class Docker(Common):
             exit()
 
         if self.options.environment:
-            if not self.args:
-                self.list()
+            # if not self.args:
+            #     self.list()
 
             if len(self.args) > 1:
                 self.service = " ".join(self.args[1:2])
