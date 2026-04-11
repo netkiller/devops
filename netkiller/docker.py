@@ -1025,8 +1025,8 @@ class Docker(Common):
             exit()
 
         if self.options.environment:
-            # if not self.args:
-            #     self.list()
+            if not self.args:
+                self.list()
 
             if len(self.args) > 1:
                 self.service = " ".join(self.args[1:2])
