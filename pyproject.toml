@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "netkiller-devops"
-version = "0.7.20"
+version = "0.7.21"
 authors = [
     { name = "Neo Chen", email = "netkiller@msn.com" },
 ]

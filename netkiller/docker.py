@@ -183,12 +183,14 @@ class Volumes(Common):
         if name:
             self.volumes[name] = None
 
-    def ls(self):
-        pass
-
-    def create(self, name):
-        self.volumes[name] = None
-        return self
+    def add(self,volume:str, **kwargs):
+        self.volumes[volume] = {}
+        if 'name' in kwargs:
+            self.volumes[volume]['name'] = kwargs['name']
+        if 'external' in kwargs:
+            self.volumes[volume]['external'] = kwargs['external']
+        if 'driver' in kwargs:
+            self.volumes[volume]['driver'] = kwargs['driver']
 
 
 class Services(Common):
