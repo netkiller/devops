@@ -6,13 +6,14 @@
 # Data: 2025-10-30
 #========================================
 import argparse
+import os
 import subprocess
 
 class Wireguard:
     def __init__(self):
-        self.parser = argparse.ArgumentParser(description='Wireguard config tools',
+        self.parser = argparse.ArgumentParser(description='Wireguard 配置工具',
                                          epilog='Author: netkiller - https://www.netkiller.cn')
-
+        self.parser.add_argument('-i','--install', action="store_true", default=False, help='安装 Wireguard 软件')
         self.parser.add_argument('-c', '--cidr', type=str, default='10.0.0.0/24', metavar="10.0.0.0/24", help='子网')
         self.parser.add_argument('-e', '--endpoint', type=str, default=None, metavar="[服务器公网IP]:50814", help='服务器端IP地址及端口号')
         # self.parser.add_argument('-s','--server', action="store_true", default=False, help='生成服务端配置')
@@ -100,13 +101,17 @@ PersistentKeepalive = 25
 
         # print(keys)
         return keys
+    def install(self):
+        os.system('dnf install -y wireguard-tools')
     def main(self):
         # (options, args) = self.parser.parse_args()
         args = self.parser.parse_args()
         # print(args)
         # self.parser.print_help()
         #
-        if args.cidr and args.endpoint:
+        if args.install:
+            self.install()
+        elif args.cidr and args.endpoint:
             keys = self.genkey(args.node)
             self.server(args.cidr, keys)
             self.peer(args.cidr, args.endpoint, keys)

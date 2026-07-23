@@ -14,9 +14,6 @@ import tempfile
 import subprocess
 from datetime import datetime
 from string import Template
-sys.path.insert(0, '/Users/neo/workspace/devops')
-sys.path.insert(0, '../devops')
-
 
 class Stage:
     def __init__(self) -> None:
@@ -32,12 +29,12 @@ class Pipeline:
     logfile = None
     image = None
 
-    def __init__(self, workspace, logging):
+    def __init__(self, workspace):
         self.container = 'docker'
         self.registry = None
         self.image = None
         self.workspace = workspace
-        self.logging = logging
+        self.logging = logging.getLogger(__class__.__name__)
         self.pipelines = {}
         if not os.path.exists(self.workspace):
             os.mkdir(self.workspace)
@@ -250,4 +247,5 @@ class Pipeline:
 
     def debug(self):
         self.logging.debug(self.pipelines)
+        print(self.pipelines)
         return self
