@@ -1,0 +1,6 @@
+- name: alertmanager
+  image: prom/alertmanager:v0.15.3
+  imagePullPolicy: IfNotPresent
+  args:
+  - "--config.file=/etc/alertmanager/config.yml"
+  - "--storage.path=/alertmanager/data"

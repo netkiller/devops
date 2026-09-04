@@ -7,6 +7,7 @@
 import os, sys
 import copy
 import json
+from enum import Enum
 from io import StringIO
 
 from ruamel.yaml import YAML
@@ -15,11 +16,18 @@ import logging, logging.handlers
 from optparse import OptionParser, OptionGroup
 
 
+
+
 class Common:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.yaml = YAML()
 
+    class Restart:
+        always = 'always'
+        unless_stopped = 'unless-stopped'
+        on_failure = 'on‑failure'
+        no = 'no'
 
 class Dockerfile(Common):
     def __init__(self,namespace:str,context:str=None,target:str=None):

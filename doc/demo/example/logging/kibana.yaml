@@ -1,0 +1,122 @@
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: kibana-config
+#   namespace: k8s-es
+# data:
+#   kibana.yml: |
+      # server.name: kibana
+      # server.host: "0"
+      # server.basePath: "/kibana"
+      # monitoring.ui.container.elasticsearch.enabled: true
+      # xpack.security.enabled: true
+      # elasticsearch.hosts: [ "http://elasticsearch-logging:9200" ]
+      # elasticsearch.username: elastic
+      # elasticsearch.password: I3KEj0MhUmGxKyd510MhUmGxKydSt
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana-logging
+  # namespace: kube-system
+  namespace: kube-public
+  labels:
+    app: kibana-logging
+    kubernetes.io/cluster-service: "true"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: kibana-logging
+  template:
+    metadata:
+      labels:
+        app: kibana-logging
+    spec:
+      containers:
+      - name: kibana-logging
+        image: docker.elastic.co/kibana/kibana:7.9.2
+        resources:
+          # keep request = limit to keep this container in guaranteed class
+          limits:
+            cpu: 200m
+          requests:
+            cpu: 200m
+        env:
+          - name: "ELASTICSEARCH_HOSTS"
+            value: "http://elasticsearch-logging:9200"
+          # - name: "KIBANA_BASE_URL"
+          #   value: "/api/v1/proxy/namespaces/kube-system/services/kibana-logging"
+        ports:
+        - name: webui
+          containerPort: 5601
+          protocol: TCP
+      #   volumeMounts:
+      #     - mountPath: /usr/share/kibana/config/
+      #       name: kibana-config
+      # volumes:
+      #   - name: kibana-config
+      #     configMap:
+      #       name: kibana-config
+      #       defaultMode: 420
+        # tolerations:
+        # - key: node-role.kubernetes.io/master
+        #   effect: NoSchedule
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana-logging
+  # namespace: kube-system
+  namespace: kube-public
+  labels:
+    app: kibana-logging
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "Kibana"
+spec:
+  selector:
+    app: kibana-logging
+  type: NodePort
+  ports:
+  - name: kibana
+    port: 5601
+    targetPort: 5601
+    protocol: TCP
+    nodePort: 30560
+  # clusterIP: None
+---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: kibana
+#   namespace: kube-public
+#   labels:
+#     run: kibana
+# spec:
+#   type: ClusterIP
+#   selector:
+#     run: kibana
+#   ports:
+#     - name: http
+#       port: 5601
+#       protocol: TCP
+#---
+# apiVersion: networking.k8s.io/v1beta1
+# kind: Ingress
+# metadata:
+#   name: kibana-ingress
+#   namespace: kube-public
+#   annotations:
+#     kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+# spec:
+#   rules:
+#   - http:
+        # host: kibana.netkiller.cn
+#       paths:
+          # path: /
+      # - path: /kibana(/|$)(.*)
+#         backend:
+#           serviceName: kibana
+#           servicePort: 5601  
