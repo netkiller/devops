@@ -1,4 +1,4 @@
-# netkiller-devops Docker 编排
+# Dockerfile 演示
 
 ## 安装 netkiller-devops 
 
@@ -6,71 +6,35 @@
 (.venv) neo@netkiller devops % pip install netkiller-devops
 ```
 
-## Service 编排演示
-
-### nginx 例子
+## 生成一个 Dockerfile 文本
 
 ```python
-from netkiller.docker import Services, Composes,  Common
+#!/usr/bin/python3
+#-*- coding: utf-8 -*-
+##############################################
+# Home	: http://netkiller.github.io
+# Author: Neo <netkiller@msn.com>
+# Upgrade: 2021-09-05
+##############################################
+try:
+	import os,  sys
+	module = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+	sys.path.insert(0,module)
+	from netkiller.docker import *
+except ImportError as err:
+	print("%s" %(err))
 
-nginx = Services("nginx")
-# 基于什么镜像
-nginx.image('nginx:latest')
-# 挂载卷
-nginx.volumes(['/etc/nginx','/var/log/nginx','/opt'])
-# 运行脚本
-nginx.command('apt update -y && apt install -y procps')
-# 暴漏端口
-nginx.expose(['80','443'])
-nginx.networks("testnet")
-nginx.restart(Common.Restart.always)
-# 工作目录
-nginx.working_dir('/opt')
-# 日志切割
-nginx.logging({'options':{'max-size': "100m",'max-file': "3"}})
-nginx.healthcheck(
-    {
-      'test': " ".join(["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80"]),
-      'interval': '10s',
-      'timeout': '5s',
-      'retries': 3,
-      'start_period': '5s'}
-)
-# nginx.dump()
-
-demo = Composes('demo')
-# demo.version('3.9')
-demo.services(nginx)
-demo.dump()
+nginx = Dockerfile() 
+nginx.image('nginx:latest').volume(['/etc/nginx','/var/log/nginx']).run('apt update -y && apt install -y procps').expose(['80','443']).workdir('/opt')
+nginx.show()
 ```
 输出结果
 ```text
-services:
-  nginx:
-    container_name: nginx
-    image: nginx:latest
-    volumes:
-    - /etc/nginx
-    - /var/log/nginx
-    - /opt
-    command: apt update -y && apt install -y procps
-    expose:
-    - '80'
-    - '443'
-    networks: testnet
-    restart: always
-    working_dir: /opt
-    logging:
-      driver:
-        options:
-          max-size: 100m
-          max-file: '3'
-    healthcheck:
-      test: CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:80
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
+FROM nginx:latest
+VOLUME ["/etc/nginx","/var/log/nginx"]
+RUN apt update -y && apt install -y procps
+EXPOSE 80 443
+WORKDIR /opt
 ```
 
 ## 另一种写法
