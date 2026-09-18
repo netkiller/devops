@@ -74,6 +74,10 @@ OS Software Configure Managment
 	$ python setup.py sdist bdist_wheel
 	$ twine upload dist/netkiller-devops-x.x.x.tar.gz 
 
+  pip install --upgrade build
+  python -m build  
+  twine upload dist/netkiller_devops-0.7.21*
+
 ### PATH Variable
 
 	$ cp share/profile.d/devops.sh /etc/profile.d/

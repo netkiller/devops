@@ -7,6 +7,7 @@
 import os, sys
 import copy
 import json
+import subprocess
 from enum import Enum
 from io import StringIO
 
@@ -803,8 +804,17 @@ class Docker(Common):
 
     def none(self):
         # cmd = "docker images|grep none|awk '{print $3}'|xargs -r docker rmi -f > /dev/null 2>&1"
-        cmd = 'docker rmi $(docker images -f "dangling=true" -q)'
-        os.system(cmd)
+        # cmd = 'docker rmi $(docker images -f "dangling=true" -q)'
+        cmd = 'docker image prune - f'
+        # os.system(cmd)
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,  # 捕获标准输出
+            stderr=subprocess.PIPE,  # 捕获错误输出
+            text=True  # 返回字符串，而不是bytes（python3.7+也可用universal_newlines=True）
+        )
+
+        self.logger.info(f"{cmd} returncode:{result.returncode}, stdout:{result.stdout}, stderr:{result.stderr}")
         return self
 
     def env(self, default):

@@ -1,0 +1,37 @@
+#! /usr/bin/env python3
+# -*- coding: UTF-8 -*-
+##############################################
+# Home	: https://www.netkiller.cn
+# Author: Neo <netkiller@msn.com>
+##############################################
+import sys
+
+sys.path.insert(0, '.')
+sys.path.insert(1, '/Users/neo/workspace/Github/devops')
+sys.path.insert(2, '../devops')
+
+try:
+    import os
+    from config import *
+    from netkiller.cicd import *
+except ImportError as err:
+    print("Error: %s" % (err))
+
+if __name__ == '__main__':
+    try:
+
+        os.putenv(
+            'JAVA_HOME', '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.362.b09-2.el9_1.x86_64')
+        cd = CICD()
+        (options, args) = cd.parser.parse_args()
+        # print(options, args)
+        # print(template)
+        cd.env(
+            {'JAVA_HOME': '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.362.b09-2.el9_1.x86_64'})
+        # cd.registry(registry)
+        # cd.template(template)
+        # cd.nacos(server, username, password)
+        # cd.config(getCofnig(options.branch))
+        cd.main()
+    except KeyboardInterrupt as err:
+        print(err)
